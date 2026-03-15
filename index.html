@@ -786,27 +786,30 @@ async function checkUpdates(){
 }
 
 function extractPricesFromText(html){
+  // Remover tags HTML e normalizar
+  const text = html.replace(/<[^>]+>/g,"\n").replace(/&amp;/g,"&").replace(/&nbsp;/g," ").replace(/R\$\s*/g,"R$ ");
+  const lines = text.split(/\n/).map(l=>l.trim()).filter(Boolean);
   const prices = {};
-  // Remover HTML tags
-  const text = html.replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&nbsp;/g," ");
-  const lines = text.split(/\n|\r|\|/).map(l=>l.trim()).filter(Boolean);
 
-  // Procurar linhas com R$ e tentar associar a modelos do catálogo
   for(const key of Object.keys(CATALOG_DEFAULT)){
-    const modelParts = key.split(" ");
-    const modelBase = modelParts.slice(-2).join(" "); // pega últimas 2 partes
-    const shortName = key.replace(/Galaxy |iPhone |Moto |Redmi |Poco |Mi |LG |Asus |Realme |Infinix /gi,"").trim();
+    // Nome curto sem prefixo de marca para buscar no doc
+    const shortName = key
+      .replace(/^Galaxy /,"").replace(/^iPhone /,"").replace(/^Moto /,"")
+      .replace(/^Redmi /,"").replace(/^Poco /,"").replace(/^Mi /,"")
+      .replace(/^LG /,"").replace(/^Asus /,"").replace(/^Realme /,"")
+      .replace(/^Infinix /,"").trim();
 
-    for(let i=0; i<lines.length; i++){
-      const line = lines[i];
-      if(!line.toUpperCase().includes(shortName.toUpperCase())) continue;
-      // Procura valor R$ nessa linha ou próxima
-      const priceMatch = line.match(/R\$\s*([\d.]+,\d{2})/);
-      if(priceMatch){
-        const price = parseFloat(priceMatch[1].replace(".","").replace(",","."));
-        if(!prices[key]) prices[key] = [];
-        prices[key].push(price);
-      }
+    for(const line of lines){
+      const lineUp = line.toUpperCase();
+      if(!lineUp.includes(shortName.toUpperCase())) continue;
+      // Só pegar linhas que TAMBÉM tenham R$
+      const priceMatch = line.match(/R\$\s*([\d]+,\d{2})/);
+      if(!priceMatch) continue;
+      const price = parseFloat(priceMatch[1].replace(",","."));
+      if(price < 10 || price > 10000) continue;
+      if(!prices[key]) prices[key] = [];
+      // Evitar duplicatas
+      if(!prices[key].includes(price)) prices[key].push(price);
     }
   }
   return prices;
@@ -816,76 +819,62 @@ function compareWithCurrent(newPrices){
   const changes = [];
   for(const [model, newVals] of Object.entries(newPrices)){
     if(!CATALOG[model]) continue;
-    const currentPrices = CATALOG[model].map(p=>p.c);
-    for(const newVal of newVals){
-      // Ver se esse valor é diferente de algum preço atual
-      const closest = currentPrices.reduce((a,b)=>Math.abs(b-newVal)<Math.abs(a-newVal)?b:a, currentPrices[0]);
-      const diff = newVal - closest;
-      if(Math.abs(diff) >= 1){ // mudança de pelo menos R$1
-        changes.push({model, oldVal: closest, newVal, diff});
+    // Para cada peça do catálogo, procura se o novo preço mudou
+    CATALOG[model].forEach((part, idx) => {
+      // Encontrar o valor mais próximo no novo doc para essa peça
+      const match = newVals.reduce((best, v) => {
+        return Math.abs(v - part.c) < Math.abs(best - part.c) ? v : best;
+      }, newVals[0]);
+      if(match === undefined) return;
+      const diff = match - part.c;
+      // Só reportar mudança >= R$5 para evitar falsos positivos
+      if(Math.abs(diff) >= 5){
+        changes.push({model, idx, qualidade: part.q, oldVal: part.c, newVal: match, diff});
       }
-    }
+    });
   }
   return changes;
 }
 
 function renderChanges(changes, newPrices){
   const changeList = document.getElementById("change-list");
-  // Agrupar por modelo
   const byModel = {};
   changes.forEach(c=>{
-    if(!byModel[c.model]) byModel[c.model]={up:[],down:[]};
-    if(c.diff>0) byModel[c.model].up.push(c);
-    else byModel[c.model].down.push(c);
+    if(!byModel[c.model]) byModel[c.model]=[];
+    byModel[c.model].push(c);
   });
-
   let html = "";
-  for(const [model, {up,down}] of Object.entries(byModel)){
-    const allChanges = [...up,...down];
-    const isUp = up.length > down.length;
+  for(const [model, items] of Object.entries(byModel)){
+    const isUp = items.some(i=>i.diff>0);
     html += `<div class="change-card ${isUp?'up':'down'}">
-      <span class="change-badge ${isUp?'badge-up':'badge-down'}">${isUp?'⬆ Subiu':'⬇ Baixou'}</span>
       <div class="change-model">${model}</div>`;
-    allChanges.forEach(c=>{
-      html += `<div class="change-detail">${fmt(c.oldVal)} → <strong>${fmt(c.newVal)}</strong> (${c.diff>0?'+':''}${fmt(c.diff)})</div>`;
+    items.forEach(c=>{
+      html += `<span class="change-badge ${c.diff>0?'badge-up':'badge-down'}">${c.diff>0?'⬆ Subiu':'⬇ Baixou'}</span>
+      <div class="change-detail">${c.qualidade}: ${fmt(c.oldVal)} → <strong>${fmt(c.newVal)}</strong> (${c.diff>0?'+':''}${fmt(c.diff)})</div>`;
     });
-    html += `<button class="btn-apply" onclick="applyChange('${model.replace(/'/g,"\\'")}',${JSON.stringify(newPrices[model])})">✅ Aplicar atualização</button>
-    </div>`;
+    html += `<button class="btn-apply" onclick="applyModelChange('${model.replace(/'/g,"\\'")}')">✅ Aplicar</button></div>`;
   }
-
-  // Botão aplicar tudo
-  html += `<div style="margin-top:12px">
-    <button onclick="applyAllChanges(${JSON.stringify(Object.fromEntries(Object.entries(newPrices).filter(([k])=>byModel[k])))})" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer">
-      ✅ Aplicar TODAS as mudanças (${changes.length})
-    </button>
-  </div>`;
-
+  html += `<div style="margin-top:12px"><button onclick="applyAllChanges()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer">✅ Aplicar TODAS (${changes.length})</button></div>`;
   changeList.innerHTML = html;
+  window._pendingChanges = changes;
 }
 
-function applyChange(model, newVals){
-  if(!CATALOG[model]) return;
-  // Atualizar preços mantendo qualidades
-  newVals.forEach((newVal, i)=>{
-    if(CATALOG[model][i]) CATALOG[model][i].c = newVal;
-  });
+function applyModelChange(model){
+  const changes = (window._pendingChanges||[]).filter(c=>c.model===model);
+  changes.forEach(c=>{ if(CATALOG[model]?.[c.idx]) CATALOG[model][c.idx].c = c.newVal; });
   saveCatalog();
   showToast(`✅ ${model} atualizado!`);
-  // Remover card
   event.target.closest(".change-card").remove();
 }
 
-function applyAllChanges(newPrices){
-  for(const [model, newVals] of Object.entries(newPrices)){
-    if(!CATALOG[model]) continue;
-    newVals.forEach((newVal, i)=>{
-      if(CATALOG[model][i]) CATALOG[model][i].c = newVal;
-    });
-  }
+function applyAllChanges(){
+  (window._pendingChanges||[]).forEach(c=>{
+    if(CATALOG[c.model]?.[c.idx]) CATALOG[c.model][c.idx].c = c.newVal;
+  });
   saveCatalog();
   showToast("✅ Todos os preços atualizados!");
-  document.getElementById("change-list").innerHTML = `<div style="text-align:center;padding:20px;color:var(--green);font-weight:700;font-size:15px">✅ Catálogo atualizado com sucesso!</div>`;
-  document.getElementById("upd-status").textContent = "✅ Preços aplicados no app!";
+  document.getElementById("change-list").innerHTML=`<div style="text-align:center;padding:20px;color:var(--green);font-weight:700">✅ Catálogo atualizado!</div>`;
+  document.getElementById("upd-status").textContent="✅ Preços aplicados!";
 }
 
 // ══════════════════════════════════════
