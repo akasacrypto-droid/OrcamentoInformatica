@@ -2245,39 +2245,32 @@ async function verificarOLX(){
   const agora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   status.textContent = `🔄 Verificando... (${agora})`;
   status.style.color = "var(--accent)";
+  status.style.display = "block";
+
+  // Usa RSS público da OLX — sem CORS, sem Apps Script
+  const rssUrl = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.olx.com.br/celulares/estados?sf=1&rss=1");
 
   try {
-    // API via Google Apps Script proxy — sem bloqueio CORS
-    const apiUrl = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrSEc2GMt2_FhBhHWJUaxp00uNqvzSjcFk-c0xhLYTh7eiFkyXOE7dp07hmTfeNLImcALCT3Bm1nfBJF3q4gkxAjBjjaygbrrzymPTAxyq_b0ks1Kwr07W2ZReGvNjUudkhec6wHF_dem1NdTQWRp5W6MNScWc3-GKrT0nI0tX3PKeUqXmJbmcJa2zOxKANSlkRdxb3by_oqsliSwi43g51JwpbAbF7RVeRaKUOE9llgTqK8FK9EYAEW8m7zG90SW7a84Ejdf_9d_zLwf3fuI3MwHbpkUDQKaJTP9jaP&lib=MVZUyNCCK_nS7OtUgFYODAL_x8weaNtAO";
-
-    const res = await fetch(apiUrl, {
-      signal: AbortSignal.timeout(10000)
-    });
-
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch(rssUrl, {signal: AbortSignal.timeout(10000)});
+    if(!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
 
-    // Extrair anúncios do JSON da OLX
-    const listings = data?.data?.ads || data?.listings || data?.data || [];
-    const cards = [];
+    if(data.status !== "ok") throw new Error("RSS erro: " + data.message);
 
-    listings.forEach(item => {
-      const id = String(item.listId || item.list_id || item.id || "");
-      const title = item.subject || item.title || item.name || "";
-      const price = item.price || item.priceValue || "";
-      const link = item.url || `https://www.olx.com.br/vi/${id}`;
-      const time = item.date || item.listTime || "";
-      if(id && title) cards.push({id, title, price: price ? `R$ ${price}` : "—", link, time});
-    });
+    const items = data.items || [];
+    if(items.length === 0) throw new Error("Nenhum item no RSS");
 
-    if(cards.length === 0) throw new Error("Sem anúncios na resposta da API");
-
-    // Detectar novos
     let novosCount = 0;
-    cards.forEach(card => {
-      if(!_monitorVistos.has(card.id)){
-        _monitorVistos.add(card.id);
-        _monitorAnuncios.unshift({...card, novo: true, visto: false});
+    items.forEach(item => {
+      const id = item.guid || item.link || "";
+      const title = item.title || "";
+      const price = (item.description || "").match(/R\$\s*[\d.,]+/)?.[0] || "—";
+      const link = item.link || "";
+      const time = item.pubDate ? new Date(item.pubDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
+      const img = item.enclosure?.link || item.thumbnail || "";
+      if(!_monitorVistos.has(id)){
+        _monitorVistos.add(id);
+        _monitorAnuncios.unshift({id, title, price, link, time, img, novo:true, visto:false});
         novosCount++;
       }
     });
@@ -2287,45 +2280,56 @@ async function verificarOLX(){
     if(novosCount > 0){
       _monitorNovos += novosCount;
       atualizarBadgeMonitor();
-      renderMonitorList();
       showToast(`🔔 ${novosCount} anúncio(s) novo(s)!`);
       if(Notification.permission === "granted")
         new Notification(`TechFix — ${novosCount} novo(s) na OLX`, {body: _monitorAnuncios[0]?.title||""});
       status.style.color = "var(--green)";
     } else {
       status.style.color = "var(--muted)";
-      // Renderizar mesmo sem novos para mostrar os que já tem
-      if(_monitorAnuncios.length === 0 && cards.length > 0){
-        cards.forEach(c => _monitorAnuncios.push({...c, novo:false, visto:true}));
-        renderMonitorList();
+      if(_monitorAnuncios.length === 0){
+        items.slice(0,10).forEach(item => {
+          const id = item.guid || item.link || "";
+          const title = item.title || "";
+          const price = (item.description || "").match(/R\$\s*[\d.,]+/)?.[0] || "—";
+          const link = item.link || "";
+          const time = item.pubDate ? new Date(item.pubDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
+          _monitorAnuncios.push({id, title, price, link, time, img:"", novo:false, visto:true});
+        });
       }
     }
 
-    status.textContent = `✅ ${cards.length} anúncios · ${novosCount > 0 ? novosCount+" novos 🆕" : "nenhum novo"} (${agora})`;
+    renderMonitorList();
+    status.textContent = `✅ ${items.length} anúncios · ${novosCount > 0 ? novosCount+" novos 🆕" : "nenhum novo"} (${agora})`;
 
   } catch(e){
-    // Fallback: tentar via allorigins com URL da API
+    // Fallback: rss2json com URL diferente
     try {
-      const apiUrl = "https://www.olx.com.br/api/relevance/v3/search?sf=1&opst=2&cps=10&cps=11&cps=12&elcd=5&limit=40";
-      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`, {signal: AbortSignal.timeout(8000)});
+      const rssUrl2 = "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent("https://www.olx.com.br/celulares?sf=1&rss=1");
+      const res2 = await fetch(rssUrl2, {signal: AbortSignal.timeout(10000)});
       const data2 = await res2.json();
-      const json = JSON.parse(data2.contents || "{}");
-      const listings = json?.data?.ads || json?.listings || [];
-      if(listings.length > 0){
-        listings.forEach(item => {
-          const id = String(item.listId || item.id || "");
-          const title = item.subject || item.title || "";
-          const price = item.price ? `R$ ${item.price}` : "—";
-          const link = item.url || `https://www.olx.com.br/vi/${id}`;
-          if(id && title && !_monitorVistos.has(id)){
+      const items2 = data2.items || [];
+      if(items2.length > 0){
+        let novos2 = 0;
+        items2.forEach(item => {
+          const id = item.guid || item.link || "";
+          const title = item.title || "";
+          const price = (item.description || "").match(/R\$\s*[\d.,]+/)?.[0] || "—";
+          const link = item.link || "";
+          const time = item.pubDate ? new Date(item.pubDate).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}) : "";
+          if(!_monitorVistos.has(id)){
             _monitorVistos.add(id);
-            _monitorAnuncios.unshift({id, title, price, link, time:"", novo:true, visto:false});
-            _monitorNovos++;
+            _monitorAnuncios.unshift({id, title, price, link, time, img:"", novo:true, visto:false});
+            novos2++;
           }
         });
-        atualizarBadgeMonitor();
+        if(_monitorAnuncios.length === 0){
+          items2.slice(0,10).forEach(item => {
+            _monitorAnuncios.push({id:item.guid||item.link, title:item.title||"", price:"—", link:item.link||"", time:"", img:"", novo:false, visto:true});
+          });
+        }
         renderMonitorList();
-        status.textContent = `✅ Via proxy (${agora})`;
+        atualizarBadgeMonitor();
+        status.textContent = `✅ Fallback RSS · ${items2.length} anúncios (${agora})`;
         status.style.color = "var(--green)";
         return;
       }
