@@ -203,25 +203,28 @@ textarea{resize:none;height:70px}
 <!-- PAGE: ATUALIZAÇÃO -->
 <div class="page" id="pg-atualizacao">
   <div class="upd-wrap">
-    <div class="upd-title">🔄 Editar Preços</div>
-    <div class="upd-desc">Selecione a marca e edite os preços diretamente. Toque no valor para alterar.</div>
+    <div class="upd-title">🔄 Atualizar Preços</div>
+    <div class="upd-desc">O app busca a lista da Floritec e mostra só o que mudou. Você confirma e aplica.</div>
 
-    <!-- Filtro de marca -->
-    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:10px">
-      <button class="ftag active" id="edt-all" onclick="setEdtBrand('all')">Todos</button>
-      <button class="ftag" id="edt-apple" onclick="setEdtBrand('apple')">🍎 Apple</button>
-      <button class="ftag" id="edt-samsung" onclick="setEdtBrand('samsung')">🌌 Samsung</button>
-      <button class="ftag" id="edt-motorola" onclick="setEdtBrand('motorola')">〽️ Motorola</button>
-      <button class="ftag" id="edt-xiaomi" onclick="setEdtBrand('xiaomi')">🔴 Xiaomi</button>
-      <button class="ftag" id="edt-lg" onclick="setEdtBrand('lg')">🔵 LG</button>
-      <button class="ftag" id="edt-outros" onclick="setEdtBrand('outros')">➕ Outros</button>
+    <button class="btn-upd" id="btn-sync" onclick="syncFloritec()">🔍 Verificar mudanças agora</button>
+    <div id="sync-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px"></div>
+    <div id="sync-changes"></div>
+
+    <div style="height:16px;border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">✏️ EDITAR PREÇO MANUALMENTE</div>
+      <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:10px">
+        <button class="ftag active" id="edt-all" onclick="setEdtBrand('all')">Todos</button>
+        <button class="ftag" id="edt-apple" onclick="setEdtBrand('apple')">🍎 Apple</button>
+        <button class="ftag" id="edt-samsung" onclick="setEdtBrand('samsung')">🌌 Samsung</button>
+        <button class="ftag" id="edt-motorola" onclick="setEdtBrand('motorola')">〽️ Motorola</button>
+        <button class="ftag" id="edt-xiaomi" onclick="setEdtBrand('xiaomi')">🔴 Xiaomi</button>
+        <button class="ftag" id="edt-lg" onclick="setEdtBrand('lg')">🔵 LG</button>
+        <button class="ftag" id="edt-outros" onclick="setEdtBrand('outros')">➕ Outros</button>
+      </div>
+      <input type="text" id="edt-search" placeholder="🔍 Buscar modelo..." oninput="renderEditor()"
+        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--white)">
+      <div id="edt-list"></div>
     </div>
-
-    <!-- Busca -->
-    <input type="text" id="edt-search" placeholder="🔍 Buscar modelo..." oninput="renderEditor()"
-      style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--white)">
-
-    <div id="edt-list"></div>
 
     <div style="height:10px"></div>
     <div id="upd-last" style="font-size:12px;color:var(--muted);text-align:center;display:none"></div>
@@ -733,8 +736,197 @@ function saveCatalog(){
 }
 
 // ══════════════════════════════════════
-// EDITOR MANUAL DE PREÇOS
+// SYNC AUTOMÁTICO COM FLORITEC
 // ══════════════════════════════════════
+const FLORITEC_URL = "https://docs.google.com/document/u/0/d/e/2PACX-1vTgSZf5Lp8dfhKBNS5hicGm3pWyVhVFI-dhzpI0C8kKj_7TALqFmeqZsFI2W5r1GnKIkDiQhd4DDk-2/pub?pli=1";
+
+async function syncFloritec(){
+  const btn = document.getElementById("btn-sync");
+  const status = document.getElementById("sync-status");
+  const changes = document.getElementById("sync-changes");
+  btn.disabled = true;
+  btn.textContent = "🔄 Buscando...";
+  status.style.display = "none";
+  changes.innerHTML = "";
+
+  try {
+    const res = await fetch(FLORITEC_URL);
+    if(!res.ok) throw new Error("Erro ao buscar documento");
+    const html = await res.text();
+
+    // Parsear tabela do doc — cada linha: célula0=modelo+qualidade, célula1=preço
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+    const rows = doc.querySelectorAll("tr");
+
+    // Mapa de chave única -> preço novo
+    // Chave = "modelo||tipo||qualidade"
+    const newMap = {};
+
+    rows.forEach(row=>{
+      const cells = [...row.querySelectorAll("td")];
+      if(cells.length < 2) return;
+      const modelText = cells[0].textContent.trim();
+      const priceText = cells[cells.length-1].textContent.trim();
+
+      // Extrair preço
+      const pm = priceText.match(/(\d+),(\d{2})/);
+      if(!pm) return;
+      const price = parseFloat(pm[1]+"."+pm[2]);
+      if(price < 10 || price > 15000) return;
+
+      // Determinar tipo
+      const mu = modelText.toUpperCase();
+      const tipo = mu.includes("BATERIA") ? "Bateria" : "Display";
+
+      // Determinar qualidade
+      let q = "S/A";
+      if(mu.includes("ORIGINAL NOVA")) q = "Original Nova";
+      else if(mu.includes("ORIGINAL RETIRADA")) q = "Original Retirada";
+      else if(mu.includes("ORIGINAL")) q = "Original";
+      else if(mu.includes("SOFT OLED")) q = "Soft OLED";
+      else if(mu.includes("CALIBRA")) q = "Calibra";
+      else if(mu.includes("SEM FLEX")) q = "Sem Flex";
+      else if(mu.includes("NACIONAL")) q = "Nacional";
+      else if(mu.includes("LCD")) q = "LCD Red.";
+      else if(mu.includes("INCELL") && mu.includes("ZL")) q = "Incell ZL";
+      else if(mu.includes("INCELL")) q = "Incell C/A";
+      else if(mu.includes("ZL") && mu.includes("C/A")) q = "ZL C/A";
+      else if(mu.includes("ZL")) q = "ZL";
+      else if(mu.includes("HD")) q = "HD";
+      else if(mu.includes("C/A")) q = "C/A";
+      else if(mu.includes("S/A")) q = "S/A";
+
+      // Separar modelos por |
+      const modelParts = modelText.split("|").map(s=>s.trim()).filter(Boolean);
+      modelParts.forEach(mp=>{
+        // Limpar qualidade e extras do nome
+        let clean = mp
+          .replace(/INCELL\s*\d*HZ?\s*(ZL|CI\s*REMOVIVEL)?/gi,"")
+          .replace(/ORIGINAL\s*(NOVA|RETIRADA)?/gi,"")
+          .replace(/SOFT\s*OLED/gi,"").replace(/CALIBRA/gi,"")
+          .replace(/SEM\s*FLEX/gi,"").replace(/LCD\s*RED\.?/gi,"")
+          .replace(/\bZL\b/gi,"").replace(/\bHD\b/gi,"")
+          .replace(/\bS\/A\b/gi,"").replace(/\bC\/A\b/gi,"")
+          .replace(/NACIONAL/gi,"").replace(/120HZ/gi,"")
+          .replace(/CI\s*REMOVIVEL/gi,"").replace(/BATERIA/gi,"")
+          .replace(/4G|5G/gi,"").replace(/\s+/g," ").trim();
+
+        if(!clean || clean.length < 2) return;
+
+        // Buscar no catálogo por correspondência
+        for(const [key, parts] of Object.entries(CATALOG)){
+          const shortKey = key
+            .replace(/^Galaxy /i,"").replace(/^iPhone /i,"")
+            .replace(/^Moto /i,"").replace(/^Redmi /i,"")
+            .replace(/^Poco /i,"").replace(/^Mi /i,"")
+            .replace(/^LG /i,"").replace(/^Asus /i,"")
+            .replace(/^Realme /i,"").replace(/^Infinix /i,"")
+            .replace(/^Samsung Tab /i,"")
+            .replace(/4G|5G/gi,"").replace(/\s+/g," ").trim();
+
+          if(clean.toUpperCase() !== shortKey.toUpperCase()) continue;
+
+          parts.forEach((p, idx)=>{
+            if(p.tipo !== tipo) return;
+            if(p.q.toUpperCase() !== q.toUpperCase()) return;
+            const mapKey = key+"||"+idx;
+            newMap[mapKey] = {key, idx, tipo, q, newPrice: price, oldPrice: p.c};
+          });
+        }
+      });
+    });
+
+    // Encontrar mudanças
+    const changed = Object.values(newMap).filter(x=> Math.abs(x.newPrice - x.oldPrice) >= 1);
+
+    if(changed.length === 0){
+      status.style.display = "block";
+      status.style.background = "var(--green-light)";
+      status.style.color = "#077a4a";
+      status.textContent = `✅ Nenhuma mudança! Catálogo está atualizado.`;
+    } else {
+      status.style.display = "block";
+      status.style.background = "var(--accent-light)";
+      status.style.color = "var(--accent)";
+      status.textContent = `🔍 ${changed.length} mudança(s) encontrada(s):`;
+      renderSyncChanges(changed);
+    }
+
+    const now = "Verificado: "+new Date().toLocaleString("pt-BR");
+    localStorage.setItem("upd_last", now);
+    const el = document.getElementById("upd-last");
+    if(el){ el.textContent=now; el.style.display="block"; }
+
+  } catch(err){
+    status.style.display = "block";
+    status.style.background = "var(--red-light)";
+    status.style.color = "var(--red)";
+    status.textContent = "❌ "+err.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = "🔍 Verificar mudanças agora";
+}
+
+function renderSyncChanges(changed){
+  const el = document.getElementById("sync-changes");
+  let html = `<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">`;
+  changed.forEach((c,i)=>{
+    const up = c.newPrice > c.oldPrice;
+    html += `<div style="background:var(--white);border:1.5px solid ${up?'var(--orange)':'var(--green)'};border-radius:12px;padding:12px 14px">
+      <div style="font-weight:900;font-size:14px">${c.key}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px">${c.tipo} · ${c.q}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+        <div style="font-size:13px">
+          <span style="font-family:'Bebas Neue',cursive;font-size:18px;color:var(--muted)">${fmt(c.oldPrice)}</span>
+          <span style="margin:0 6px;color:var(--muted)">→</span>
+          <span style="font-family:'Bebas Neue',cursive;font-size:22px;color:${up?'var(--orange)':'var(--green)'}">${fmt(c.newPrice)}</span>
+          <span style="font-size:12px;color:${up?'var(--orange)':'var(--green)'}"> (${up?'+':''}${fmt(c.newPrice-c.oldPrice)})</span>
+        </div>
+        <button onclick="applySingleChange(${i})"
+          style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">
+          ✅ Aplicar
+        </button>
+      </div>
+    </div>`;
+  });
+  html += `</div>
+  <button onclick="applyAllSyncChanges()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:8px">
+    ✅ Aplicar TODAS (${changed.length})
+  </button>`;
+  el.innerHTML = html;
+  window._syncChanges = changed;
+}
+
+function applySingleChange(i){
+  const c = window._syncChanges?.[i];
+  if(!c) return;
+  if(CATALOG[c.key]?.[c.idx]) CATALOG[c.key][c.idx].c = c.newPrice;
+  saveCatalog();
+  showToast(`✅ ${c.key} atualizado!`);
+  renderEditor();
+  // Remover card
+  document.querySelectorAll("#sync-changes > div > div")[i]?.remove();
+  window._syncChanges.splice(i,1);
+  if(window._syncChanges.length===0){
+    document.getElementById("sync-changes").innerHTML="";
+    document.getElementById("sync-status").textContent="✅ Tudo atualizado!";
+  }
+}
+
+function applyAllSyncChanges(){
+  (window._syncChanges||[]).forEach(c=>{
+    if(CATALOG[c.key]?.[c.idx]) CATALOG[c.key][c.idx].c = c.newPrice;
+  });
+  saveCatalog();
+  showToast(`✅ ${(window._syncChanges||[]).length} preços atualizados!`);
+  document.getElementById("sync-changes").innerHTML="";
+  document.getElementById("sync-status").textContent="✅ Catálogo atualizado!";
+  renderEditor();
+}
+
+
 const EDT_BRANDS = {
   apple:    k=>k.startsWith("iPhone"),
   samsung:  k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab"),
