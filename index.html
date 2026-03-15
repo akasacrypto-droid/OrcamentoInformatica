@@ -1291,9 +1291,10 @@ let cart = {}, maoObra = {}, pendingPrice = null;
 
 function getModels(brandId){ return Object.keys(CATALOG).filter(k=>BRANDS.find(b=>b.id===brandId)?.test(k)).sort(); }
 
+function getModelsNP(brandId){ return getModels(brandId).filter(m=>NP[m]); }
 function renderBrands(){
   document.getElementById("brand-grid").innerHTML = BRANDS.map(b=>{
-    const count = getModels(b.id).length;
+    const count = getModelsNP(b.id).length;
     if(!count) return "";
     return `<div class="brand-card" onclick="selectBrand('${b.id}')">
       <div class="brand-emoji">${b.emoji}</div>
@@ -1326,7 +1327,7 @@ function renderModels(){
   const b=BRANDS.find(x=>x.id===state.brand);
   document.getElementById("step2-title").textContent=`${b.emoji} Selecione o modelo`;
   const q=document.getElementById("modelFilter").value.toLowerCase();
-  const models=getModels(state.brand).filter(m=>m.toLowerCase().includes(q));
+  const models=getModelsNP(state.brand).filter(m=>m.toLowerCase().includes(q));
   document.getElementById("model-list").innerHTML=models.length
     ? models.map(m=>`<div class="model-item" onclick="selectModel('${m.replace(/'/g,"\\'")}')">
         <span class="model-item-name">${m}</span>
