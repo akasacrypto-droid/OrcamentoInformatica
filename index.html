@@ -1211,27 +1211,7 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novapecasLink(tipo,model){
-  // Mapear defeito para termo de busca do site NovaPeças
-  const mapa = {
-    "Display":         "frontal",
-    "Bateria":         "bateria",
-    "Conector":        "conector carga",
-    "Câmera Traseira": "camera traseira",
-    "Câmera Frontal":  "camera frontal",
-    "Flex Carga":      "flex carga",
-    "Flex Volume":     "flex volume",
-    "Flex Power":      "flex power",
-    "Alto-falante":    "alto falante",
-    "Microfone":       "microfone",
-    "Botão Home":      "botao home",
-    "Carcaça":         "tampa traseira",
-    "Molho":           "placa",
-    "Placa":           "placa",
-  };
-  const termo = mapa[tipo] || tipo;
-  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(termo+" "+model)}`;
-}
+function novapecasLink(tipo,model){ return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model)}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -2014,7 +1994,7 @@ function renderOLXResult(a, images, url){
         };
 
         const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
-        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q.replace("tela","frontal").replace("display","frontal"))}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
+        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(modelo)}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
         const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
@@ -2193,26 +2173,30 @@ function addPecaExtra(compra, reparo, revenda){
 
 function gerarCopy(a){
   const modelo = a.modelo_detectado || "celular";
-  const precoAnuncio = a.preco_anuncio || 0;
   const oferta = a.oferta_custom || a.preco_maximo_recomendado || 0;
   const ofertaStr = fmt(oferta);
-  const condicao = (a.defeitos_identificados||[]).join(", ").toLowerCase() || "alguns defeitos";
 
   const copies = {
     verde: [
-      `Oi! Vi seu ${modelo} na OLX, tenho interesse.\n\nAparelho usado sempre tem algum detalhe, então não consigo pagar o valor cheio. Pago *${ofertaStr}* à vista agora. Se fechar, busco hoje ainda! 🤝`,
+      `Oi, tudo bem? Tenho interesse no ${modelo}, ainda tá disponível?\n\nConsigo pagar *${ofertaStr}* à vista agora, pode ser hoje mesmo. Me avisa! 🤝`,
 
-      `Olá! Me interessei pelo seu ${modelo}.\n\nPago *${ofertaStr}* à vista. Pagamento na hora, sem enrolação. Fecha? 😊`,
+      `Oi! Ainda vende o ${modelo}?\n\nPago *${ofertaStr}* à vista, sem enrolação. Se topar, combino a retirada hoje. 😊`,
+
+      `Boa tarde! Vi o ${modelo} e me interessei.\n\nFecho *${ofertaStr}* à vista agora. Tem como?`,
     ],
     amarelo: [
-      `Oi! Vi seu ${modelo} na OLX.\n\nVi que ele tem ${condicao}, então vou precisar de reparo. Pago *${ofertaStr}* à vista, já considerando o conserto. Fecha? 💰`,
+      `Oi, tudo bem? Vi o ${modelo} e tenho interesse.\n\nJá comprei vários assim pra uso, mas preciso de um desconto porque sempre acabo precisando de algum ajuste. Topo *${ofertaStr}* à vista. Fecha?`,
 
-      `Olá! Tenho interesse no ${modelo}, mas ele precisa de reparo (${condicao}).\n\nConsigo pagar *${ofertaStr}* à vista. Busco hoje se fechar! 🤝`,
+      `Olá! O ${modelo} ainda tá disponível?\n\nTrabalho com eletrônicos e compro bastante, mas preciso de margem. Pago *${ofertaStr}* à vista na hora. Aceita? 🤝`,
+
+      `Oi! Me interesso pelo ${modelo}.\n\nPago *${ofertaStr}* à vista, hoje mesmo se fechar. Consigo buscar no seu endereço. Fecha? 😊`,
     ],
     vermelho: [
-      `Oi! Vi seu ${modelo} na OLX.\n\nPelo estado que ele tá (${condicao}), o conserto sai caro. O máximo que consigo pagar é *${ofertaStr}* à vista. Fecha? 🙂`,
+      `Oi! Vi o ${modelo} e tenho interesse, mas meu limite é *${ofertaStr}* à vista.\n\nSe topar, busco hoje. Me avisa! 🙂`,
 
-      `Olá! Me interessei pelo ${modelo}, mas com ${condicao} o valor de mercado cai bastante.\n\nPago *${ofertaStr}* à vista, na hora. Aceita? 😅`,
+      `Olá, tudo bem? Tenho interesse no ${modelo}.\n\nO máximo que consigo pagar é *${ofertaStr}* à vista agora. Aceita?`,
+
+      `Oi! Ainda vende o ${modelo}?\n\nConsigo *${ofertaStr}* à vista. Pago na hora, sem burocracia. Fecha? 😅`,
     ],
   };
 
