@@ -70,7 +70,7 @@ nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;jus
 .price-links{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
 .price-link{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-decoration:none}
 .price-link.floritec{background:var(--accent-light);color:var(--accent)}
-.price-link.shop{background:#fff3e0;color:#e65100}
+.price-link.shop{background:#fff3e0;color:#e65100}.price-link.novapecas{background:#e3f0ff;color:#1a56db}
 .price-right{text-align:right;flex-shrink:0}
 .price-custo{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
 .price-val{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green);line-height:1}
@@ -1211,6 +1211,7 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
+function novapecasLink(tipo,model){ return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(tipo+" "+model)}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1230,8 +1231,9 @@ function renderPrices(){
             <div class="price-quality">${p.q}</div>
             <div class="price-fornecedor">📦 ${p.f}</div>
             <div class="price-links">
-              <a class="price-link floritec" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Ver no site</a>
-              <a class="price-link shop" href="${shopLink(tipo+' '+p.q,state.model)}" target="_blank" onclick="event.stopPropagation()">🛒 Google Shopping</a>
+              <a class="price-link floritec" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Floritec</a>
+              <a class="price-link novapecas" href="${novapecasLink(tipo,state.model)}" target="_blank" onclick="event.stopPropagation()">🔵 NovaPeças</a>
+              <a class="price-link shop" href="${shopLink(tipo+' '+p.q,state.model)}" target="_blank" onclick="event.stopPropagation()">🛒 Shopping</a>
             </div>
           </div>
           <div class="price-right">
@@ -1246,7 +1248,8 @@ function renderPrices(){
       const ck=state.model+"_"+tipo+"_manual";
       const inC=cart[ck];
       html+=`<div class="no-price-card"><p>⚠️ Sem preço no catálogo. Consulte:</p>
-        <a class="price-link shop" href="${shopLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🛒 Google Shopping</a>
+        <a class="price-link novapecas" href="${novapecasLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🔵 NovaPeças</a>
+        <a class="price-link shop" href="${shopLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🛒 Shopping</a>
       </div>
       <div class="price-row ${inC?'selected':''}" onclick="selectPrice('${ck}','${state.model.replace(/'/g,"\\'")}','${tipo}','Manual',0,'Manual','')">
         <div class="price-row-left"><div class="price-quality">Digitar valor manualmente</div></div>
@@ -1991,12 +1994,13 @@ function renderOLXResult(a, images, url){
         };
 
         const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
+        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q)}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
         const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
-          rows += pecaRow("📱","Tela / Display", a.estimativa_reparo.tela, floritecLink+shopLink("tela display"));
+          rows += pecaRow("📱","Tela / Display", a.estimativa_reparo.tela, floritecLink+novapecasLinkOlx("tela "+modelo)+shopLink("tela display"));
         if(a.estimativa_reparo?.bateria > 0)
-          rows += pecaRow("🔋","Bateria", a.estimativa_reparo.bateria, floritecLink+shopLink("bateria"));
+          rows += pecaRow("🔋","Bateria", a.estimativa_reparo.bateria, floritecLink+novapecasLinkOlx("bateria "+modelo)+shopLink("bateria"));
         if(a.estimativa_reparo?.camera > 0)
           rows += pecaRow("📷","Câmera", a.estimativa_reparo.camera, shopLink("câmera módulo"));
 
