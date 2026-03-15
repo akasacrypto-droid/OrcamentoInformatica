@@ -1354,18 +1354,19 @@ function showPage(p){
 // OLX ANALYSE — IA + Imagens
 // ══════════════════════════════════════
 const OLX_DEFEITOS = [
-  {id:"tela",       icon:"📱", label:"Tela trincada",      custo_key:"tela",    extra:0},
-  {id:"tela_morta", icon:"⬛", label:"Tela sem imagem",    custo_key:"tela",    extra:0},
-  {id:"bateria",    icon:"🔋", label:"Bateria ruim",        custo_key:"bateria", extra:0},
-  {id:"conector",   icon:"🔌", label:"Conector com defeito",custo_key:null,      extra:50},
-  {id:"camera_t",   icon:"📷", label:"Câmera traseira",    custo_key:"camera",  extra:0},
-  {id:"camera_f",   icon:"🤳", label:"Câmera frontal",     custo_key:"camera",  extra:0},
-  {id:"nao_liga",   icon:"⛔", label:"Não liga",           custo_key:null,      extra:150},
-  {id:"placa",      icon:"🔧", label:"Defeito de placa",   custo_key:null,      extra:250},
-  {id:"molho",      icon:"💧", label:"Caiu na água",       custo_key:null,      extra:100},
-  {id:"face_id",    icon:"👤", label:"Face ID com defeito",custo_key:null,      extra:0,  critico:true},
-  {id:"carcaca",    icon:"🧱", label:"Carcaça quebrada",   custo_key:null,      extra:80},
-  {id:"alto",       icon:"🔊", label:"Sem som",            custo_key:null,      extra:40},
+  {id:"tela",       icon:"📱", label:"Tela trincada",       custo_key:"tela",    extra:0},
+  {id:"tela_morta", icon:"⬛", label:"Tela sem imagem",     custo_key:"tela",    extra:0},
+  {id:"bateria",    icon:"🔋", label:"Bateria ruim",         custo_key:"bateria", extra:0},
+  {id:"tampa",      icon:"🧱", label:"Tampa traseira",       custo_key:null,      extra:60},
+  {id:"conector",   icon:"🔌", label:"Conector com defeito", custo_key:null,      extra:50},
+  {id:"camera_t",   icon:"📷", label:"Câmera traseira",      custo_key:"camera",  extra:0},
+  {id:"camera_f",   icon:"🤳", label:"Câmera frontal",       custo_key:"camera",  extra:0},
+  {id:"nao_liga",   icon:"⛔", label:"Não liga",             custo_key:null,      extra:150},
+  {id:"placa",      icon:"🔧", label:"Defeito de placa",     custo_key:null,      extra:250},
+  {id:"molho",      icon:"💧", label:"Caiu na água",         custo_key:null,      extra:100},
+  {id:"face_id",    icon:"👤", label:"Face ID com defeito",  custo_key:null,      extra:0,   critico:true},
+  {id:"carcaca",    icon:"🔩", label:"Carcaça torta/quebrada",custo_key:null,     extra:80},
+  {id:"alto",       icon:"🔊", label:"Sem som",              custo_key:null,      extra:40},
 ];
 
 function renderOlxDefeitos(){
@@ -1487,6 +1488,7 @@ async function analisarOLX(){
 
   const defeitos = getDefeitosSelecionados();
   const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
+  _pecasExtras = [];
 
   status.style.display = "none";
   renderOLXResult(analise, _olxImages, url);
@@ -1623,7 +1625,13 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   if(defeitos.length >= 3) desconto += 0.10;
   const maxAjustado = Math.round(base.max * (1 - Math.min(desconto, 0.50)));
 
-  const precoCompra = precoAnuncio > 0 ? precoAnuncio : maxAjustado;
+  // Preço máximo que você deve pagar = revenda - reparo - lucro mínimo desejado (R$300)
+  const lucroMinimo = 300;
+  const maxIdeal = Math.max(revenda - custoTotal - lucroMinimo, Math.round(revenda * 0.2));
+  const maxAjustado2 = Math.min(maxAjustado, maxIdeal);
+
+  // Lucro calculado com base no que você VAI pagar (maxAjustado2), não o que foi pedido
+  const precoCompra = maxAjustado2;
   const revenda = base.revenda;
   const lucro = revenda - precoCompra - custoTotal;
   const margem = revenda > 0 ? Math.round((lucro/revenda)*100) : 0;
@@ -1656,7 +1664,7 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   return {
     modelo_detectado: modelFormatado,
     preco_anuncio: precoAnuncio,
-    preco_maximo_recomendado: maxAjustado,
+    preco_maximo_recomendado: maxAjustado2,
     condicao_estimada: defeitos.length > 0 ? defeitosNomes.join(", ") : "Sem defeitos informados",
     defeitos_identificados: defeitosNomes,
     estimativa_reparo: { tela, bateria, carcaca:0, camera, outros, total:custoTotal },
@@ -1795,36 +1803,108 @@ function renderOLXResult(a, images, url){
         </button>
         <a href="https://wa.me/?text=${encodeURIComponent(gerarCopy(a))}" target="_blank"
           style="flex:1;background:#25d366;color:#fff;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px">
-          💬 Enviar WhatsApp
+          💬 WhatsApp
         </a>
+      </div>
+    </div>
+
+    <!-- CALCULADORA DE CUSTO TOTAL -->
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">🧮 CALCULADORA DE CUSTO TOTAL</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Adicione peças extras para ver o custo real do investimento</div>
+
+      <div style="background:var(--bg);border-radius:10px;padding:10px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span>Preço de compra</span>
+          <span style="font-weight:700" id="calc-compra">${fmt2(a.preco_anuncio||a.preco_maximo_recomendado)}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span>Reparo estimado</span>
+          <span style="font-weight:700">${fmt2(a.estimativa_reparo?.total||0)}</span>
+        </div>
+        <div id="calc-extras-list"></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
+          <span>INVESTIMENTO TOTAL</span>
+          <span style="color:var(--accent)" id="calc-total">${fmt2((a.preco_anuncio||a.preco_maximo_recomendado) + (a.estimativa_reparo?.total||0))}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">
+          <span>Lucro final estimado</span>
+          <span style="font-weight:700;color:var(--green)" id="calc-lucro">${fmt2(a.preco_revenda_medio - (a.preco_anuncio||a.preco_maximo_recomendado) - (a.estimativa_reparo?.total||0))}</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <input type="text" id="calc-peca-nome" placeholder="Nome da peça (ex: Flex volume)"
+          style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
+        <input type="number" id="calc-peca-val" placeholder="R$" min="0"
+          style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
+        <button onclick="addPecaExtra(${a.preco_anuncio||a.preco_maximo_recomendado}, ${a.estimativa_reparo?.total||0}, ${a.preco_revenda_medio})"
+          style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+          + Adicionar
+        </button>
       </div>
     </div>
   `;
 }
 
+let _pecasExtras = [];
+function addPecaExtra(compra, reparo, revenda){
+  const nome = document.getElementById("calc-peca-nome")?.value.trim();
+  const val = parseFloat(document.getElementById("calc-peca-val")?.value) || 0;
+  if(!nome || !val){ showToast("Preencha nome e valor."); return; }
+  _pecasExtras.push({nome, val});
+  document.getElementById("calc-peca-nome").value = "";
+  document.getElementById("calc-peca-val").value = "";
+
+  const totalExtras = _pecasExtras.reduce((a,p)=>a+p.val, 0);
+  const totalInvest = compra + reparo + totalExtras;
+  const lucroFinal = revenda - totalInvest;
+
+  // Atualizar lista
+  document.getElementById("calc-extras-list").innerHTML = _pecasExtras.map((p,i)=>
+    `<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;color:var(--accent)">
+      <span>+ ${p.nome}</span>
+      <span style="font-weight:700">${fmt(p.val)}</span>
+    </div>`
+  ).join("");
+
+  document.getElementById("calc-total").textContent = fmt(totalInvest);
+  document.getElementById("calc-lucro").textContent = fmt(lucroFinal);
+  document.getElementById("calc-lucro").style.color = lucroFinal > 0 ? "var(--green)" : "var(--red)";
+  showToast(`✅ ${nome} adicionado!`);
+}
+
 function gerarCopy(a){
   const modelo = a.modelo_detectado || "celular";
-  const precoMax = a.preco_maximo_recomendado || 0;
   const precoAnuncio = a.preco_anuncio || 0;
-  const condicao = a.condicao_estimada || "";
   const custoReparo = a.estimativa_reparo?.total || 0;
 
-  // Variações de copy dependendo do veredito
+  // Oferta = preço máximo recomendado (que já leva em conta o reparo)
+  // Se o preço pedido já é menor que o max recomendado, oferecer ainda menos
+  const oferta = a.preco_maximo_recomendado || 0;
+
+  // Verificar se faz sentido (oferta deve ser menor que preço pedido)
+  const ofertaFinal = precoAnuncio > 0 && oferta >= precoAnuncio
+    ? Math.round(precoAnuncio * 0.65) // se max >= pedido, oferece 65% do pedido
+    : oferta;
+
+  const ofertaStr = fmt(ofertaFinal);
+
   const copies = {
     verde: [
-      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos com esse estado sempre precisam de algum ajuste.\n\nConsiderando o reparo necessário, consigo pagar à vista *${fmt(precoMax)}*. Se topar, posso buscar hoje mesmo! 🤝`,
+      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos usados sempre têm algum detalhe que aparece só na hora.\n\nConsigo pagar à vista *${ofertaStr}* agora. Se topar, posso buscar hoje mesmo! 🤝`,
 
-      `Oi, tudo bem? Vi o ${modelo} que você tá vendendo.\n\nTrabalho com manutenção de celulares e sei que aparelhos usados sempre têm algum detalhe. Pago *${fmt(precoMax)}* à vista agora — pagamento na hora, sem enrolação. Aceita? 😊`,
+      `Oi! Vi o ${modelo} no seu anúncio. Trabalho com celulares e sei que sempre tem algum ajuste a fazer.\n\nPago *${ofertaStr}* à vista, na hora, sem enrolação. Aceita? 😊`,
     ],
     amarelo: [
-      `Olá! Vi seu anúncio do ${modelo}.\n\nEle tem alguns detalhes que vão precisar de conserto, o que reduz o valor de mercado. Consigo pagar *${fmt(precoMax)}* à vista — é o que consigo considerando o estado dele.\n\nTopa? Posso ir buscar hoje! 💰`,
+      `Olá! Vi seu ${modelo} na OLX.\n\nEle tem alguns detalhes que vão precisar de conserto (${a.condicao_estimada}), o que reduz bastante o valor.\n\nConsigo pagar *${ofertaStr}* à vista — é o que consigo considerando o reparo necessário. Topa? 💰`,
 
-      `Oi! Me interessei pelo seu ${modelo}. Pelo estado que ele tá, preciso investir em reparo antes de usar. Pagaria *${fmt(precoMax)}* à vista. Se quiser, a gente fecha agora! 🤝`,
+      `Oi! Me interessei pelo ${modelo}. Pelo estado que ele tá, preciso investir em reparo antes de usar.\n\nPagaria *${ofertaStr}* à vista, já considerando os consertos. Se quiser, a gente fecha agora! 🤝`,
     ],
     vermelho: [
-      `Olá! Vi o ${modelo} no seu anúncio.\n\nEle tem defeitos que vão precisar de bastante investimento em reparo. O valor de mercado pra revenda tá bem abaixo do pedido. Consigo pagar *${fmt(precoMax)}* à vista — é o máximo viável pra mim considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvemos hoje! 🙂`,
+      `Olá! Vi o ${modelo} no seu anúncio.\n\nPelo estado que ele tá (${a.condicao_estimada}), o reparo vai custar bastante. Só consigo pagar *${ofertaStr}* à vista — já tô no limite considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvo hoje! 🙂`,
 
-      `Oi, tudo bem? Vi seu ${modelo} na OLX. Pelo estado que ele tá, o conserto sai caro. O melhor que consigo oferecer é *${fmt(precoMax)}* à vista, e olha que já tô forçando um pouco 😅. Aceita?`,
+      `Oi! Vi seu ${modelo} na OLX. Pelo estado, o conserto sai caro. Máximo que consigo é *${ofertaStr}* à vista 😅. Aceita?`,
     ],
   };
 
