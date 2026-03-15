@@ -1059,25 +1059,6 @@ function applyAllSyncChanges(){
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
 // ══════════════════════════════════════
-// ══ NOVAPEÇAS — IDs por modelo (adicione um por vez) ══
-const NP = {
-  "iPhone 5G":      { display:1005, bateria:7728 },
-  "iPhone 5S":      { display:1008, bateria:7728 },
-  "iPhone 6G":      { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
-  "iPhone 6G Plus": { display:15889, bateria:7025, flexCarga:25902, flexPower:6743 },
-  "iPhone 6S":      { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
-  "iPhone 6S Plus": { display:15898, bateria:7025, flexCarga:25908, flexPower:6749 },
-  "iPhone 7G":      { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
-  "iPhone 7 Plus":  { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
-};
-const NP_KEY = {
-  "Display":"display","Bateria":"bateria","Flex Carga":"flexCarga",
-  "Flex Power":"flexPower","Câmera Traseira":"cameraTraseira",
-  "Câmera Frontal":"cameraFrontal","Alto-falante":"altoFalante",
-  "Microfone":"microfone","Botão Home":"botaoHome","Carcaça":"carcaca",
-};
-
-
 const BRANDS = [
   {id:"apple",    name:"Apple",       emoji:"🍎", test: k=>k.startsWith("iPhone")},
   {id:"samsung",  name:"Samsung",     emoji:"🌌", test: k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab")},
@@ -1128,10 +1109,9 @@ let cart = {}, maoObra = {}, pendingPrice = null;
 
 function getModels(brandId){ return Object.keys(CATALOG).filter(k=>BRANDS.find(b=>b.id===brandId)?.test(k)).sort(); }
 
-function getModelsNP(brandId){ return getModels(brandId).filter(m=>NP[m]); }
 function renderBrands(){
   document.getElementById("brand-grid").innerHTML = BRANDS.map(b=>{
-    const count = getModelsNP(b.id).length;
+    const count = getModels(b.id).length;
     if(!count) return "";
     return `<div class="brand-card" onclick="selectBrand('${b.id}')">
       <div class="brand-emoji">${b.emoji}</div>
@@ -1164,7 +1144,7 @@ function renderModels(){
   const b=BRANDS.find(x=>x.id===state.brand);
   document.getElementById("step2-title").textContent=`${b.emoji} Selecione o modelo`;
   const q=document.getElementById("modelFilter").value.toLowerCase();
-  const models=getModelsNP(state.brand).filter(m=>m.toLowerCase().includes(q));
+  const models=getModels(state.brand).filter(m=>m.toLowerCase().includes(q));
   document.getElementById("model-list").innerHTML=models.length
     ? models.map(m=>`<div class="model-item" onclick="selectModel('${m.replace(/'/g,"\\'")}')">
         <span class="model-item-name">${m}</span>
@@ -1204,9 +1184,8 @@ function toggleDefect(tipo){
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
 function npLink(tipo,model){
-  const id = NP[model]?.[NP_KEY[tipo]];
-  if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`;
-  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`;
+  const q = model.split(" ").slice(0,3).join(" ");
+  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q)}`;
 }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
