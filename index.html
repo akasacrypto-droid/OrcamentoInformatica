@@ -220,31 +220,28 @@ textarea{resize:none;height:70px}
   <div style="padding:16px;padding-bottom:80px">
 
     <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🔍 OLX Analyse</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link, o preço e a condição — a IA analisa tudo</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link, o preço e marque os defeitos — a análise é feita na hora</div>
 
     <input type="url" id="olx-url" placeholder="https://go.olx.com.br/..."
       style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text);margin-bottom:8px"
       oninput="tentarCarregarImagens()">
 
     <!-- Preview de imagens -->
-    <div id="olx-imgs-preview" style="display:none;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:4px"></div>
+    <div id="olx-imgs-preview" style="display:none;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:4px"></div>
     <div id="olx-imgs-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
 
-    <div style="display:flex;gap:8px;margin-bottom:12px">
-      <div style="flex:1">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
-        <input type="number" id="olx-preco" placeholder="Ex: 400" min="0"
-          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
-      </div>
-      <div style="flex:1">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">CONDIÇÃO</div>
-        <select id="olx-condicao" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 10px;font-family:'Mulish',sans-serif;font-size:13px;outline:none;background:var(--white);color:var(--text)">
-          <option value="usado_bom">✅ Bom estado</option>
-          <option value="tela_trincada">📱 Tela trincada</option>
-          <option value="bateria_ruim">🔋 Bateria ruim</option>
-          <option value="nao_liga">⛔ Não liga</option>
-          <option value="varios_defeitos">🔧 Vários defeitos</option>
-        </select>
+    <!-- Preço -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
+      <input type="number" id="olx-preco" placeholder="Ex: 400" min="0"
+        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
+    </div>
+
+    <!-- Defeitos -->
+    <div style="margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">DEFEITOS IDENTIFICADOS NO ANÚNCIO</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="olx-defeitos-grid">
+        <!-- Gerado pelo JS -->
       </div>
     </div>
 
@@ -1356,6 +1353,58 @@ function showPage(p){
 // ══════════════════════════════════════
 // OLX ANALYSE — IA + Imagens
 // ══════════════════════════════════════
+const OLX_DEFEITOS = [
+  {id:"tela",       icon:"📱", label:"Tela trincada",      custo_key:"tela",    extra:0},
+  {id:"tela_morta", icon:"⬛", label:"Tela sem imagem",    custo_key:"tela",    extra:0},
+  {id:"bateria",    icon:"🔋", label:"Bateria ruim",        custo_key:"bateria", extra:0},
+  {id:"conector",   icon:"🔌", label:"Conector com defeito",custo_key:null,      extra:50},
+  {id:"camera_t",   icon:"📷", label:"Câmera traseira",    custo_key:"camera",  extra:0},
+  {id:"camera_f",   icon:"🤳", label:"Câmera frontal",     custo_key:"camera",  extra:0},
+  {id:"nao_liga",   icon:"⛔", label:"Não liga",           custo_key:null,      extra:150},
+  {id:"placa",      icon:"🔧", label:"Defeito de placa",   custo_key:null,      extra:250},
+  {id:"molho",      icon:"💧", label:"Caiu na água",       custo_key:null,      extra:100},
+  {id:"face_id",    icon:"👤", label:"Face ID com defeito",custo_key:null,      extra:0,  critico:true},
+  {id:"carcaca",    icon:"🧱", label:"Carcaça quebrada",   custo_key:null,      extra:80},
+  {id:"alto",       icon:"🔊", label:"Sem som",            custo_key:null,      extra:40},
+];
+
+function renderOlxDefeitos(){
+  const grid = document.getElementById("olx-defeitos-grid");
+  if(!grid) return;
+  grid.innerHTML = OLX_DEFEITOS.map(d=>`
+    <label style="display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;cursor:pointer;user-select:none;transition:all .15s" id="lbl-${d.id}" onclick="toggleDefeitoOLX('${d.id}')">
+      <div style="width:20px;height:20px;border-radius:5px;border:2px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px" id="chk-${d.id}"></div>
+      <span style="font-size:12px;font-weight:700">${d.icon} ${d.label}</span>
+      ${d.critico?'<span style="font-size:10px;background:var(--red-light);color:var(--red);border-radius:4px;padding:1px 5px;margin-left:auto">crítico</span>':''}
+    </label>`).join("");
+}
+
+function toggleDefeitoOLX(id){
+  const lbl = document.getElementById("lbl-"+id);
+  const chk = document.getElementById("chk-"+id);
+  const ativo = lbl.dataset.ativo === "1";
+  if(ativo){
+    lbl.dataset.ativo = "0";
+    lbl.style.borderColor = "var(--border)";
+    lbl.style.background = "var(--white)";
+    chk.textContent = "";
+    chk.style.background = "#fff";
+    chk.style.borderColor = "var(--border)";
+  } else {
+    lbl.dataset.ativo = "1";
+    lbl.style.borderColor = "var(--accent)";
+    lbl.style.background = "var(--accent-light)";
+    chk.textContent = "✓";
+    chk.style.background = "var(--accent)";
+    chk.style.borderColor = "var(--accent)";
+    chk.style.color = "#fff";
+  }
+}
+
+function getDefeitosSelecionados(){
+  return OLX_DEFEITOS.filter(d => document.getElementById("lbl-"+d.id)?.dataset.ativo === "1");
+}
+
 let _olxImages = [];
 
 async function tentarCarregarImagens(){
@@ -1436,7 +1485,8 @@ async function analisarOLX(){
   const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
   const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
 
-  const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, condicao);
+  const defeitos = getDefeitosSelecionados();
+  const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
 
   status.style.display = "none";
   renderOLXResult(analise, _olxImages, url);
@@ -1476,7 +1526,7 @@ function identificarModelo(slug){
   return null;
 }
 
-function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio=0, condicao="usado_bom"){
+function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio=0, defeitos=[]){
   const mercado = {
     "iphone 5": {revenda:250, max:120},
     "iphone 6": {revenda:300, max:150},
@@ -1552,21 +1602,26 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
     else base = {revenda:500, max:250};
   }
 
-  // Ajuste pela condição
-  const desconto = {
-    usado_bom: 0,
-    tela_trincada: 0.05,
-    bateria_ruim: 0.03,
-    nao_liga: 0.15,
-    varios_defeitos: 0.20,
-  }[condicao] || 0;
-  const maxAjustado = Math.round(base.max * (1 - desconto));
+  // Calcular custo com base nos defeitos selecionados
+  const temTela    = defeitos.some(d=>d.id==="tela"||d.id==="tela_morta");
+  const temBateria = defeitos.some(d=>d.id==="bateria");
+  const temCamera  = defeitos.some(d=>d.id==="camera_t"||d.id==="camera_f");
+  const temPlaca   = defeitos.some(d=>d.id==="placa");
+  const temFaceID  = defeitos.some(d=>d.id==="face_id");
+  const extraTotal = defeitos.reduce((a,d)=>a+d.extra,0);
 
-  const custoCamera = Math.round(base.revenda * 0.04);
-  const custoOutros = 50;
-  const tela = custoTela || Math.round(base.revenda*0.08);
-  const bateria = custoBateria || Math.round(base.revenda*0.04);
-  const custoTotal = tela + bateria + custoCamera + custoOutros;
+  const tela    = temTela    ? (custoTela    || Math.round(base.revenda*0.08)) : 0;
+  const bateria = temBateria ? (custoBateria || Math.round(base.revenda*0.04)) : 0;
+  const camera  = temCamera  ? Math.round(base.revenda*0.04) : 0;
+  const outros  = extraTotal > 0 ? extraTotal : (defeitos.length === 0 ? 0 : 50);
+  const custoTotal = tela + bateria + camera + outros;
+
+  // Desconto no preço máximo por defeitos graves
+  let desconto = 0;
+  if(temPlaca) desconto += 0.30;
+  if(temFaceID) desconto += 0.20;
+  if(defeitos.length >= 3) desconto += 0.10;
+  const maxAjustado = Math.round(base.max * (1 - Math.min(desconto, 0.50)));
 
   const precoCompra = precoAnuncio > 0 ? precoAnuncio : maxAjustado;
   const revenda = base.revenda;
@@ -1576,30 +1631,24 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   const bandeiras = [];
   const positivos = [];
 
-  // Alertas pelo preço
-  if(precoAnuncio > 0 && precoAnuncio > maxAjustado){
+  if(precoAnuncio > 0 && precoAnuncio > maxAjustado)
     bandeiras.push(`Preço pedido (${fmt(precoAnuncio)}) acima do máximo recomendado (${fmt(maxAjustado)})`);
-  }
-  if(precoAnuncio > 0 && precoAnuncio > revenda * 0.8){
+  if(precoAnuncio > 0 && precoAnuncio > revenda * 0.8)
     bandeiras.push("Preço muito alto — margem de lucro baixa");
-  }
+  if(temPlaca) bandeiras.push("⚠️ Defeito de placa — risco muito alto, evite se puder");
+  if(temFaceID) bandeiras.push("⚠️ Face ID com defeito — conserto praticamente inviável");
+  if(defeitos.some(d=>d.id==="nao_liga")) bandeiras.push("Celular não liga — pode ser placa ou conector");
+  if(defeitos.some(d=>d.id==="molho")) bandeiras.push("Caiu na água — verifique oxidação na placa");
+  if(mu.includes("11 pro")||mu.includes("12 pro")||mu.includes("13 pro")||mu.includes("14 pro")||mu.includes("15 pro"))
+    bandeiras.push("Display OLED caro — tela pode custar mais de R$300");
 
-  // Alertas pelo modelo
-  if(mu.includes("11 pro")||mu.includes("12 pro")||mu.includes("13 pro")||mu.includes("14 pro")||mu.includes("15 pro")){
-    bandeiras.push("Display OLED caro — verifique se a tela está boa");
-    bandeiras.push("Face ID: se com defeito, conserto é inviável");
-  }
-  if(mu.includes("iphone x")||mu.includes("iphone xs")){
-    bandeiras.push("Face ID sensível — verifique funcionamento");
-  }
-  if(condicao==="nao_liga") bandeiras.push("Celular não liga — risco alto de defeito de placa");
-  if(condicao==="varios_defeitos") bandeiras.push("Múltiplos defeitos — calcule bem antes de comprar");
-
-  if(lucro > 400) positivos.push(`Lucro estimado acima de R$400`);
+  if(lucro > 400) positivos.push("Boa margem de lucro");
   if(precoAnuncio > 0 && precoAnuncio <= maxAjustado) positivos.push("Preço dentro do limite recomendado");
-  if(custoTela > 0) positivos.push(`Tela disponível na Floritec por ${fmt(custoTela)}`);
-  if(custoBateria > 0) positivos.push(`Bateria disponível na Floritec por ${fmt(custoBateria)}`);
+  if(custoTela > 0 && temTela) positivos.push(`Tela disponível na Floritec por ${fmt(custoTela)}`);
+  if(custoBateria > 0 && temBateria) positivos.push(`Bateria disponível na Floritec por ${fmt(custoBateria)}`);
   if(!bandeiras.length) positivos.push("Nenhum alerta crítico identificado");
+
+  const defeitosNomes = defeitos.map(d=>d.label);
 
   const veredito = lucro > 300 ? "verde" : lucro > 50 ? "amarelo" : "vermelho";
   const modelFormatado = modelKey || modelRaw.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
@@ -1608,9 +1657,9 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
     modelo_detectado: modelFormatado,
     preco_anuncio: precoAnuncio,
     preco_maximo_recomendado: maxAjustado,
-    condicao_estimada: {usado_bom:"Usado em bom estado",tela_trincada:"Tela trincada",bateria_ruim:"Bateria com problema",nao_liga:"Não liga",varios_defeitos:"Vários defeitos"}[condicao]||"—",
-    defeitos_identificados: [],
-    estimativa_reparo: { tela, bateria, carcaca:0, camera:custoCamera, outros:custoOutros, total:custoTotal },
+    condicao_estimada: defeitos.length > 0 ? defeitosNomes.join(", ") : "Sem defeitos informados",
+    defeitos_identificados: defeitosNomes,
+    estimativa_reparo: { tela, bateria, carcaca:0, camera, outros, total:custoTotal },
     preco_revenda_medio: revenda,
     lucro_estimado: lucro,
     margem_percent: margem,
@@ -1734,13 +1783,69 @@ function renderOLXResult(a, images, url){
     <a href="${url}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--accent);color:#fff;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">
       🔗 Ver anúncio na OLX
     </a>
+
+    <!-- COPY PARA O VENDEDOR -->
+    <div style="background:var(--dark);border-radius:14px;padding:14px;margin-bottom:8px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:#fff;margin-bottom:4px">💬 MENSAGEM PARA O VENDEDOR</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px">Copy persuasivo para negociar o preço</div>
+      <div id="copy-msg-box" style="background:#1e2330;border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,.85);line-height:1.7;white-space:pre-wrap;margin-bottom:10px">${gerarCopy(a)}</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="copiarMsgVendedor()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+          📋 Copiar mensagem
+        </button>
+        <a href="https://wa.me/?text=${encodeURIComponent(gerarCopy(a))}" target="_blank"
+          style="flex:1;background:#25d366;color:#fff;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px">
+          💬 Enviar WhatsApp
+        </a>
+      </div>
+    </div>
   `;
+}
+
+function gerarCopy(a){
+  const modelo = a.modelo_detectado || "celular";
+  const precoMax = a.preco_maximo_recomendado || 0;
+  const precoAnuncio = a.preco_anuncio || 0;
+  const condicao = a.condicao_estimada || "";
+  const custoReparo = a.estimativa_reparo?.total || 0;
+
+  // Variações de copy dependendo do veredito
+  const copies = {
+    verde: [
+      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos com esse estado sempre precisam de algum ajuste.\n\nConsiderando o reparo necessário, consigo pagar à vista *${fmt(precoMax)}*. Se topar, posso buscar hoje mesmo! 🤝`,
+
+      `Oi, tudo bem? Vi o ${modelo} que você tá vendendo.\n\nTrabalho com manutenção de celulares e sei que aparelhos usados sempre têm algum detalhe. Pago *${fmt(precoMax)}* à vista agora — pagamento na hora, sem enrolação. Aceita? 😊`,
+    ],
+    amarelo: [
+      `Olá! Vi seu anúncio do ${modelo}.\n\nEle tem alguns detalhes que vão precisar de conserto, o que reduz o valor de mercado. Consigo pagar *${fmt(precoMax)}* à vista — é o que consigo considerando o estado dele.\n\nTopa? Posso ir buscar hoje! 💰`,
+
+      `Oi! Me interessei pelo seu ${modelo}. Pelo estado que ele tá, preciso investir em reparo antes de usar. Pagaria *${fmt(precoMax)}* à vista. Se quiser, a gente fecha agora! 🤝`,
+    ],
+    vermelho: [
+      `Olá! Vi o ${modelo} no seu anúncio.\n\nEle tem defeitos que vão precisar de bastante investimento em reparo. O valor de mercado pra revenda tá bem abaixo do pedido. Consigo pagar *${fmt(precoMax)}* à vista — é o máximo viável pra mim considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvemos hoje! 🙂`,
+
+      `Oi, tudo bem? Vi seu ${modelo} na OLX. Pelo estado que ele tá, o conserto sai caro. O melhor que consigo oferecer é *${fmt(precoMax)}* à vista, e olha que já tô forçando um pouco 😅. Aceita?`,
+    ],
+  };
+
+  const lista = copies[a.veredito] || copies.amarelo;
+  return lista[Math.floor(Math.random() * lista.length)];
+}
+
+function copiarMsgVendedor(){
+  const msg = document.getElementById("copy-msg-box")?.textContent || "";
+  navigator.clipboard?.writeText(msg).then(()=>showToast("✅ Mensagem copiada!")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=msg;ta.style.cssText="position:fixed;opacity:0";
+    document.body.appendChild(ta);ta.select();document.execCommand("copy");
+    document.body.removeChild(ta);showToast("✅ Copiado!");
+  });
 }
 
 
 loadCatalog();
 renderBrands();
 updateBadge();
+renderOlxDefeitos();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
 </script>
