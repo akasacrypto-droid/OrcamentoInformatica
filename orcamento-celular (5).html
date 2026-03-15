@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TechFix</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Mulish:wght@400;600;700;900&display=swap');
+:root{
+  --bg:#f0f2f5;--white:#fff;--dark:#12151c;--border:#e2e5ec;
+  --accent:#0057ff;--accent-light:#e8efff;--green:#00c47a;--green-light:#e6faf3;
+  --red:#ff3b55;--red-light:#fff0f2;--muted:#8a91a0;--text:#1e2330;--orange:#ff8c00;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;font-size:15px;min-height:100vh}
+
+/* NAV */
+nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'Bebas Neue',cursive;font-size:22px;color:#fff;letter-spacing:2px}
+.nav-logo span{color:#4d8fff}
+.orc-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px}
+#badge{background:var(--green);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px}
+#badge.zero{display:none}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--white);border-top:2px solid var(--border);display:flex;height:58px}
+.bnav{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-family:'Mulish',sans-serif;font-weight:700;font-size:11px;transition:color .15s}
+.bnav.active{color:var(--accent)}
+.page{display:none;padding-bottom:76px}
+.page.active{display:block}
+
+/* BREADCRUMB */
+.breadcrumb{display:flex;align-items:center;gap:6px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.breadcrumb::-webkit-scrollbar{display:none}
+.bc-item{font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;transition:color .15s;flex-shrink:0}
+.bc-item.active{color:var(--accent)}
+.bc-item:hover{color:var(--accent)}
+.bc-sep{color:var(--border);font-size:16px;flex-shrink:0}
+
+/* STEPS */
+.step{display:none;padding:16px}
+.step.active{display:block}
+.step-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px}
+
+/* GRID DE MARCAS */
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.brand-card{background:var(--white);border:2px solid var(--border);border-radius:16px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;user-select:none}
+.brand-card:hover,.brand-card:active{border-color:var(--accent);background:var(--accent-light);transform:scale(.97)}
+.brand-emoji{font-size:32px}
+.brand-name{font-weight:900;font-size:13px;text-align:center}
+
+/* LISTA DE MODELOS */
+.model-search-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px 11px 40px;font-size:15px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);transition:border-color .18s;margin-bottom:12px;background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='7' cy='7' r='5' stroke='%238a91a0' stroke-width='1.8'/%3E%3Cpath d='M11 11l3 3' stroke='%238a91a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center}
+.model-search-input:focus{border-color:var(--accent);background-color:var(--white)}
+.model-search-input::placeholder{color:var(--muted)}
+.model-list{display:flex;flex-direction:column;gap:7px}
+.model-item{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s}
+.model-item:hover,.model-item:active{border-color:var(--accent);background:var(--accent-light)}
+.model-item-name{font-weight:700;font-size:14px}
+.model-item-count{font-size:12px;color:var(--accent);font-weight:700}
+.model-arrow{color:var(--muted);font-size:18px}
+
+/* DEFEITOS */
+.defect-grid{display:flex;flex-direction:column;gap:8px}
+.defect-card{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;user-select:none}
+.defect-card:hover{border-color:var(--accent);box-shadow:0 2px 12px rgba(0,87,255,.08)}
+.defect-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.defect-icon-wrap{width:44px;height:44px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;transition:background .15s}
+.defect-card.selected .defect-icon-wrap{background:var(--accent)}
+.defect-info{flex:1}
+.defect-name{font-weight:900;font-size:15px}
+.defect-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.defect-chk{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.defect-card.selected .defect-chk{background:var(--accent);border-color:var(--accent)}
+.defect-chk svg{display:none}
+.defect-card.selected .defect-chk svg{display:block}
+
+/* PREÇOS */
+.prices-header{background:var(--dark);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.prices-model-icon{font-size:28px}
+.prices-model-info{flex:1}
+.prices-model-name{font-family:'Bebas Neue',cursive;font-size:19px;letter-spacing:1px;color:#fff}
+.prices-model-brand{font-size:12px;color:rgba(255,255,255,.5);margin-top:1px}
+
+.price-section{margin-bottom:18px}
+.price-section-title{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:2px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+
+.price-row{background:var(--white);border:1.5px solid var(--border);border-radius:13px;padding:13px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;user-select:none}
+.price-row:hover{border-color:var(--accent);box-shadow:0 2px 10px rgba(0,87,255,.08)}
+.price-row.selected{border-color:var(--accent);background:var(--accent-light)}
+.price-row-left{flex:1}
+.price-quality{font-weight:900;font-size:14px}
+.price-fornecedor{font-size:11px;color:var(--muted);margin-top:2px}
+.price-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent);font-weight:700;margin-top:4px;text-decoration:none;background:var(--accent-light);padding:3px 8px;border-radius:6px}
+.price-link:hover{background:var(--accent);color:#fff}
+.price-right{text-align:right}
+.price-custo{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+.price-val{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green);letter-spacing:.5px;line-height:1}
+.price-row.selected .price-val{color:var(--accent)}
+.price-cobrar{font-size:11px;color:var(--accent);font-weight:700;margin-top:2px}
+.price-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.price-row.selected .price-chk{background:var(--accent);border-color:var(--accent)}
+.price-chk svg{display:none}
+.price-row.selected .price-chk svg{display:block}
+
+.btn-confirm{width:100%;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px;font-family:'Mulish',sans-serif;font-weight:900;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px;transition:background .15s}
+.btn-confirm:hover{background:#0046d4}
+
+/* FORNECEDORES PAGE */
+.forn-header{padding:18px 16px 4px}
+.forn-header h2{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px}
+.forn-header p{font-size:13px;color:var(--muted);margin-top:3px}
+.nota-aviso{background:#fffbe6;border:1px solid #ffe58f;border-radius:10px;padding:10px 14px;font-size:12px;color:#7a5f00;margin:10px 16px;line-height:1.5}
+.forn-filter{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:10px 16px}
+.forn-filter::-webkit-scrollbar{display:none}
+.ftag{background:var(--white);border:1.5px solid var(--border);color:var(--muted);border-radius:999px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;font-family:'Mulish',sans-serif}
+.ftag.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.forn-list{padding:0 16px 16px;display:flex;flex-direction:column;gap:12px}
+.forn-card{background:var(--white);border:1.5px solid var(--border);border-radius:16px;overflow:hidden}
+.forn-card.destaque{border-color:#f0b429}
+.forn-top{padding:14px;display:flex;align-items:flex-start;gap:12px}
+.forn-logo{width:48px;height:48px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;border:1px solid var(--border)}
+.forn-info{flex:1}
+.forn-name{font-weight:900;font-size:15px}
+.forn-city{font-size:11px;color:var(--muted);margin-top:1px}
+.forn-desc{font-size:13px;color:#555;margin-top:6px;line-height:1.5}
+.forn-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ftag-item{border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700}
+.ftag-item.blue{background:var(--accent-light);color:var(--accent)}
+.ftag-item.green{background:var(--green-light);color:var(--green)}
+.ftag-item.orange{background:#fff4e6;color:var(--orange)}
+.forn-prices{background:var(--bg);border-top:1px solid var(--border);padding:10px 14px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.forn-prices::-webkit-scrollbar{display:none}
+.pchip{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:6px 10px;white-space:nowrap}
+.pchip-label{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.pchip-val{font-family:'Bebas Neue',cursive;font-size:16px;color:var(--green);margin-top:1px}
+.forn-actions{padding:10px 14px;display:flex;gap:8px;border-top:1px solid var(--border)}
+.btn-site{flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn-wf{background:#25d366;color:#fff;border:none;border-radius:10px;padding:10px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:5px;text-decoration:none}
+
+/* MODAIS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 20px 32px;animation:slideUp .22s ease}
+.modal-orc{max-height:92vh;display:flex;flex-direction:column}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:1.5px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:var(--bg);border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+input[type=text],input[type=number],textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:15px;color:var(--text);outline:none;margin-bottom:14px;transition:border-color .18s;background:var(--white)}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none;height:70px}
+.modal-confirm-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer}
+.orc-body{flex:1;overflow-y:auto}
+.cli-block{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px}
+.cli-row{display:flex;gap:10px}
+.cli-row>div{flex:1}
+.orc-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.orc-item-icon{font-size:18px;margin-top:1px}
+.orc-item-info{flex:1}
+.orc-item-name{font-weight:700;font-size:14px}
+.orc-item-desc{font-size:12px;color:var(--muted)}
+.orc-item-price{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green);white-space:nowrap}
+.orc-remove{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px}
+.qty-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qty-btn{width:28px;height:28px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.qty-n{font-weight:900;font-size:14px;min-width:20px;text-align:center}
+.total-bar{background:var(--dark);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin:14px 0}
+.total-label{color:rgba(255,255,255,.6);font-size:13px;font-weight:700}
+.total-value{font-family:'Bebas Neue',cursive;font-size:30px;color:var(--green);letter-spacing:1px}
+.action-btns{display:flex;flex-direction:column;gap:10px}
+.btn-wo{width:100%;background:#25d366;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pdf{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-limpar{width:100%;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:12px;padding:12px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+.empty{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-icon{font-size:42px;margin-bottom:10px}
+.markup-hint{background:#f0fff8;border:1px solid #b2f0d8;border-radius:8px;padding:8px 12px;font-size:12px;color:#077a4a;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+
+/* MODAL PREÇO */
+.cost-badge{background:var(--green-light);color:#077a4a;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">TECH<span>FIX</span></div>
+  <button class="orc-btn" onclick="openOrc()">📋 Orçamento <span id="badge" class="zero"></span></button>
+</nav>
+
+<!-- ── PÁGINA ORÇAMENTO ── -->
+<div class="page active" id="pg-orcamento">
+
+  <!-- BREADCRUMB -->
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="bc-item active" onclick="goStep(1)">Marca</span>
+  </div>
+
+  <!-- STEP 1: MARCA -->
+  <div class="step active" id="step1">
+    <div class="step-title">📱 Selecione a marca</div>
+    <div class="brand-grid" id="brand-grid"></div>
+  </div>
+
+  <!-- STEP 2: MODELO -->
+  <div class="step" id="step2">
+    <div class="step-title" id="step2-title">Selecione o modelo</div>
+    <input class="model-search-input" id="modelFilter" type="text" placeholder="Filtrar modelo..." oninput="filterModels()">
+    <div class="model-list" id="model-list"></div>
+  </div>
+
+  <!-- STEP 3: DEFEITOS -->
+  <div class="step" id="step3">
+    <div class="step-title" id="step3-title">Qual é o defeito?</div>
+    <div class="defect-grid" id="defect-grid"></div>
+    <br>
+    <button class="btn-confirm" id="defect-confirm" onclick="goStep(4)" style="display:none">
+      Ver preços das peças →
+    </button>
+  </div>
+
+  <!-- STEP 4: PREÇOS -->
+  <div class="step" id="step4">
+    <div class="step-title">💰 Preços de custo + fornecedor</div>
+    <div id="prices-wrap"></div>
+    <button class="btn-confirm" onclick="openOrc()">
+      📋 Adicionar ao Orçamento
+    </button>
+  </div>
+
+</div>
+
+<!-- ── PÁGINA FORNECEDORES ── -->
+<div class="page" id="pg-fornecedores">
+  <div class="forn-header">
+    <h2>🏭 Fornecedores</h2>
+    <p>Melhores atacadistas de peças do Brasil</p>
+  </div>
+  <div class="nota-aviso">⚠️ Preços de referência. Clique em <strong>Ver Site</strong> para valores atualizados.</div>
+  <div class="forn-filter" id="forn-filter"></div>
+  <div class="forn-list" id="forn-list"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav active" id="bn-orcamento" onclick="showPage('orcamento')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+    Orçamento
+  </button>
+  <button class="bnav" id="bn-fornecedores" onclick="showPage('fornecedores')">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Fornecedores
+  </button>
+</div>
+
+<!-- MODAL: DEFINIR PREÇO -->
+<div class="overlay" id="priceOverlay">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="price-modal-title">Quanto cobrar?</span>
+      <button class="modal-close" onclick="closePriceModal()">✕</button>
+    </div>
+    <div class="cost-badge" id="cost-badge">💰 Custo da peça: R$ —</div>
+    <label>Valor que vai cobrar do cliente (R$)</label>
+    <input type="number" id="priceInput" placeholder="Ex: 250,00" min="0" step="0.01">
+    <button class="modal-confirm-btn" onclick="confirmPrice()">✅ Confirmar</button>
+  </div>
+</div>
+
+<!-- MODAL: ORÇAMENTO FINAL -->
+<div class="overlay" id="orcOverlay">
+  <div class="modal modal-orc">
+    <div class="modal-title">
+      Orçamento
+      <button class="modal-close" onclick="closeOrc()">✕</button>
+    </div>
+    <div class="orc-body" id="orc-body"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// DADOS
+// ══════════════════════════════════════════════════
+const BRANDS = [
+  {id:"apple",   name:"Apple",    emoji:"🍎"},
+  {id:"samsung", name:"Samsung",  emoji:"🌌"},
+  {id:"motorola",name:"Motorola", emoji:"〽️"},
+  {id:"xiaomi",  name:"Xiaomi",   emoji:"🔴"},
+  {id:"lg",      name:"LG",       emoji:"🔵"},
+  {id:"asus",    name:"Asus",     emoji:"🟣"},
+];
+
+// Peças: {tipo, qualidade, custo, fornecedor, link}
+const CATALOG = {
+  // ── APPLE ──
+  "iPhone XR":[
+    {tipo:"Bateria",q:"Compatível",c:80,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Sem Flex",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:120,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Nova",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone XS":[
+    {tipo:"Bateria",q:"Compatível",c:80,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:175,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Nova",c:475,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone XS Max":[
+    {tipo:"Bateria",q:"Compatível",c:80,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:130,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:245,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Nova",c:500,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 11":[
+    {tipo:"Bateria",q:"Compatível",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL CI Removível",c:110,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:320,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 11 Pro":[
+    {tipo:"Bateria",q:"Compatível",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL CI Removível",c:215,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 11 Pro Max":[
+    {tipo:"Bateria",q:"Compatível",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:130,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL CI Removível",c:255,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 12":[
+    {tipo:"Bateria",q:"Compatível",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Calibra",c:145,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:425,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 12 Pro":[
+    {tipo:"Bateria",q:"Compatível",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"HD",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 12 Pro Max":[
+    {tipo:"Bateria",q:"Compatível",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:165,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:375,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 13":[
+    {tipo:"Bateria",q:"Compatível",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Calibra",c:145,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:195,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:325,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Soft OLED",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:650,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 13 Pro":[
+    {tipo:"Bateria",q:"Compatível",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Calibra",c:155,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:295,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:475,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1200,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 13 Pro Max":[
+    {tipo:"Bateria",q:"Compatível",c:110,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:345,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:600,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Soft OLED",c:650,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 14":[
+    {tipo:"Bateria",q:"Compatível",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Calibra",c:145,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:245,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:325,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Soft OLED",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 14 Pro":[
+    {tipo:"Bateria",q:"Compatível",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:685,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1400,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 14 Pro Max":[
+    {tipo:"Bateria",q:"Compatível",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:425,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:725,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Soft OLED",c:850,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 15":[
+    {tipo:"Bateria",q:"Compatível",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Bateria",q:"Calibra",c:155,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:350,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:650,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:850,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 15 Pro":[
+    {tipo:"Bateria",q:"Compatível",c:120,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:400,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:725,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Nova",c:1800,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 15 Pro Max":[
+    {tipo:"Bateria",q:"Compatível",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:450,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:800,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1900,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 16":[
+    {tipo:"Display",q:"Incell ZL",c:450,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL",c:780,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1300,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 16 Pro":[
+    {tipo:"Display",q:"ZL",c:780,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1500,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "iPhone 16 Pro Max":[
+    {tipo:"Display",q:"ZL",c:1000,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Original Retirada",c:1600,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  // ── SAMSUNG ──
+  "Galaxy A13":[
+    {tipo:"Display",q:"S/A",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:100,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A14":[
+    {tipo:"Display",q:"C/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A15":[
+    {tipo:"Display",q:"Incell C/A",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"Incell ZL",c:135,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:245,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A22":[
+    {tipo:"Display",q:"Incell C/A",c:100,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:190,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A23":[
+    {tipo:"Display",q:"C/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A32":[
+    {tipo:"Display",q:"Incell C/A",c:100,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:185,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A34":[
+    {tipo:"Display",q:"C/A",c:195,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:315,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A35":[
+    {tipo:"Display",q:"S/A",c:195,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:305,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A52":[
+    {tipo:"Display",q:"Incell C/A",c:110,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A53":[
+    {tipo:"Display",q:"ZL C/A",c:285,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A54":[
+    {tipo:"Display",q:"ZL C/A",c:275,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy A55":[
+    {tipo:"Display",q:"S/A",c:195,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:305,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy S20 FE":[
+    {tipo:"Display",q:"Incell ZL",c:165,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy S21 FE":[
+    {tipo:"Display",q:"Incell ZL",c:220,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:355,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy Note 10":[
+    {tipo:"Display",q:"ZL C/A",c:1050,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Galaxy Note 20":[
+    {tipo:"Display",q:"ZL C/A",c:700,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  // ── MOTOROLA ──
+  "Moto G14":[
+    {tipo:"Display",q:"S/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:130,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G22":[
+    {tipo:"Display",q:"S/A",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G32":[
+    {tipo:"Display",q:"S/A",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G34":[
+    {tipo:"Display",q:"S/A",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G54":[
+    {tipo:"Display",q:"S/A",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G84":[
+    {tipo:"Display",q:"S/A",c:205,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:295,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto G85":[
+    {tipo:"Display",q:"S/A",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:435,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto Edge 30":[
+    {tipo:"Display",q:"S/A",c:260,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:295,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Moto Edge 50 Fusion":[
+    {tipo:"Display",q:"S/A",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:435,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  // ── XIAOMI ──
+  "Poco X5 Pro":[
+    {tipo:"Display",q:"Incell ZL",c:135,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"S/A",c:245,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Poco X5":[
+    {tipo:"Display",q:"S/A",c:225,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Poco X6":[
+    {tipo:"Display",q:"S/A",c:375,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:405,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Poco X7 Pro":[
+    {tipo:"Display",q:"S/A",c:395,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Poco M4 Pro":[
+    {tipo:"Display",q:"S/A",c:195,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:215,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Poco F4":[
+    {tipo:"Display",q:"S/A",c:230,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:285,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi Note 12":[
+    {tipo:"Display",q:"S/A",c:225,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi Note 12 Pro":[
+    {tipo:"Display",q:"S/A",c:225,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:265,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi Note 13":[
+    {tipo:"Display",q:"S/A",c:275,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:335,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi Note 13 Pro":[
+    {tipo:"Display",q:"S/A",c:365,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:395,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi 13C":[
+    {tipo:"Display",q:"S/A",c:90,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:100,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:120,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Redmi 14C":[
+    {tipo:"Display",q:"S/A",c:95,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"C/A",c:110,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:125,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  // ── LG ──
+  "LG K52":[
+    {tipo:"Display",q:"S/A",c:80,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:135,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "LG K62":[
+    {tipo:"Display",q:"S/A",c:80,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:135,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "LG K61":[
+    {tipo:"Display",q:"S/A",c:85,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+    {tipo:"Display",q:"ZL C/A",c:115,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  // ── ASUS ──
+  "Asus Zenfone ZB631KL":[
+    {tipo:"Display",q:"S/A",c:105,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+  "Asus Zenfone ZC553KL":[
+    {tipo:"Display",q:"S/A",c:145,f:"Floritec",link:"https://floritecpecas.kyte.site"},
+  ],
+};
+
+// mapeamento marca → modelos
+const BRAND_MODELS = {
+  apple:   Object.keys(CATALOG).filter(k=>k.startsWith("iPhone")),
+  samsung: Object.keys(CATALOG).filter(k=>k.startsWith("Galaxy")),
+  motorola:Object.keys(CATALOG).filter(k=>k.startsWith("Moto")),
+  xiaomi:  Object.keys(CATALOG).filter(k=>k.startsWith("Poco")||k.startsWith("Redmi")||k.startsWith("Mi ")),
+  lg:      Object.keys(CATALOG).filter(k=>k.startsWith("LG")),
+  asus:    Object.keys(CATALOG).filter(k=>k.startsWith("Asus")),
+};
+
+const DEFECT_TIPOS = {
+  "Display":         {icon:"📱", desc:"Tela quebrada, manchas, sem imagem"},
+  "Bateria":         {icon:"🔋", desc:"Bateria fraca, não carrega, incha"},
+  "Conector":        {icon:"🔌", desc:"Não carrega, conector frouxo"},
+  "Câmera Traseira": {icon:"📷", desc:"Embaçada, manchas, não foca"},
+  "Câmera Frontal":  {icon:"🤳", desc:"Selfie com defeito, Face ID"},
+  "Flex Carga":      {icon:"⚡", desc:"Flex interna do conector de carga"},
+  "Flex Volume":     {icon:"🔘", desc:"Flex dos botões laterais de volume"},
+  "Flex Power":      {icon:"⏻", desc:"Flex do botão power / ligar"},
+  "Alto-falante":    {icon:"🔊", desc:"Sem som, som distorcido"},
+  "Microfone":       {icon:"🎙️", desc:"Não grava voz, chamadas mudas"},
+  "Botão Home":      {icon:"⬜", desc:"Botão home físico com defeito"},
+  "Carcaça":         {icon:"🧱", desc:"Traseira quebrada, frame torto"},
+  "Molho":           {icon:"💧", desc:"Caiu na água, não liga"},
+  "Placa":           {icon:"🔧", desc:"Micro-soldagem, BGA, ressuscitar"},
+};
+
+// ══════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════
+let state = {brand:null, model:null, defects:[], step:1};
+let cart  = {};
+let pendingPrice = null; // {cartKey, item}
+
+// ══════════════════════════════════════════════════
+// STEPS
+// ══════════════════════════════════════════════════
+function goStep(n, skipBreadcrumb){
+  state.step = n;
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+  document.getElementById("step"+n).classList.add("active");
+  if(!skipBreadcrumb) buildBreadcrumb();
+  if(n===1) renderBrands();
+  if(n===2) renderModels();
+  if(n===3) renderDefects();
+  if(n===4) renderPrices();
+}
+
+function buildBreadcrumb(){
+  const bc = document.getElementById("breadcrumb");
+  let html = `<span class="bc-item ${state.step===1?'active':''}" onclick="goStep(1)">Marca</span>`;
+  if(state.brand){
+    const b = BRANDS.find(x=>x.id===state.brand);
+    html += `<span class="bc-sep">›</span>
+      <span class="bc-item ${state.step===2?'active':''}" onclick="goStep(2)">${b.emoji} ${b.name}</span>`;
+  }
+  if(state.model){
+    html += `<span class="bc-sep">›</span>
+      <span class="bc-item ${state.step===3?'active':''}" onclick="goStep(3)">${state.model}</span>`;
+  }
+  if(state.step===4){
+    html += `<span class="bc-sep">›</span>
+      <span class="bc-item active">Preços</span>`;
+  }
+  bc.innerHTML = html;
+}
+
+// STEP 1
+function renderBrands(){
+  document.getElementById("brand-grid").innerHTML = BRANDS.map(b=>`
+    <div class="brand-card" onclick="selectBrand('${b.id}')">
+      <div class="brand-emoji">${b.emoji}</div>
+      <div class="brand-name">${b.name}</div>
+    </div>`).join("");
+}
+function selectBrand(id){
+  state.brand = id;
+  state.model = null;
+  state.defects = [];
+  document.getElementById("modelFilter").value = "";
+  goStep(2);
+}
+
+// STEP 2
+function renderModels(){
+  const b = BRANDS.find(x=>x.id===state.brand);
+  document.getElementById("step2-title").textContent = `${b.emoji} Selecione o modelo`;
+  const q = document.getElementById("modelFilter").value.toLowerCase();
+  const models = (BRAND_MODELS[state.brand]||[]).filter(m=>m.toLowerCase().includes(q));
+  document.getElementById("model-list").innerHTML = models.length
+    ? models.map(m=>{
+        const count = CATALOG[m].length;
+        return `<div class="model-item" onclick="selectModel('${m}')">
+          <span class="model-item-name">${m}</span>
+          <span style="display:flex;align-items:center;gap:8px">
+            <span class="model-item-count">${count} peça${count>1?'s':''}</span>
+            <span class="model-arrow">›</span>
+          </span>
+        </div>`;
+      }).join("")
+    : `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Nenhum modelo encontrado</div>`;
+}
+function filterModels(){ renderModels(); }
+function selectModel(m){
+  state.model = m;
+  state.defects = [];
+  goStep(3);
+}
+
+// STEP 3
+function renderDefects(){
+  document.getElementById("step3-title").textContent = `Defeitos do ${state.model}`;
+  // descobrir quais tipos existem para este modelo
+  const partsForModel = CATALOG[state.model]||[];
+  const tiposDisp = [...new Set(partsForModel.map(p=>p.tipo))];
+  // mostrar todos os defeitos mas destacar os que têm peças no catálogo
+  const allDefects = Object.entries(DEFECT_TIPOS);
+  let html = "";
+  // primeiro os que têm peças
+  allDefects.forEach(([tipo, info])=>{
+    const hasPart = tiposDisp.includes(tipo);
+    const sel = state.defects.includes(tipo) ? "selected" : "";
+    html += `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
+      <div class="defect-icon-wrap">${info.icon}</div>
+      <div class="defect-info">
+        <div class="defect-name">${tipo} ${hasPart?'<span style="font-size:11px;background:var(--green-light);color:var(--green);border-radius:5px;padding:2px 6px;font-family:Mulish,sans-serif;font-weight:700">✓ preço disponível</span>':''}</div>
+        <div class="defect-sub">${info.desc}</div>
+      </div>
+      <div class="defect-chk">
+        <svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+    </div>`;
+  });
+  document.getElementById("defect-grid").innerHTML = html;
+  updateDefectBtn();
+}
+function toggleDefect(tipo){
+  const i = state.defects.indexOf(tipo);
+  if(i>-1) state.defects.splice(i,1);
+  else state.defects.push(tipo);
+  renderDefects();
+}
+function updateDefectBtn(){
+  const btn = document.getElementById("defect-confirm");
+  if(state.defects.length>0){
+    btn.style.display = "flex";
+    btn.textContent = `Ver preços (${state.defects.length} defeito${state.defects.length>1?"s":""}) →`;
+  } else {
+    btn.style.display = "none";
+  }
+}
+
+// STEP 4
+function shopLink(tipo, model){
+  return `https://www.google.com/search?q=${encodeURIComponent(tipo+' '+model)}&tbm=shop`;
+}
+function renderPrices(){
+  const b = BRANDS.find(x=>x.id===state.brand);
+  const parts = CATALOG[state.model]||[];
+  let html = `<div class="prices-header">
+    <div class="prices-model-icon">${b.emoji}</div>
+    <div class="prices-model-info">
+      <div class="prices-model-name">${state.model}</div>
+      <div class="prices-model-brand">${b.name} · ${state.defects.join(", ")}</div>
+    </div>
+  </div>`;
+
+  state.defects.forEach(tipo=>{
+    const tipoPartes = parts.filter(p=>p.tipo===tipo);
+    const info = DEFECT_TIPOS[tipo];
+    html += `<div class="price-section">
+      <div class="price-section-title">${info.icon} ${tipo}</div>`;
+
+    if(tipoPartes.length){
+      // tem peças no catálogo Floritec
+      tipoPartes.forEach((p,i)=>{
+        const cartKey = state.model+"_"+tipo+"_"+i;
+        const inCart = cart[cartKey];
+        const sel = inCart?"selected":"";
+        html += `<div class="price-row ${sel}" onclick="selectPrice('${cartKey}','${state.model}','${tipo}','${p.q}',${p.c},'${p.f}','${p.link}')">
+          <div class="price-row-left">
+            <div class="price-quality">${p.q}</div>
+            <div class="price-fornecedor">📦 ${p.f}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:5px">
+              <a class="price-link" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Floritec</a>
+              <a class="price-link" href="${shopLink(tipo+' '+p.q, state.model)}" target="_blank" onclick="event.stopPropagation()" style="background:#fff3e0;color:#e65100">🛒 Google Shopping</a>
+            </div>
+          </div>
+          <div class="price-right">
+            <div class="price-custo">Custo ref.</div>
+            <div class="price-val">${fmt(p.c)}</div>
+            ${inCart?`<div class="price-cobrar">Cobrar: ${fmt(inCart.price)}</div>`:''}
+          </div>
+          <div class="price-chk">
+            <svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>`;
+      });
+    } else {
+      // sem preço no catálogo → mostra card só com Google Shopping
+      const cartKey = state.model+"_"+tipo+"_manual";
+      const inCart = cart[cartKey];
+      const sel = inCart?"selected":"";
+      html += `
+        <div style="background:#fff3e0;border:1.5px solid #ffe0b2;border-radius:12px;padding:12px 14px;margin-bottom:8px">
+          <div style="font-size:13px;color:#7a4400;margin-bottom:8px">⚠️ Não temos preço de referência para esse item. Consulte o preço direto:</div>
+          <a class="price-link" href="${shopLink(tipo, state.model)}" target="_blank"
+            style="background:#e65100;color:#fff;padding:9px 14px;border-radius:10px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;gap:6px;text-decoration:none">
+            🛒 Ver preços no Google Shopping
+          </a>
+        </div>
+        <div class="price-row ${sel}" onclick="selectPrice('${cartKey}','${state.model}','${tipo}','Manual',0,'Manual','')">
+          <div class="price-row-left">
+            <div class="price-quality">Digitar valor manualmente</div>
+            <div class="price-fornecedor" style="margin-top:3px">Consulte o Google Shopping acima</div>
+          </div>
+          <div class="price-right">
+            <div class="price-custo">Custo</div>
+            <div class="price-val" style="color:var(--muted)">R$ —</div>
+            ${inCart?`<div class="price-cobrar">Cobrar: ${fmt(inCart.price)}</div>`:''}
+          </div>
+          <div class="price-chk">
+            <svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>`;
+    }
+    html += `</div>`;
+  });
+
+  document.getElementById("prices-wrap").innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════
+// SELEÇÃO DE PREÇO → abre modal
+// ══════════════════════════════════════════════════
+function selectPrice(cartKey, model, tipo, qualidade, custo, fornecedor, link){
+  if(cart[cartKey]){
+    delete cart[cartKey];
+    updateBadge();
+    renderPrices();
+    return;
+  }
+  pendingPrice = {cartKey, model, tipo, qualidade, custo, fornecedor, link};
+  document.getElementById("price-modal-title").textContent = `${tipo} — ${qualidade}`;
+  document.getElementById("cost-badge").textContent = `💰 Custo da peça: ${fmt(custo)} (${fornecedor})`;
+  document.getElementById("priceInput").value = "";
+  document.getElementById("priceInput").placeholder = `Sugestão: ${fmt(custo*2)}`;
+  document.getElementById("priceOverlay").classList.add("open");
+  setTimeout(()=>document.getElementById("priceInput").focus(),300);
+}
+function closePriceModal(){ document.getElementById("priceOverlay").classList.remove("open"); pendingPrice=null; }
+function confirmPrice(){
+  const price = parseFloat(document.getElementById("priceInput").value);
+  if(isNaN(price)||price<0){alert("Informe um valor válido.");return;}
+  const {cartKey,model,tipo,qualidade,custo,fornecedor,link} = pendingPrice;
+  const info = DEFECT_TIPOS[tipo]||{icon:"🔧"};
+  cart[cartKey] = {
+    id:cartKey, icon:info.icon,
+    name:`${tipo} — ${model}`,
+    desc:`${qualidade} · Custo: ${fmt(custo)} (${fornecedor})`,
+    qty:1, price, custo, link
+  };
+  closePriceModal();
+  updateBadge();
+  renderPrices();
+}
+
+// ══════════════════════════════════════════════════
+// MÃO DE OBRA
+// ══════════════════════════════════════════════════
+const MAO_OBRA_PADRAO = [
+  {id:"mo_display",   icon:"📱", nome:"Troca de Tela",           valor:50},
+  {id:"mo_bateria",   icon:"🔋", nome:"Troca de Bateria",         valor:40},
+  {id:"mo_conector",  icon:"🔌", nome:"Troca de Conector",        valor:50},
+  {id:"mo_camera_t",  icon:"📷", nome:"Troca Câmera Traseira",    valor:50},
+  {id:"mo_camera_f",  icon:"🤳", nome:"Troca Câmera Frontal",     valor:50},
+  {id:"mo_flex",      icon:"⚡", nome:"Troca de Flex",            valor:40},
+  {id:"mo_alto",      icon:"🔊", nome:"Troca Alto-falante",       valor:40},
+  {id:"mo_mic",       icon:"🎙️", nome:"Troca de Microfone",       valor:40},
+  {id:"mo_botao",     icon:"⬜", nome:"Troca de Botão",           valor:40},
+  {id:"mo_carcaca",   icon:"🧱", nome:"Troca de Carcaça",         valor:60},
+  {id:"mo_molho",     icon:"💧", nome:"Limpeza / Molho d'água",   valor:80},
+  {id:"mo_placa",     icon:"🔧", nome:"Soldagem / Placa",         valor:120},
+  {id:"mo_higieniz",  icon:"🫧", nome:"Higienização",             valor:50},
+  {id:"mo_format",    icon:"🖥️", nome:"Formatação / Flash",       valor:60},
+];
+let maoObra = {}; // id -> {id, icon, nome, valor}
+
+function calcTotalMO(){ return Object.values(maoObra).reduce((a,i)=>a+i.valor,0); }
+function calcTotalPecas(){ return Object.values(cart).reduce((a,i)=>a+i.price*i.qty,0); }
+function calcGrandTotal(){ return calcTotalPecas()+calcTotalMO(); }
+
+function toggleMO(id){
+  if(maoObra[id]) delete maoObra[id];
+  else {
+    const m = MAO_OBRA_PADRAO.find(x=>x.id===id);
+    maoObra[id] = {...m};
+  }
+  renderOrc();
+}
+function editMO(id){
+  const m = maoObra[id]||MAO_OBRA_PADRAO.find(x=>x.id===id);
+  const novo = prompt(`Valor da mão de obra — ${m.nome}:`, m.valor);
+  if(novo===null) return;
+  const v = parseFloat(novo);
+  if(isNaN(v)||v<0){alert("Valor inválido.");return;}
+  if(!maoObra[id]) maoObra[id]={...m};
+  maoObra[id].valor = v;
+  renderOrc();
+}
+
+// ══════════════════════════════════════════════════
+// BADGE + ORC
+// ══════════════════════════════════════════════════
+function updateBadge(){
+  const t=Object.values(cart).reduce((a,i)=>a+i.qty,0);
+  const b=document.getElementById("badge");
+  b.textContent=t||"";b.classList.toggle("zero",!t);
+}
+function openOrc(){renderOrc();document.getElementById("orcOverlay").classList.add("open");}
+function closeOrc(){document.getElementById("orcOverlay").classList.remove("open");}
+function renderOrc(){
+  const items=Object.values(cart);
+  const totalCusto=items.reduce((a,i)=>a+(i.custo||0)*i.qty,0);
+  const totalPecas=calcTotalPecas();
+  const totalMO=calcTotalMO();
+  const grandTotal=totalPecas+totalMO;
+  const lucro=grandTotal-totalCusto;
+
+  let html=`<div class="cli-block">
+    <label>Nome do cliente</label>
+    <input type="text" id="cli_nome" placeholder="Ex: João Silva" oninput="atualizarCopy()" style="margin-bottom:10px">
+    <div class="cli-row">
+      <div><label>Aparelho</label><input type="text" id="cli_modelo" placeholder="${state.model||'Modelo'}" oninput="atualizarCopy()"></div>
+      <div><label>WhatsApp</label><input type="text" id="cli_tel" placeholder="(48) 99999-0000"></div>
+    </div>
+  </div>`;
+
+  // ── PEÇAS ──
+  if(items.length){
+    html+=`<div style="font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px">🔩 PEÇAS</div>`;
+    html+=`<div class="markup-hint">💡 Custo total peças: <strong>${fmt(totalCusto)}</strong> · Lucro estimado: <strong>${fmt(lucro)}</strong></div>`;
+    items.forEach(item=>{
+      html+=`<div class="orc-item">
+        <div class="orc-item-icon">${item.icon}</div>
+        <div class="orc-item-info">
+          <div class="orc-item-name">${item.name}</div>
+          <div class="orc-item-desc">${item.desc}</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="chQty('${item.id}',-1)">−</button>
+            <span class="qty-n" id="qty_${item.id}">${item.qty}</span>
+            <button class="qty-btn" onclick="chQty('${item.id}',1)">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <div class="orc-item-price" id="ip_${item.id}">${fmt(item.price*item.qty)}</div>
+          <button class="orc-remove" onclick="rmItem('${item.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+  }
+
+  // ── MÃO DE OBRA ──
+  html+=`<div style="font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:2px;color:var(--muted);margin:18px 0 8px">🛠️ MÃO DE OBRA</div>`;
+  html+=`<div style="display:flex;flex-direction:column;gap:7px;margin-bottom:8px">`;
+  MAO_OBRA_PADRAO.forEach(m=>{
+    const ativo = !!maoObra[m.id];
+    html+=`<div style="background:${ativo?'var(--accent-light)':'var(--white)'};border:1.5px solid ${ativo?'var(--accent)':'var(--border)'};border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s" onclick="toggleMO('${m.id}')">
+      <div style="font-size:20px;width:34px;height:34px;background:${ativo?'var(--accent)':'var(--bg)'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">${m.icon}</div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:14px">${m.nome}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:1px">Valor padrão: ${fmt(m.valor)}</div>
+      </div>
+      ${ativo?`
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent)">${fmt(maoObra[m.id].valor)}</div>
+          <button onclick="event.stopPropagation();editMO('${m.id}')" style="background:var(--accent);color:#fff;border:none;border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer">✏️ Editar</button>
+        </div>
+      `:`<div style="font-family:'Bebas Neue',cursive;font-size:18px;color:var(--muted)">${fmt(m.valor)}</div>`}
+      <div style="width:22px;height:22px;border-radius:50%;border:2px solid ${ativo?'var(--accent)':'var(--border)'};background:${ativo?'var(--accent)':'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        ${ativo?`<svg width="11" height="8" fill="none"><path d="M1 3.5l3 3L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}
+      </div>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // subtotais
+  if(totalMO>0||totalPecas>0){
+    html+=`<div style="background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:4px">`;
+    if(totalPecas>0) html+=`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--muted);font-weight:700">Peças</span><span style="font-weight:700">${fmt(totalPecas)}</span></div>`;
+    if(totalMO>0)    html+=`<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--muted);font-weight:700">Mão de obra</span><span style="font-weight:700">${fmt(totalMO)}</span></div>`;
+    html+=`</div>`;
+  }
+
+  html+=`<div style="margin:10px 0 0"><label>Observações</label><textarea id="obs" placeholder="Prazo, garantia, condições..." oninput="atualizarCopy()"></textarea></div>
+  <div class="total-bar">
+    <div><div class="total-label">TOTAL GERAL</div><div style="font-size:12px;color:rgba(255,255,255,.4)">${items.length} peça(s) + ${Object.keys(maoObra).length} serviço(s)</div></div>
+    <div class="total-value" id="total-val">${fmt(grandTotal)}</div>
+  </div>
+
+  <div style="background:#f8f9fb;border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1.5px;color:var(--muted)">💬 MENSAGEM PRONTA</div>
+      <button id="copy-btn" onclick="copiarMsg()" style="background:var(--green);color:#fff;border:none;border-radius:9px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s">
+        📋 Copiar
+      </button>
+    </div>
+    <div id="copy-preview" style="background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:13px;white-space:pre-wrap;line-height:1.6;color:var(--text);max-height:200px;overflow-y:auto;word-break:break-word"></div>
+  </div>
+
+  <div class="action-btns">
+    <button class="btn-wo" onclick="sendWhats()">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.552 4.103 1.516 5.83L.057 23.007a1 1 0 001.23 1.23l5.243-1.46A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.88 0-3.64-.511-5.148-1.403l-.37-.22-3.112.868.868-3.04-.238-.383A9.959 9.959 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Abrir WhatsApp
+    </button>
+    <button class="btn-pdf" onclick="savePDF()">📄 Salvar PDF / Imprimir</button>
+    <button class="btn-limpar" onclick="limpar()">🗑 Limpar orçamento</button>
+  </div><div style="height:8px"></div>`;
+  document.getElementById("orc-body").innerHTML=html;
+  atualizarCopy();
+}
+function montarMsg(){
+  const nome  = document.getElementById("cli_nome")?.value.trim()||"";
+  const modelo= document.getElementById("cli_modelo")?.value.trim()||state.model||"";
+  const obs   = document.getElementById("obs")?.value.trim()||"";
+  const items = Object.values(cart);
+  const moItems= Object.values(maoObra);
+  const num   = String(Date.now()).slice(-6);
+  let msg = `🔧 *ORÇAMENTO #${num}*\n`;
+  if(nome)  msg += `👤 Cliente: ${nome}\n`;
+  if(modelo)msg += `📱 Aparelho: ${modelo}\n`;
+  if(items.length){
+    msg += `\n🔩 *Peças:*\n`;
+    items.forEach(i=>{ msg += `• ${i.name}${i.qty>1?` x${i.qty}`:""} — ${fmt(i.price*i.qty)}\n`; });
+  }
+  if(moItems.length){
+    msg += `\n🛠️ *Mão de obra:*\n`;
+    moItems.forEach(i=>{ msg += `• ${i.nome} — ${fmt(i.valor)}\n`; });
+  }
+  if(items.length && moItems.length){
+    msg += `\n────────────────\n`;
+    if(items.length)  msg += `🔩 Peças:      ${fmt(Object.values(cart).reduce((a,i)=>a+i.price*i.qty,0))}\n`;
+    if(moItems.length)msg += `🛠️ Mão de obra: ${fmt(calcTotalMO())}\n`;
+  }
+  msg += `\n💰 *Total: ${fmt(calcGrandTotal())}*`;
+  if(obs) msg += `\n\n📝 ${obs}`;
+  msg += `\n\n_Qualquer dúvida, é só chamar! 😊_`;
+  return msg;
+}
+function atualizarCopy(){
+  const el = document.getElementById("copy-preview");
+  if(!el) return;
+  el.textContent = montarMsg();
+}
+function copiarMsg(){
+  const msg = montarMsg();
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(msg).then(()=>{
+      const btn = document.getElementById("copy-btn");
+      if(btn){ btn.textContent="✅ Copiado!"; btn.style.background="var(--green)"; setTimeout(()=>{ btn.textContent="📋 Copiar"; },2000); }
+    }).catch(()=> fallbackCopy(msg));
+  } else { fallbackCopy(msg); }
+}
+function fallbackCopy(text){
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  document.execCommand("copy");
+  document.body.removeChild(ta);
+  const btn = document.getElementById("copy-btn");
+  if(btn){ btn.textContent="✅ Copiado!"; setTimeout(()=>{ btn.textContent="📋 Copiar"; },2000); }
+}
+function chQty(id,d){
+  if(!cart[id])return;
+  cart[id].qty=Math.max(1,cart[id].qty+d);
+  document.getElementById("qty_"+id).textContent=cart[id].qty;
+  document.getElementById("ip_"+id).textContent=fmt(cart[id].price*cart[id].qty);
+  document.getElementById("total-val").textContent=fmt(calcGrandTotal());
+  atualizarCopy();
+  updateBadge();
+}
+function rmItem(id){delete cart[id];updateBadge();renderOrc();}
+function limpar(){if(!confirm("Limpar tudo?"))return;cart={};maoObra={};updateBadge();renderOrc();}
+function sendWhats(){
+  const items=Object.values(cart); const moItems=Object.values(maoObra);
+  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  const tel=document.getElementById("cli_tel")?.value.trim().replace(/\D/g,"")||"";
+  const msg=montarMsg();
+  window.open(tel?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+}
+function savePDF(){
+  const nome=document.getElementById("cli_nome")?.value.trim()||"—";
+  const modelo=document.getElementById("cli_modelo")?.value.trim()||state.model||"—";
+  const obs=document.getElementById("obs")?.value.trim()||"";
+  const items=Object.values(cart);
+  const moItems=Object.values(maoObra);
+  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  const grandTotal=calcGrandTotal();
+  const num=String(Date.now()).slice(-6);
+  const data=new Date().toLocaleDateString("pt-BR");
+  const pecasRows=items.map(i=>`<tr><td>${i.name}</td><td align="center">${i.qty}</td><td align="right">${fmt(i.price)}</td><td align="right"><strong>${fmt(i.price*i.qty)}</strong></td></tr>`).join("");
+  const moRows=moItems.map(i=>`<tr style="background:#f9f9f9"><td>🛠️ ${i.nome}</td><td align="center">1</td><td align="right">${fmt(i.valor)}</td><td align="right"><strong>${fmt(i.valor)}</strong></td></tr>`).join("");
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;padding:32px;color:#1e2330;font-size:14px}
+    h1{font-size:22px;margin-bottom:4px}.sub{color:#888;font-size:13px;margin-bottom:20px}
+    .info{background:#f5f7fa;border-radius:8px;padding:12px 16px;margin-bottom:20px}.info div{margin-bottom:4px}
+    table{width:100%;border-collapse:collapse;margin-bottom:8px}
+    th{background:#12151c;color:#fff;padding:9px 12px;text-align:left;font-size:12px}
+    td{padding:9px 12px;border-bottom:1px solid #e2e5ec}
+    .sec{background:#f0f0f0;font-weight:700;font-size:12px;letter-spacing:1px;padding:6px 12px;color:#555}
+    .tot td{font-size:16px;font-weight:bold;background:#e6faf3;border-top:2px solid #00c47a}
+    .obs{background:#fffbf0;border:1px solid #ffe08a;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:20px}
+    footer{text-align:center;color:#aaa;font-size:12px;margin-top:30px;border-top:1px solid #e2e5ec;padding-top:14px}
+  </style></head><body>
+  <h1>🔧 Orçamento #${num}</h1><div class="sub">Emitido em ${data}</div>
+  <div class="info"><div><strong>Cliente:</strong> ${nome}</div><div><strong>Aparelho:</strong> ${modelo}</div></div>
+  <table>
+    <thead><tr><th>Serviço / Peça</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+    <tbody>
+      ${items.length?`<tr><td colspan="4" class="sec">🔩 PEÇAS</td></tr>${pecasRows}`:''}
+      ${moItems.length?`<tr><td colspan="4" class="sec">🛠️ MÃO DE OBRA</td></tr>${moRows}`:''}
+    </tbody>
+    <tfoot><tr class="tot"><td colspan="3">TOTAL GERAL</td><td align="right">${fmt(grandTotal)}</td></tr></tfoot>
+  </table>
+  ${obs?`<div class="obs">📝 <strong>Obs:</strong> ${obs}</div>`:""}
+  <footer>TechFix — Assistência Técnica de Celulares</footer>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+function fmt(v){return"R$ "+Number(v).toFixed(2).replace(".",",");}
+
+// ══════════════════════════════════════════════════
+// FORNECEDORES
+// ══════════════════════════════════════════════════
+const FORNECEDORES=[
+  {id:"floritec",logo:"🌺",name:"Floritec Peças",city:"Florianópolis / São José — SC",desc:"Catálogo extenso de displays e baterias para iPhone, Samsung, Motorola, Xiaomi. Entrega por motoboy, Sedex ou retirada.",tags:["Display","Bateria","iPhone","Samsung"],cats:["Todos","Display","Bateria"],precos:[{l:"Display iPhone 11 HD",v:"R$ 95,00"},{l:"Bateria iPhone 13",v:"R$ 90,00"},{l:"Display Samsung A32",v:"R$ 100,00"}],site:"https://floritecpecas.kyte.site",whats:"5548996156102",destaque:true},
+  {id:"multicelular",logo:"📦",name:"Multi Celular",city:"São Paulo — SP",desc:"Um dos maiores atacadistas do Brasil. Displays, baterias, conectores e câmeras para todo o país.",tags:["Display","Bateria","Conector","Câmera"],cats:["Todos","Display","Bateria","Conector","Câmera"],precos:[{l:"Display Moto G30",v:"~R$ 85,00"},{l:"Bateria Samsung A51",v:"~R$ 45,00"},{l:"Conector USB-C",v:"~R$ 18,00"}],site:"https://www.multicelular.com.br",whats:"",destaque:false},
+  {id:"celbox",logo:"📱",name:"Cel.Box",city:"São Paulo — SP",desc:"Atacado com foco em preços baixos. Boa variedade para iPhone, Samsung, Xiaomi e Motorola.",tags:["Display","Bateria"],cats:["Todos","Display","Bateria"],precos:[{l:"Display iPhone XR ZL",v:"~R$ 110,00"},{l:"Display Samsung A13",v:"~R$ 88,00"},{l:"Bateria Moto G7",v:"~R$ 35,00"}],site:"https://www.celbox.com.br",whats:"",destaque:false},
+  {id:"gbmax",logo:"⚡",name:"GB Max",city:"São Paulo — SP",desc:"Focado em baterias e conectores com preços de atacado.",tags:["Bateria","Conector"],cats:["Todos","Bateria","Conector"],precos:[{l:"Bateria iPhone X",v:"~R$ 55,00"},{l:"Bateria Samsung A50",v:"~R$ 40,00"},{l:"Conector Micro-USB",v:"~R$ 12,00"}],site:"https://www.gbmax.com.br",whats:"",destaque:false},
+  {id:"shopee",logo:"🛒",name:"Shopee Atacado",city:"Nacional",desc:"Várias lojas atacadistas. Prefira vendedores com 4.8+ estrelas.",tags:["Display","Bateria","Conector"],cats:["Todos","Display","Bateria","Conector"],precos:[{l:"Display Moto G8",v:"~R$ 55,00"},{l:"Bateria iPhone 11",v:"~R$ 38,00"},{l:"Conector USB-C",v:"~R$ 10,00"}],site:"https://shopee.com.br/search?keyword=pecas+celular+atacado",whats:"",destaque:false},
+];
+const FORN_CATS=["Todos","Display","Bateria","Conector","Câmera"];
+let activeFCat="Todos";
+function buildFornFilter(){document.getElementById("forn-filter").innerHTML=FORN_CATS.map(c=>`<button class="ftag ${c===activeFCat?'active':''}" onclick="setFCat('${c}')">${c}</button>`).join("");}
+function setFCat(c){activeFCat=c;buildFornFilter();renderForn();}
+function renderForn(){
+  const tc=["green","blue","orange"];
+  document.getElementById("forn-list").innerHTML=FORNECEDORES.filter(f=>f.cats.includes(activeFCat)).map(f=>{
+    const prices=f.precos.map(p=>`<div class="pchip"><div class="pchip-label">${p.l}</div><div class="pchip-val">${p.v}</div></div>`).join("");
+    const tags=f.tags.slice(0,4).map((t,i)=>`<span class="ftag-item ${tc[i%3]}">${t}</span>`).join("");
+    const wBtn=f.whats?`<a class="btn-wf" href="https://wa.me/${f.whats}" target="_blank">💬 WhatsApp</a>`:"";
+    return `<div class="forn-card ${f.destaque?'destaque':''}">
+      <div class="forn-top"><div class="forn-logo">${f.logo}</div>
+        <div class="forn-info"><div class="forn-name">${f.name}${f.destaque?' ⭐':''}</div>
+          <div class="forn-city">📍 ${f.city}</div>
+          <div class="forn-desc">${f.desc}</div>
+          <div class="forn-tags">${tags}</div>
+        </div></div>
+      <div class="forn-prices">${prices}</div>
+      <div class="forn-actions"><a class="btn-site" href="${f.site}" target="_blank">🌐 Ver Site</a>${wBtn}</div>
+    </div>`;
+  }).join("");
+}
+
+function showPage(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".bnav").forEach(e=>e.classList.remove("active"));
+  document.getElementById("pg-"+p).classList.add("active");
+  document.getElementById("bn-"+p).classList.add("active");
+}
+
+// INIT
+goStep(1, true);
+buildBreadcrumb();
+buildFornFilter();
+renderForn();
+</script>
+</body>
+</html>
