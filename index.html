@@ -2007,29 +2007,54 @@ async function checkVersion(){
   const num = document.getElementById("version-num");
   num.textContent = "...";
   try {
-    // Pegar último commit do repositório (mais confiável)
-    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits?per_page=1&t=${Date.now()}`, {
-      signal: AbortSignal.timeout(5000),
-      headers: {"Cache-Control": "no-cache"}
-    });
+    // Usar a API de deployments do GitHub Pages — sem limite de rate
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/deployments?environment=github-pages&per_page=1`,
+      { signal: AbortSignal.timeout(6000) }
+    );
+
+    // Verificar se hit rate limit
+    if(res.status === 403 || res.status === 429){
+      // Fallback: pegar data do próprio arquivo HTML via HEAD request
+      const headRes = await fetch(window.location.href, {method:"HEAD", cache:"no-store", signal: AbortSignal.timeout(5000)});
+      const lastMod = headRes.headers.get("last-modified");
+      if(lastMod){
+        const date = new Date(lastMod);
+        const diffMin = Math.round((new Date() - date) / 60000);
+        let quando = diffMin < 1 ? "agora" : diffMin < 60 ? `${diffMin}min atrás` : diffMin < 1440 ? `${Math.round(diffMin/60)}h atrás` : `${Math.round(diffMin/1440)}d atrás`;
+        num.textContent = date.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+        badge.title = `Último deploy: ${date.toLocaleString("pt-BR")} (${quando})`;
+        if(diffMin < 10){ badge.style.color="var(--green)"; badge.style.borderColor="var(--green)"; }
+        else if(diffMin < 60){ badge.style.color="#f0b429"; badge.style.borderColor="#f0b429"; }
+        else { badge.style.color="rgba(255,255,255,.35)"; badge.style.borderColor="rgba(255,255,255,.1)"; }
+        showToast(`🔄 Site atualizado ${quando}`);
+        return;
+      }
+      throw new Error("rate limit");
+    }
+
     const data = await res.json();
-    if(!data[0]) throw new Error();
-    const commit = data[0];
-    const sha = commit.sha.slice(0,7);
-    const date = new Date(commit.commit.committer.date);
+    if(!data[0]) throw new Error("sem dados");
+
+    const deploy = data[0];
+    const date = new Date(deploy.created_at);
     const diffMin = Math.round((new Date() - date) / 60000);
     let quando = diffMin < 1 ? "agora" : diffMin < 60 ? `${diffMin}min atrás` : diffMin < 1440 ? `${Math.round(diffMin/60)}h atrás` : `${Math.round(diffMin/1440)}d atrás`;
+    const sha = deploy.sha?.slice(0,7) || "—";
     num.textContent = sha;
-    badge.title = `Atualizado ${quando}\n${date.toLocaleString("pt-BR")}`;
-
+    badge.title = `Deploy ${quando}\n${date.toLocaleString("pt-BR")}`;
     if(diffMin < 10){ badge.style.color="var(--green)"; badge.style.borderColor="var(--green)"; }
     else if(diffMin < 60){ badge.style.color="#f0b429"; badge.style.borderColor="#f0b429"; }
     else { badge.style.color="rgba(255,255,255,.35)"; badge.style.borderColor="rgba(255,255,255,.1)"; }
+    showToast(`🔄 Deploy ${quando} (${sha})`);
 
-    showToast(`🔄 Site atualizado ${quando} (${sha})`);
   } catch(e){
-    num.textContent = "—";
-    showToast("⚠️ Não foi possível verificar versão");
+    // Último fallback: mostrar hora atual do carregamento da página
+    const now = new Date();
+    num.textContent = now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    badge.title = `Página carregada às ${now.toLocaleString("pt-BR")}`;
+    badge.style.color = "rgba(255,255,255,.35)";
+    badge.style.borderColor = "rgba(255,255,255,.1)";
   }
 }
 
