@@ -252,6 +252,16 @@ textarea{resize:none;height:70px}
     <div id="olx-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px;background:var(--accent-light);color:var(--accent)"></div>
     <div id="olx-result" style="display:none"></div>
 
+    <!-- LOG DEBUG -->
+    <div style="margin-top:8px">
+      <button onclick="toggleLog()" style="background:none;border:none;color:var(--muted);font-family:'Mulish',sans-serif;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0">
+        🛠️ Ver log de debug
+      </button>
+      <div id="olx-log" style="display:none;background:#12151c;border-radius:10px;padding:12px;margin-top:6px">
+        <pre id="olx-log-content" style="font-size:11px;color:#a0aec0;white-space:pre-wrap;margin:0;font-family:monospace;line-height:1.6">Nenhuma análise executada ainda.</pre>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1459,43 +1469,66 @@ async function analisarOLX(){
   status.style.display = "block";
   status.style.background = "var(--accent-light)";
   status.style.color = "var(--accent)";
-  status.textContent = "🔍 Identificando modelo...";
   result.style.display = "none";
 
-  // Timer visual
-  let seg = 0;
-  const msgs = ["🔍 Identificando modelo...","📊 Calculando preços de mercado...","🔧 Estimando custo de reparo...","💰 Calculando lucro e margem...","🚩 Verificando alertas...","✅ Quase pronto..."];
-  const timer = setInterval(()=>{
-    seg++;
-    const msg = msgs[Math.min(seg-1, msgs.length-1)];
-    status.textContent = `${msg} (${seg}s)`;
-  }, 1000);
+  const log = [];
+  const addLog = (msg) => { log.push(`[${new Date().toLocaleTimeString("pt-BR")}] ${msg}`); updateLog(log); };
+  const t0 = Date.now();
 
-  // Não espera imagens — análise é instantânea
+  addLog("▶ Iniciando análise");
+  addLog(`🔗 URL: ${url.slice(0,60)}...`);
+  status.textContent = "🔍 Identificando modelo...";
+
+  // Extrair slug da URL — SÍNCRONO, sem await
   let slug = "";
   try {
     const urlObj = new URL(url);
     const parts = urlObj.pathname.split("/").filter(Boolean);
     slug = parts[parts.length - 1] || "";
+    addLog(`📎 Slug extraído: ${slug}`);
   } catch(e) {
     slug = url.split("?")[0].split("/").filter(Boolean).pop() || "";
+    addLog(`⚠️ URL parse error: ${e.message}`);
   }
-  const modelRaw = slug.replace(/-\d{6,}$/, "").replace(/-/g," ").trim().toLowerCase();
 
+  const modelRaw = slug.replace(/-\d{6,}$/, "").replace(/-/g," ").trim().toLowerCase();
+  addLog(`🔤 Model raw: "${modelRaw}"`);
+
+  status.textContent = "📊 Buscando no catálogo...";
   const modelKey = identificarModelo(modelRaw);
+  addLog(modelKey ? `✅ Modelo identificado: ${modelKey}` : `⚠️ Modelo não encontrado no catálogo — usando estimativa genérica`);
+
   const catalogParts = modelKey ? (CATALOG[modelKey] || CATALOG_DEFAULT[modelKey] || []) : [];
   const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
   const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
+  addLog(`💰 Custo tela: R$${custoTela} | Custo bateria: R$${custoBateria}`);
 
+  status.textContent = "🔧 Calculando reparo e lucro...";
   const defeitos = getDefeitosSelecionados();
+  addLog(`🔧 Defeitos selecionados: ${defeitos.length > 0 ? defeitos.map(d=>d.label).join(", ") : "nenhum"}`);
+
   const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
   _pecasExtras = [];
 
-  clearInterval(timer);
+  const elapsed = Date.now() - t0;
+  addLog(`✅ Análise concluída em ${elapsed}ms`);
+  addLog(`📊 Veredito: ${analise.veredito} | Lucro: R$${analise.lucro_estimado}`);
+
   status.style.display = "none";
   renderOLXResult(analise, _olxImages, url);
   btn.disabled = false;
   btn.textContent = "🔍 Analisar anúncio";
+}
+
+const _olxLog = [];
+function updateLog(log){
+  const el = document.getElementById("olx-log-content");
+  if(el) el.textContent = log.join("\n");
+}
+
+function toggleLog(){
+  const el = document.getElementById("olx-log");
+  if(el) el.style.display = el.style.display === "none" ? "block" : "none";
 }
 
 function identificarModelo(slug){
