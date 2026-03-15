@@ -786,30 +786,56 @@ async function checkUpdates(){
 }
 
 function extractPricesFromText(html){
-  // Remover tags HTML e normalizar
-  const text = html.replace(/<[^>]+>/g,"\n").replace(/&amp;/g,"&").replace(/&nbsp;/g," ").replace(/R\$\s*/g,"R$ ");
-  const lines = text.split(/\n/).map(l=>l.trim()).filter(Boolean);
   const prices = {};
+  // Parsear tabelas do HTML da Floritec
+  // Cada linha da tabela tem: | modelo | R$ valor |
+  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+  const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
 
-  for(const key of Object.keys(CATALOG_DEFAULT)){
-    // Nome curto sem prefixo de marca para buscar no doc
-    const shortName = key
-      .replace(/^Galaxy /,"").replace(/^iPhone /,"").replace(/^Moto /,"")
-      .replace(/^Redmi /,"").replace(/^Poco /,"").replace(/^Mi /,"")
-      .replace(/^LG /,"").replace(/^Asus /,"").replace(/^Realme /,"")
-      .replace(/^Infinix /,"").trim();
+  let rowMatch;
+  while((rowMatch = rowRegex.exec(html)) !== null){
+    const rowContent = rowMatch[1];
+    const cells = [];
+    let cellMatch;
+    const cellRe = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+    while((cellMatch = cellRe.exec(rowContent)) !== null){
+      // Limpar HTML de dentro da célula
+      const cellText = cellMatch[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&nbsp;/g," ").trim();
+      cells.push(cellText);
+    }
+    if(cells.length < 2) continue;
 
-    for(const line of lines){
-      const lineUp = line.toUpperCase();
-      if(!lineUp.includes(shortName.toUpperCase())) continue;
-      // Só pegar linhas que TAMBÉM tenham R$
-      const priceMatch = line.match(/R\$\s*([\d]+,\d{2})/);
-      if(!priceMatch) continue;
-      const price = parseFloat(priceMatch[1].replace(",","."));
-      if(price < 10 || price > 10000) continue;
-      if(!prices[key]) prices[key] = [];
-      // Evitar duplicatas
-      if(!prices[key].includes(price)) prices[key].push(price);
+    // Célula 0 = modelo(s), Célula 1 = valor
+    const modelCell = cells[0];
+    const valueCell = cells[cells.length-1];
+
+    // Extrair preço
+    const priceMatch = valueCell.match(/R\$\s*([\d]+,\d{2})/);
+    if(!priceMatch) continue;
+    const price = parseFloat(priceMatch[1].replace(",","."));
+    if(price < 10 || price > 10000) continue;
+
+    // Modelos podem ser separados por |
+    const modelParts = modelCell.split("|").map(s=>s.trim()).filter(Boolean);
+
+    for(const mp of modelParts){
+      // Tentar encontrar qual chave do catálogo corresponde
+      const mpUp = mp.toUpperCase();
+
+      for(const key of Object.keys(CATALOG_DEFAULT)){
+        const keyUp = key.toUpperCase();
+        // Nome curto sem prefixo
+        const shortKey = keyUp
+          .replace("GALAXY ","").replace("IPHONE ","").replace("MOTO ","")
+          .replace("REDMI ","").replace("POCO ","").replace("MI ","")
+          .replace("LG ","").replace("ASUS ","").replace("REALME ","").replace("INFINIX ","");
+
+        // Verificar se o modelo da linha contém o nome curto da chave
+        if(mpUp.includes(shortKey) || shortKey.includes(mpUp)){
+          if(!prices[key]) prices[key] = [];
+          if(!prices[key].includes(price)) prices[key].push(price);
+        }
+      }
     }
   }
   return prices;
