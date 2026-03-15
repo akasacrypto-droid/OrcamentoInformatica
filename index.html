@@ -1190,7 +1190,15 @@ function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
   // Mapa tipo → chave no NP_*
-  const NP_MAPS = {"Flex Carga": NP_FLEX};
+  const NP_MAPS = {
+    "Display":         NP_DISPLAY,
+    "Bateria":         NP_BATERIA,
+    "Flex Carga":      NP_FLEX,
+    "Flex Power":      NP_FLEX_POWER,
+    "Câmera Traseira": NP_CAMERA_TRASEIRA,
+    "Câmera Frontal":  NP_CAMERA_FRONTAL,
+    "Alto-falante":    NP_ALTO_FALANTE,
+  };
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
     const npMap = NP_MAPS[tipo];
@@ -1215,6 +1223,31 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
+
+// ══ NOVAPEÇAS — IDs por categoria ══
+const NP_DISPLAY = {
+  "iPhone 5G":1005,"iPhone 5S":1008,
+  "iPhone 6G":15880,"iPhone 6G Plus":15889,"iPhone 6S":15895,"iPhone 6S Plus":15898,
+  "iPhone 7G":14351,"iPhone 7 Plus":14354,
+};
+const NP_BATERIA = {
+  "iPhone 5S":7728,
+  "iPhone 6G":2642,"iPhone 6G Plus":7025,"iPhone 6S":6993,"iPhone 6S Plus":7025,
+  "iPhone 7G":25413,"iPhone 7 Plus":26531,
+};
+const NP_FLEX_POWER = {
+  "iPhone 6G":6740,"iPhone 6G Plus":6743,"iPhone 6S":6746,"iPhone 6S Plus":6749,
+  "iPhone 7G":6752,"iPhone 7 Plus":6755,
+};
+const NP_CAMERA_TRASEIRA = {
+  "iPhone 7G":16720,"iPhone 7 Plus":16726,
+};
+const NP_CAMERA_FRONTAL = {
+  "iPhone 7G":19170,"iPhone 7 Plus":19173,
+};
+const NP_ALTO_FALANTE = {
+  "iPhone 7G":17923,"iPhone 7 Plus":17576,
+};
 const NP_FLEX = {
   "iPhone 6G": 25899,
   "iPhone 6G Plus": 25902,
@@ -1384,11 +1417,11 @@ const NP_FLEX = {
   "Infinix Note 10 Pro": 28226,
 };
 function novapecasLink(tipo,model){
-  // Se for Flex Carga e tiver ID mapeado, link direto
-  if(tipo === "Flex Carga" && NP_FLEX[model]){
-    return `https://novapecascell.com.br/produto/${NP_FLEX[model]}`;
-  }
-  // Fallback: busca pelo modelo
+  const npMap = {"Display":NP_DISPLAY,"Bateria":NP_BATERIA,"Flex Carga":NP_FLEX,
+    "Flex Power":NP_FLEX_POWER,"Câmera Traseira":NP_CAMERA_TRASEIRA,
+    "Câmera Frontal":NP_CAMERA_FRONTAL,"Alto-falante":NP_ALTO_FALANTE};
+  const id = npMap[tipo]?.[model];
+  if(id) return `https://novapecascell.com.br/produto/${id}`;
   const palavras = model.split(" ").slice(0,3).join(" ");
   return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(palavras)}`;
 }
