@@ -1348,125 +1348,152 @@ async function analisarOLX(){
   status.style.display = "block";
   status.style.background = "var(--accent-light)";
   status.style.color = "var(--accent)";
-  status.textContent = "🔄 Buscando dados do anúncio...";
+  status.textContent = "🔍 Identificando modelo...";
   result.style.display = "none";
 
-  let pageText = "";
-  let images = [];
+  // Extrair modelo da URL
+  // ex: /iphone-11-pro-max-1478776962 -> "iphone 11 pro max"
+  const slug = url.split("/").find(p => /[a-z].*\d{6,}/.test(p)) || url.split("/").pop() || "";
+  const modelRaw = slug.replace(/-?\d{6,}.*$/, "").replace(/-/g," ").trim().toLowerCase();
 
-  // Extrair modelo do URL (ex: iphone-11-pro-max)
-  const urlModel = url.split("/").pop()?.split("?")[0]?.replace(/-\d+$/, "").replace(/-/g," ") || "";
+  // Identificar modelo no catálogo
+  const modelKey = identificarModelo(modelRaw);
+  const catalogParts = modelKey ? (CATALOG[modelKey] || CATALOG_DEFAULT[modelKey] || []) : [];
 
-  // Tentar proxies
-  const proxies = [
-    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
-    `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  ];
+  // Calcular custo de reparo com base no catálogo
+  const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
+  const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
 
-  for(const proxyUrl of proxies){
-    try {
-      const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
-      let html = "";
-      if(proxyUrl.includes("allorigins")){
-        const d = await res.json();
-        html = d.contents || "";
-      } else {
-        html = await res.text();
-      }
-      if(!html || html.length < 500) continue;
+  // Tabela de preços de mercado BR por modelo
+  const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url);
 
-      const tmpDoc = new DOMParser().parseFromString(html, "text/html");
-
-      const title = tmpDoc.querySelector("h1")?.textContent?.trim() ||
-                    tmpDoc.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
-      const priceEl = tmpDoc.querySelector('[class*="price"],[data-testid*="price"]');
-      const price = priceEl?.textContent?.trim() || "";
-      const descEl = tmpDoc.querySelector('[class*="description"],[data-testid*="description"]');
-      const desc = descEl?.textContent?.trim().slice(0,500) || "";
-      const loc = tmpDoc.querySelector('[class*="location"],[data-testid*="location"]')?.textContent?.trim() || "";
-
-      // Imagens
-      const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')].map(m=>m.getAttribute("content")).filter(Boolean);
-      const srcImgs = [...tmpDoc.querySelectorAll("img")].map(i=>i.src||i.getAttribute("data-src")||"").filter(s=>s&&s.startsWith("http")&&(s.includes("olx")||s.includes("imagens")||s.includes("static")));
-      images = [...new Set([...ogImgs,...srcImgs])].slice(0,4);
-
-      if(title || price || desc){
-        pageText = `TÍTULO: ${title}\nPREÇO: ${price}\nDESCRIÇÃO: ${desc}\nLOCALIZAÇÃO: ${loc}`;
-        break;
-      }
-    } catch(e){ continue; }
-  }
-
-  // Se não conseguiu nada, usar dados da URL
-  if(!pageText){
-    pageText = `MODELO PELO LINK: ${urlModel}\nLINK: ${url}\n\nNota: Não foi possível acessar a página. Analise pelo modelo identificado na URL e forneça estimativas baseadas no mercado brasileiro atual.`;
-  }
-
-  status.textContent = "🤖 IA analisando...";
-
-  try {
-    const systemPrompt = `Você é especialista em compra e revenda de celulares usados no Brasil para assistência técnica.
-Analise anúncios da OLX e responda APENAS em JSON válido, sem markdown.
-Use preços realistas do mercado brasileiro de 2025.
-Se faltar informação, estime com base no modelo identificado.`;
-
-    const userPrompt = `Analise este anúncio para compra e revenda:
-
-${pageText}
-LINK: ${url}
-
-Responda em JSON:
-{
-  "modelo_detectado": "modelo completo",
-  "preco_anuncio": numero,
-  "preco_maximo_recomendado": numero,
-  "condicao_estimada": "descrição",
-  "defeitos_identificados": ["defeito1"],
-  "estimativa_reparo": {
-    "tela": numero,
-    "bateria": numero,
-    "carcaca": numero,
-    "camera": numero,
-    "outros": numero,
-    "total": numero
-  },
-  "preco_revenda_medio": numero,
-  "lucro_estimado": numero,
-  "margem_percent": numero,
-  "bandeiras_vermelhas": ["alerta1"],
-  "pontos_positivos": ["ponto1"],
-  "veredito": "verde|amarelo|vermelho",
-  "veredito_texto": "texto curto",
-  "resumo": "2-3 frases"
-}`;
-
-    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{role:"user", content: userPrompt}]
-      })
-    });
-
-    const apiData = await apiRes.json();
-    const rawText = apiData.content?.map(c=>c.text||"").join("") || "";
-    const clean = rawText.replace(/```json|```/g,"").trim();
-    const analysis = JSON.parse(clean);
-
-    renderOLXResult(analysis, images, url);
-    status.style.display = "none";
-
-  } catch(err){
-    status.style.background = "var(--red-light)";
-    status.style.color = "var(--red)";
-    status.textContent = "❌ Erro na análise: " + err.message;
-  }
-
+  status.style.display = "none";
+  renderOLXResult(analise, [], url);
   btn.disabled = false;
   btn.textContent = "🔍 Analisar";
+}
+
+function identificarModelo(slug){
+  const slugUp = slug.toUpperCase();
+  // Tentar encontrar chave no catálogo
+  for(const key of Object.keys(CATALOG_DEFAULT)){
+    const keyUp = key.toUpperCase();
+    const shortKey = keyUp
+      .replace("GALAXY ","").replace("IPHONE ","").replace("MOTO ","")
+      .replace("REDMI ","").replace("POCO ","").replace(/^MI /,"")
+      .replace("LG ","").replace("ASUS ","").replace("REALME ","").replace("INFINIX ","");
+    if(slugUp.includes(shortKey) || shortKey.split(" ").every(p=>slugUp.includes(p))){
+      return key;
+    }
+  }
+  return null;
+}
+
+function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url){
+  // Base de conhecimento de preços de revenda BR (valores médios 2025)
+  const mercado = {
+    // iphones
+    "iphone 5": {revenda:250, max:120},
+    "iphone 6": {revenda:300, max:150},
+    "iphone 7": {revenda:400, max:200},
+    "iphone 8": {revenda:500, max:250},
+    "iphone x": {revenda:700, max:350},
+    "iphone xr": {revenda:900, max:450},
+    "iphone xs": {revenda:850, max:400},
+    "iphone xs max": {revenda:1000, max:500},
+    "iphone 11": {revenda:1100, max:600},
+    "iphone 11 pro": {revenda:1400, max:750},
+    "iphone 11 pro max": {revenda:1600, max:850},
+    "iphone 12": {revenda:1500, max:800},
+    "iphone 12 pro": {revenda:1700, max:900},
+    "iphone 12 pro max": {revenda:2000, max:1100},
+    "iphone 13": {revenda:2200, max:1300},
+    "iphone 13 pro": {revenda:2800, max:1700},
+    "iphone 13 pro max": {revenda:3200, max:1900},
+    "iphone 14": {revenda:3000, max:1800},
+    "iphone 14 pro": {revenda:3800, max:2300},
+    "iphone 14 pro max": {revenda:4200, max:2600},
+    "iphone 15": {revenda:4000, max:2600},
+    "iphone 15 pro": {revenda:5500, max:3500},
+    "iphone 15 pro max": {revenda:6500, max:4000},
+    // samsung
+    "galaxy a": {revenda:500, max:250},
+    "galaxy s": {revenda:1200, max:650},
+    "galaxy note": {revenda:1000, max:550},
+    // moto
+    "moto g": {revenda:400, max:200},
+    "moto edge": {revenda:800, max:400},
+    // xiaomi
+    "redmi": {revenda:450, max:220},
+    "poco": {revenda:600, max:300},
+  };
+
+  // Encontrar preço base
+  let base = null;
+  const mu = modelRaw.toLowerCase();
+  for(const [k,v] of Object.entries(mercado)){
+    if(mu.includes(k)){ base = v; break; }
+  }
+  if(!base){
+    // Genérico
+    if(mu.includes("iphone")) base = {revenda:1000, max:500};
+    else if(mu.includes("galaxy")) base = {revenda:600, max:300};
+    else if(mu.includes("moto")) base = {revenda:400, max:200};
+    else base = {revenda:500, max:250};
+  }
+
+  const custoCamera = Math.round(base.revenda * 0.04);
+  const custoOutros = 50;
+  const custoTotal = (custoTela||Math.round(base.revenda*0.08)) + (custoBateria||Math.round(base.revenda*0.04)) + custoCamera + custoOutros;
+  const precoCompra = base.max;
+  const revenda = base.revenda;
+  const lucro = revenda - precoCompra - custoTotal;
+  const margem = revenda > 0 ? Math.round((lucro/revenda)*100) : 0;
+
+  // Alertas
+  const bandeiras = [];
+  const positivos = [];
+  if(mu.includes("iphone 11 pro") || mu.includes("iphone 12 pro") || mu.includes("13 pro") || mu.includes("14 pro") || mu.includes("15 pro")){
+    bandeiras.push("Display OLED caro — tela pode custar mais de R$300");
+    bandeiras.push("Face ID: se estiver com defeito, conserto é inviável");
+  }
+  if(mu.includes("iphone x") || mu.includes("iphone xs")){
+    bandeiras.push("Face ID sensível — verifique funcionamento");
+  }
+  if(mu.includes("placa") || mu.includes("motherboard")){
+    bandeiras.push("Possível defeito de placa — evitar");
+  }
+  if(lucro > 400) positivos.push("Boa margem de lucro estimada");
+  if(custoTela > 0) positivos.push(`Tela disponível na Floritec por ${fmt(custoTela)}`);
+  if(custoBateria > 0) positivos.push(`Bateria disponível na Floritec por ${fmt(custoBateria)}`);
+  positivos.push("Modelo com boa saída no mercado");
+
+  const veredito = lucro > 300 ? "verde" : lucro > 100 ? "amarelo" : "vermelho";
+  const modelFormatado = modelKey || modelRaw.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+
+  return {
+    modelo_detectado: modelFormatado,
+    preco_anuncio: 0,
+    preco_maximo_recomendado: precoCompra,
+    condicao_estimada: "Verificar ao ver o aparelho pessoalmente",
+    defeitos_identificados: ["Verificar tela", "Verificar bateria", "Testar Face ID/Touch ID"],
+    estimativa_reparo: {
+      tela: custoTela || Math.round(base.revenda*0.08),
+      bateria: custoBateria || Math.round(base.revenda*0.04),
+      carcaca: 0,
+      camera: custoCamera,
+      outros: custoOutros,
+      total: custoTotal
+    },
+    preco_revenda_medio: revenda,
+    lucro_estimado: lucro,
+    margem_percent: margem,
+    bandeiras_vermelhas: bandeiras,
+    pontos_positivos: positivos,
+    veredito,
+    veredito_texto: veredito==="verde"?"Boa oportunidade se o aparelho estiver em bom estado":veredito==="amarelo"?"Avalie bem o estado antes de comprar":"Margem muito baixa ou risco alto",
+    resumo: `Modelo identificado: ${modelFormatado}. Preço máximo recomendado para compra: ${fmt(precoCompra)}. Após reparo estimado de ${fmt(custoTotal)}, revenda média de ${fmt(revenda)} com lucro de ${fmt(lucro)}.`
+  };
 }
 
 function renderOLXResult(a, images, url){
