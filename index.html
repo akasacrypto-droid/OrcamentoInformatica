@@ -49,7 +49,7 @@ nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;jus
 .defect-info{flex:1}
 .defect-name{font-weight:900;font-size:14px}
 .defect-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.has-price{font-size:10px;background:var(--green-light);color:var(--green);border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}.has-np{font-size:10px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}
+.has-price{font-size:10px;background:var(--green-light);color:var(--green);border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}
 .defect-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .defect-card.selected .defect-chk{background:var(--accent);border-color:var(--accent)}
 .defect-chk svg{display:none}
@@ -168,7 +168,15 @@ textarea{resize:none;height:70px}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 
-@media(min-width:768px){nav{padding:14px 32px}.nav-logo{font-size:26px}.breadcrumb,.page{max-width:700px;margin:0 auto}.page{padding-bottom:90px}#pg-olx>div,#pg-atualizacao>div{max-width:700px;margin:0 auto}.bottom-nav{left:50%;transform:translateX(-50%);width:420px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}.brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}.brand-card{padding:22px 14px;border-radius:18px}.brand-emoji{font-size:34px}.brand-name{font-size:13px}.model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}.price-val{font-size:26px}.price-row{padding:14px 18px}.overlay{align-items:center}.modal{border-radius:20px;max-width:500px;margin:0 auto}.modal-orc{max-height:85vh;border-radius:20px}}@media(min-width:1024px){.page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div{max-width:760px}}
+@media(min-width:768px){nav{padding:14px 32px}.nav-logo{font-size:26px}.breadcrumb,.page{max-width:700px;margin:0 auto}.page{padding-bottom:90px}#pg-olx>div,#pg-atualizacao>div,#pg-logs>div{max-width:700px;margin:0 auto}.bottom-nav{left:50%;transform:translateX(-50%);width:480px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}.brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}.brand-card{padding:22px 14px;border-radius:18px}.brand-emoji{font-size:34px}.brand-name{font-size:13px}.model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}.price-val{font-size:26px}.price-row{padding:14px 18px}.overlay{align-items:center}.modal{border-radius:20px;max-width:500px;margin:0 auto}.modal-orc{max-height:85vh;border-radius:20px}}
+@media(min-width:1024px){.page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div,#pg-logs>div{max-width:760px}}
+.log-entry{padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:12px;font-family:monospace;line-height:1.5;word-break:break-all}
+.log-entry.error{background:#fff0f2;border-left:3px solid var(--red);color:var(--red)}
+.log-entry.warn{background:#fff4e6;border-left:3px solid var(--orange);color:var(--orange)}
+.log-entry.info{background:#f0f4ff;border-left:3px solid var(--accent);color:var(--accent)}
+.log-entry.success{background:var(--green-light);border-left:3px solid var(--green);color:#077a4a}
+.log-time{font-size:10px;opacity:.6;margin-right:6px}
+.log-badge{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:700;margin-right:5px;text-transform:uppercase}
 </style>
 </head>
 <body>
@@ -295,6 +303,38 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
+
+<!-- PAGE: LOGS -->
+<div class="page" id="pg-logs">
+  <div style="padding:16px;padding-bottom:80px">
+    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🛠️ Painel de Erros</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Log completo de todas as ações e erros do app</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <button onclick="filterLogs('all')" id="log-btn-all" style="background:var(--dark);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Todos</button>
+      <button onclick="filterLogs('error')" id="log-btn-error" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">❌ Erros</button>
+      <button onclick="filterLogs('warn')" id="log-btn-warn" style="background:#fff4e6;color:var(--orange);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">⚠️ Avisos</button>
+      <button onclick="filterLogs('info')" id="log-btn-info" style="background:var(--accent-light);color:var(--accent);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">ℹ️ Info</button>
+      <button onclick="filterLogs('success')" id="log-btn-success" style="background:var(--green-light);color:#077a4a;border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">✅ OK</button>
+      <button onclick="clearLogs()" style="background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto">🗑 Limpar</button>
+    </div>
+
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px">
+        <span id="log-count">0 entradas</span>
+        <span id="log-error-count" style="color:var(--red)">0 erros</span>
+      </div>
+      <div id="log-container" style="max-height:60vh;overflow-y:auto">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Nenhum log ainda — use o app para gerar logs</div>
+      </div>
+    </div>
+
+    <button onclick="exportLogs()" style="width:100%;background:var(--dark);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer">
+      📋 Copiar logs
+    </button>
+  </div>
+</div>
+
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
   <button class="bnav active" id="bn-orcamento" onclick="showPage('orcamento')">
@@ -309,6 +349,11 @@ textarea{resize:none;height:70px}
   <button class="bnav" id="bn-atualizacao" onclick="showPage('atualizacao')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
     Atualizar
+  </button>
+  <button class="bnav" id="bn-logs" onclick="showPage('logs')" style="position:relative">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <span id="log-error-badge" style="display:none;position:absolute;top:4px;right:8px;background:var(--red);color:#fff;border-radius:999px;min-width:16px;height:16px;font-size:10px;font-weight:900;align-items:center;justify-content:center;padding:0 3px">0</span>
+    Logs
   </button>
 </div>
 
@@ -796,9 +841,9 @@ let CATALOG = {};
 function loadCatalog(){
   try{
     const saved = localStorage.getItem("techfix_catalog");
-    if(saved) CATALOG = JSON.parse(saved);
-    else CATALOG = {...CATALOG_DEFAULT};
-  }catch(e){ CATALOG = {...CATALOG_DEFAULT}; }
+    if(saved){ CATALOG = JSON.parse(saved); appLog("success","Catálogo","Catálogo carregado do localStorage"); }
+    else{ CATALOG = {...CATALOG_DEFAULT}; appLog("info","Catálogo","Catálogo padrão carregado"); }
+  }catch(e){ CATALOG = {...CATALOG_DEFAULT}; appLog("error","Catálogo","Erro ao carregar catálogo",e.message); }
 }
 function saveCatalog(){
   localStorage.setItem("techfix_catalog",JSON.stringify(CATALOG));
@@ -957,7 +1002,8 @@ async function syncFloritec(){
       status.style.display = "block";
       status.style.background = "var(--green-light)";
       status.style.color = "#077a4a";
-      status.textContent = `✅ Nenhuma mudança! Catálogo está atualizado.`;
+      appLog("success","Sync Floritec","Catálogo sincronizado","Nenhuma mudança encontrada");
+    status.textContent = `✅ Nenhuma mudança! Catálogo está atualizado.`;
     } else {
       status.style.display = "block";
       status.style.background = "var(--accent-light)";
@@ -973,6 +1019,7 @@ async function syncFloritec(){
 
   } catch(err){
     status.style.display = "block";
+    appLog("error","Sync Floritec","Falha ao sincronizar",err.message);
     status.style.background = "var(--red-light)";
     status.style.color = "var(--red)";
     status.textContent = "❌ "+err.message;
@@ -1040,23 +1087,77 @@ function applyAllSyncChanges(){
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
 // ══════════════════════════════════════
-// ══ NOVAPEÇAS — IDs por modelo ══
-const NP = {
-  "iPhone 5G":      { display:1005, bateria:7728 },
-  "iPhone 5S":      { display:1008, bateria:7728 },
-  "iPhone 6G":      { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
-  "iPhone 6G Plus": { display:15889, bateria:7025, flexCarga:25902, flexPower:6743 },
-  "iPhone 6S":      { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
-  "iPhone 6S Plus": { display:15898, bateria:7025, flexCarga:25908, flexPower:6749 },
-  "iPhone 7G":      { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
-  "iPhone 7 Plus":  { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
-};
-const NP_KEY = {
-  "Display":"display", "Bateria":"bateria", "Flex Carga":"flexCarga",
-  "Flex Power":"flexPower", "Camara Traseira":"cameraTraseira",
-  "Camara Frontal":"cameraFrontal", "Alto-falante":"altoFalante",
-  "Microfone":"microfone", "Botao Home":"botaoHome", "Carcaca":"carcaca",
-};
+// ══ SISTEMA DE LOGS ══
+const _logs = [];
+let _logFilter = 'all';
+
+function appLog(level, module, msg, detail=''){
+  const entry = {
+    level,  // 'error' | 'warn' | 'info' | 'success'
+    module, // ex: 'Orçamento', 'OLX Analyse', 'Sync', 'UI'
+    msg,
+    detail,
+    time: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+    ts: Date.now()
+  };
+  _logs.unshift(entry);
+  if(_logs.length > 500) _logs.pop();
+
+  // Atualizar badge de erro
+  const erros = _logs.filter(l=>l.level==='error').length;
+  const badge = document.getElementById('log-error-badge');
+  const countEl = document.getElementById('log-error-count');
+  if(badge){ badge.style.display = erros>0?'flex':'none'; badge.textContent=erros; }
+  if(countEl) countEl.textContent = erros+' erro(s)';
+
+  // Re-renderizar se painel aberto
+  if(document.getElementById('pg-logs')?.classList.contains('active')) renderLogs();
+}
+
+function renderLogs(){
+  const container = document.getElementById('log-container');
+  const countEl = document.getElementById('log-count');
+  if(!container) return;
+  const filtered = _logFilter==='all' ? _logs : _logs.filter(l=>l.level===_logFilter);
+  if(countEl) countEl.textContent = filtered.length+' entrada(s)';
+  if(!filtered.length){
+    container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Nenhum log para o filtro selecionado</div>';
+    return;
+  }
+  const icons = {error:'❌', warn:'⚠️', info:'ℹ️', success:'✅'};
+  container.innerHTML = filtered.map(l=>`
+    <div class="log-entry ${l.level}">
+      <span class="log-time">${l.time}</span>
+      <span class="log-badge">${icons[l.level]||'•'} ${l.module}</span>
+      <strong>${l.msg}</strong>
+      ${l.detail ? `<div style="margin-top:3px;opacity:.75;font-size:11px">${l.detail}</div>` : ''}
+    </div>
+  `).join('');
+}
+
+function filterLogs(level){
+  _logFilter = level;
+  document.querySelectorAll('[id^="log-btn-"]').forEach(b=>b.style.opacity='0.5');
+  const btn = document.getElementById('log-btn-'+level);
+  if(btn) btn.style.opacity='1';
+  renderLogs();
+}
+
+function clearLogs(){
+  _logs.length = 0;
+  const badge = document.getElementById('log-error-badge');
+  if(badge) badge.style.display='none';
+  renderLogs();
+}
+
+function exportLogs(){
+  const txt = _logs.map(l=>`[${l.time}] [${l.level.toUpperCase()}] [${l.module}] ${l.msg}${l.detail?' — '+l.detail:''}`).join('\n');
+  navigator.clipboard?.writeText(txt).then(()=>showToast('✅ Logs copiados!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=txt;ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✅ Copiado!');
+  });
+}
+
 
 const BRANDS = [
   {id:"apple",    name:"Apple",       emoji:"🍎", test: k=>k.startsWith("iPhone")},
@@ -1138,7 +1239,7 @@ function buildBC(){
   if(state.step===4) h+=`<span class="bc-sep">›</span><span class="bc-item active">Preços</span>`;
   document.getElementById("breadcrumb").innerHTML=h;
 }
-function selectBrand(id){ state.brand=id; state.model=null; state.defects=[]; document.getElementById("modelFilter").value=""; goStep(2); }
+function selectBrand(id){ appLog("info","Orçamento",`Marca selecionada: ${BRANDS.find(b=>b.id===id)?.name||id}`); state.brand=id; state.model=null; state.defects=[]; document.getElementById("modelFilter").value=""; goStep(2); }
 function renderModels(){
   const b=BRANDS.find(x=>x.id===state.brand);
   document.getElementById("step2-title").textContent=`${b.emoji} Selecione o modelo`;
@@ -1155,20 +1256,17 @@ function renderModels(){
     : `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Nenhum modelo encontrado</div>`;
 }
 function filterModels(){ renderModels(); }
-function selectModel(m){ state.model=m; state.defects=[]; goStep(3); }
+function selectModel(m){ appLog("info","Orçamento",`Modelo selecionado: ${m}`); state.model=m; state.defects=[]; goStep(3); }
 function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
-  const _npM=NP[state.model]||{};
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
-    const hasNP=NP_KEY[tipo]&&_npM[NP_KEY[tipo]];
     const sel=state.defects.includes(tipo)?"selected":"";
-    const npBadge=hasNP?'<span class="has-np">🔵 NP</span>':'';
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
       <div class="defect-info">
-        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${npBadge}</div>
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}</div>
         <div class="defect-sub">${info.desc}</div>
       </div>
       <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -1184,7 +1282,7 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function npLink(tipo,model){ const id=NP[model]&&NP_KEY[tipo]?NP[model][NP_KEY[tipo]]:null; if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`; return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`; }
+function npLink(tipo,model){ appLog("info","NovaPeças",`Busca: ${tipo} — ${model}`); return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1252,6 +1350,7 @@ function confirmPrice(){
   const {ck,model,tipo,q,c}=pendingPrice;
   const info=DEFECT_TIPOS[tipo]||{icon:"🔧"};
   cart[ck]={id:ck,icon:info.icon,name:`${tipo} — ${model}`,desc:`${q} · Custo ref.: ${c>0?fmt(c):"—"}`,qty:1,price,custo:c};
+  appLog("success","Orçamento",`Peça adicionada: ${tipo} — ${model}`,`Qualidade: ${q} | Custo: ${c>0?fmt(c):"—"} | Cobrança: ${fmt(price)}`);
   closePriceModal();updateBadge();renderPrices();showToast("✅ Adicionado!");
 }
 
@@ -1379,7 +1478,8 @@ function buildMsg(){
 }
 function copyMsg(){
   const items=Object.values(cart), moItems=Object.values(maoObra);
-  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  if(!items.length&&!moItems.length){appLog('warn','Orçamento','Copiar: nenhum item no orçamento');alert("Adicione pelo menos um item.");return;}
+  appLog('info','Orçamento','Mensagem copiada',`${items.length} peça(s)`);
   const msg=buildMsg();
   navigator.clipboard?.writeText(msg).then(()=>showToast("✅ Mensagem copiada! Cole no WhatsApp")).catch(()=>{
     const ta=document.createElement("textarea");ta.value=msg;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);showToast("✅ Copiado!");
@@ -1387,7 +1487,8 @@ function copyMsg(){
 }
 function sendWhats(){
   const items=Object.values(cart), moItems=Object.values(maoObra);
-  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  if(!items.length&&!moItems.length){appLog('warn','Orçamento','WhatsApp: nenhum item no orçamento');alert("Adicione pelo menos um item.");return;}
+  appLog('success','Orçamento','Orçamento enviado via WhatsApp',`${items.length} peça(s), ${moItems.length} serviço(s)`);
   const tel=document.getElementById("cli_tel")?.value.trim().replace(/\D/g,"")||"";
   const msg=buildMsg();
   window.open(tel?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
@@ -1609,6 +1710,7 @@ async function analisarOLX(){
   } catch(err) {
     addLog(`❌ ERRO: ${err.message}`);
     addLog(`📍 Stack: ${err.stack?.split("\n")[1]||""}`);
+    appLog("error","OLX Analyse","Erro na análise",err.message);
     status.style.background = "var(--red-light)";
     status.style.color = "var(--red)";
     status.textContent = "❌ Erro na análise — veja o log de debug";
@@ -2152,7 +2254,7 @@ function gerarCopy(a){
 
   const copies = {
     verde: [
-      `Oi, tudo bem? Tenho interesse no ${modelo}, ainda tá disponível?\n\nConsigo pagar *${ofertaStr}* à vista agora. Me avisa! 🤝`,
+      `Oi! Vi seu ${modelo} na OLX, tenho interesse.\n\nAparelho usado sempre tem algum detalhe, então não consigo pagar o valor cheio. Pago *${ofertaStr}* à vista agora. Se fechar, busco hoje ainda! 🤝`,
 
       `Olá! Me interessei pelo seu ${modelo}.\n\nPago *${ofertaStr}* à vista. Pagamento na hora, sem enrolação. Fecha? 😊`,
     ],
@@ -2248,6 +2350,7 @@ async function checkVersion(){
 loadCatalog();
 renderBrands();
 updateBadge();
+appLog("success","App","TechFix iniciado",`${new Date().toLocaleString("pt-BR")}`);
 renderOlxDefeitos();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
