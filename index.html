@@ -1417,38 +1417,30 @@ async function tentarCarregarImagens(){
   preview.style.display = "none";
   imgStatus.style.display = "none";
 
-  // Tentar puxar HTML via proxy para extrair imagens
   try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(8000)});
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(4000)});
     const data = await res.json();
     const html = data.contents || "";
     if(!html) return;
-
     const tmpDoc = new DOMParser().parseFromString(html, "text/html");
-
-    // og:image geralmente tem as fotos do anúncio
-    const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"], meta[name="og:image"]')]
+    const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')]
       .map(m => m.getAttribute("content")).filter(Boolean);
-
-    // Também tentar pegar de scripts JSON (OLX coloca fotos em JSON embutido)
     const scripts = [...tmpDoc.querySelectorAll("script")].map(s=>s.textContent);
     const jsonImgs = [];
     for(const s of scripts){
       const matches = [...s.matchAll(/"url"\s*:\s*"(https:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)];
       matches.forEach(m => jsonImgs.push(m[1].replace(/\\u002F/g,"/").replace(/\\\//g,"/")));
     }
-
     _olxImages = [...new Set([...ogImgs, ...jsonImgs])].filter(u=>!u.includes("logo")&&!u.includes("icon")).slice(0,5);
-
     if(_olxImages.length > 0){
       preview.style.display = "flex";
       preview.innerHTML = _olxImages.map(img=>
-        `<img src="${img}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" crossorigin="anonymous" onerror="this.style.display='none'">`
+        `<img src="${img}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" onerror="this.style.display='none'">`
       ).join("");
       imgStatus.style.display = "block";
-      imgStatus.textContent = `🖼️ ${_olxImages.length} imagem(ns) carregada(s)`;
+      imgStatus.textContent = `🖼️ ${_olxImages.length} foto(s) carregada(s)`;
     }
-  } catch(e){ /* silencioso */ }
+  } catch(e){ /* silencioso — sem imagens */ }
 }
 
 async function analisarOLX(){
@@ -1470,7 +1462,7 @@ async function analisarOLX(){
   status.textContent = "🔍 Identificando modelo...";
   result.style.display = "none";
 
-  // Extrair modelo da URL
+  // Não espera imagens — análise é instantânea
   let slug = "";
   try {
     const urlObj = new URL(url);
