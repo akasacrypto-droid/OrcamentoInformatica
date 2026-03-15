@@ -220,25 +220,30 @@ textarea{resize:none;height:70px}
   <div style="padding:16px;padding-bottom:80px">
 
     <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🔍 OLX Analyse</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link do anúncio e a IA analisa se vale a pena comprar</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link, o preço e a condição — a IA analisa tudo</div>
 
     <input type="url" id="olx-url" placeholder="https://go.olx.com.br/..."
-      style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text);margin-bottom:8px">
+      style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text);margin-bottom:8px"
+      oninput="tentarCarregarImagens()">
+
+    <!-- Preview de imagens -->
+    <div id="olx-imgs-preview" style="display:none;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px;padding-bottom:4px"></div>
+    <div id="olx-imgs-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
 
     <div style="display:flex;gap:8px;margin-bottom:12px">
       <div style="flex:1">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO DO ANÚNCIO (R$)</div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
         <input type="number" id="olx-preco" placeholder="Ex: 400" min="0"
           style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
       </div>
       <div style="flex:1">
         <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">CONDIÇÃO</div>
-        <select id="olx-condicao" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
-          <option value="usado_bom">Usado — Bom estado</option>
-          <option value="tela_trincada">Tela trincada</option>
-          <option value="nao_liga">Não liga</option>
-          <option value="bateria_ruim">Bateria ruim</option>
-          <option value="varios_defeitos">Vários defeitos</option>
+        <select id="olx-condicao" style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 10px;font-family:'Mulish',sans-serif;font-size:13px;outline:none;background:var(--white);color:var(--text)">
+          <option value="usado_bom">✅ Bom estado</option>
+          <option value="tela_trincada">📱 Tela trincada</option>
+          <option value="bateria_ruim">🔋 Bateria ruim</option>
+          <option value="nao_liga">⛔ Não liga</option>
+          <option value="varios_defeitos">🔧 Vários defeitos</option>
         </select>
       </div>
     </div>
@@ -1351,6 +1356,51 @@ function showPage(p){
 // ══════════════════════════════════════
 // OLX ANALYSE — IA + Imagens
 // ══════════════════════════════════════
+let _olxImages = [];
+
+async function tentarCarregarImagens(){
+  const url = document.getElementById("olx-url").value.trim();
+  if(!url || !url.includes("olx")) return;
+  const preview = document.getElementById("olx-imgs-preview");
+  const imgStatus = document.getElementById("olx-imgs-status");
+  _olxImages = [];
+  preview.style.display = "none";
+  imgStatus.style.display = "none";
+
+  // Tentar puxar HTML via proxy para extrair imagens
+  try {
+    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(8000)});
+    const data = await res.json();
+    const html = data.contents || "";
+    if(!html) return;
+
+    const tmpDoc = new DOMParser().parseFromString(html, "text/html");
+
+    // og:image geralmente tem as fotos do anúncio
+    const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"], meta[name="og:image"]')]
+      .map(m => m.getAttribute("content")).filter(Boolean);
+
+    // Também tentar pegar de scripts JSON (OLX coloca fotos em JSON embutido)
+    const scripts = [...tmpDoc.querySelectorAll("script")].map(s=>s.textContent);
+    const jsonImgs = [];
+    for(const s of scripts){
+      const matches = [...s.matchAll(/"url"\s*:\s*"(https:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)];
+      matches.forEach(m => jsonImgs.push(m[1].replace(/\\u002F/g,"/").replace(/\\\//g,"/")));
+    }
+
+    _olxImages = [...new Set([...ogImgs, ...jsonImgs])].filter(u=>!u.includes("logo")&&!u.includes("icon")).slice(0,5);
+
+    if(_olxImages.length > 0){
+      preview.style.display = "flex";
+      preview.innerHTML = _olxImages.map(img=>
+        `<img src="${img}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" crossorigin="anonymous" onerror="this.style.display='none'">`
+      ).join("");
+      imgStatus.style.display = "block";
+      imgStatus.textContent = `🖼️ ${_olxImages.length} imagem(ns) carregada(s)`;
+    }
+  } catch(e){ /* silencioso */ }
+}
+
 async function analisarOLX(){
   const url = document.getElementById("olx-url").value.trim();
   if(!url || !url.includes("olx")){ alert("Cole um link válido da OLX."); return; }
@@ -1370,9 +1420,7 @@ async function analisarOLX(){
   status.textContent = "🔍 Identificando modelo...";
   result.style.display = "none";
 
-  // Extrair modelo da URL corretamente
-  // URL: /celulares/iphone-11-pro-max-1478776962?rec=...
-  // Pegar o último segmento do path antes dos query params
+  // Extrair modelo da URL
   let slug = "";
   try {
     const urlObj = new URL(url);
@@ -1381,7 +1429,6 @@ async function analisarOLX(){
   } catch(e) {
     slug = url.split("?")[0].split("/").filter(Boolean).pop() || "";
   }
-  // Remover ID numérico do final (6+ dígitos)
   const modelRaw = slug.replace(/-\d{6,}$/, "").replace(/-/g," ").trim().toLowerCase();
 
   const modelKey = identificarModelo(modelRaw);
@@ -1392,7 +1439,7 @@ async function analisarOLX(){
   const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, condicao);
 
   status.style.display = "none";
-  renderOLXResult(analise, [], url);
+  renderOLXResult(analise, _olxImages, url);
   btn.disabled = false;
   btn.textContent = "🔍 Analisar anúncio";
 }
