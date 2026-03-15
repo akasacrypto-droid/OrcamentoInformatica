@@ -1512,15 +1512,30 @@ async function analisarOLX(){
   const defeitos = getDefeitosSelecionados();
   addLog(`🔧 Defeitos selecionados: ${defeitos.length > 0 ? defeitos.map(d=>d.label).join(", ") : "nenhum"}`);
 
-  const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
-  _pecasExtras = [];
+  try {
+    addLog("⚙️ Chamando gerarAnalise...");
+    const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
+    _pecasExtras = [];
 
-  const elapsed = Date.now() - t0;
-  addLog(`✅ Análise concluída em ${elapsed}ms`);
-  addLog(`📊 Veredito: ${analise.veredito} | Lucro: R$${analise.lucro_estimado}`);
+    const elapsed = Date.now() - t0;
+    addLog(`✅ Análise concluída em ${elapsed}ms`);
+    addLog(`📊 Veredito: ${analise.veredito} | Lucro: R$${analise.lucro_estimado}`);
 
-  status.style.display = "none";
-  renderOLXResult(analise, _olxImages, url);
+    addLog("🖥️ Renderizando resultado...");
+    status.style.display = "none";
+    renderOLXResult(analise, _olxImages, url);
+    addLog("✅ Pronto!");
+  } catch(err) {
+    addLog(`❌ ERRO: ${err.message}`);
+    addLog(`📍 Stack: ${err.stack?.split("\n")[1]||""}`);
+    status.style.background = "var(--red-light)";
+    status.style.color = "var(--red)";
+    status.textContent = "❌ Erro na análise — veja o log de debug";
+    // Abrir log automaticamente
+    const logEl = document.getElementById("olx-log");
+    if(logEl) logEl.style.display = "block";
+  }
+
   btn.disabled = false;
   btn.textContent = "🔍 Analisar anúncio";
 }
@@ -1696,16 +1711,13 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   if(temPlaca) desconto += 0.30;
   if(temFaceID) desconto += 0.20;
   if(defeitos.length >= 3) desconto += 0.10;
-  const maxAjustado = Math.round(base.max * (1 - Math.min(desconto, 0.50)));
 
-  // Preço máximo que você deve pagar = revenda - reparo - lucro mínimo desejado (R$300)
+  const revenda = base.revenda;
+  const maxAjustado = Math.round(base.max * (1 - Math.min(desconto, 0.50)));
   const lucroMinimo = 300;
   const maxIdeal = Math.max(revenda - custoTotal - lucroMinimo, Math.round(revenda * 0.2));
   const maxAjustado2 = Math.min(maxAjustado, maxIdeal);
-
-  // Lucro calculado com base no que você VAI pagar (maxAjustado2), não o que foi pedido
   const precoCompra = maxAjustado2;
-  const revenda = base.revenda;
   const lucro = revenda - precoCompra - custoTotal;
   const margem = revenda > 0 ? Math.round((lucro/revenda)*100) : 0;
 
