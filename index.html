@@ -235,12 +235,24 @@ textarea{resize:none;height:70px}
     <div id="olx-imgs-preview" style="display:none;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:4px"></div>
     <div id="olx-imgs-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
 
-    <!-- Preço -->
-    <div style="margin-bottom:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
-      <input type="number" id="olx-preco" placeholder="Ex: 400" min="0"
-        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
+    <!-- Preços -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
+        <input type="number" id="olx-preco" placeholder="Ex: 800" min="0"
+          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
+          oninput="atualizarDesconto()">
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">QUERO PAGAR (R$)</div>
+        <input type="number" id="olx-oferta" placeholder="Ex: 500" min="0"
+          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
+          oninput="atualizarDesconto()">
+      </div>
     </div>
+
+    <!-- Preview do desconto -->
+    <div id="desconto-preview" style="display:none;background:var(--green-light);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#077a4a;font-weight:700"></div>
 
     <!-- Defeitos -->
     <div style="margin-bottom:14px">
@@ -1463,6 +1475,7 @@ async function analisarOLX(){
   if(!url || !url.includes("olx")){ alert("Cole um link válido da OLX."); return; }
 
   const precoAnuncio = parseFloat(document.getElementById("olx-preco")?.value) || 0;
+  const ofertaCustom = parseFloat(document.getElementById("olx-oferta")?.value) || 0;
   const condicao = document.getElementById("olx-condicao")?.value || "usado_bom";
 
   const btn = document.getElementById("olx-btn");
@@ -1515,6 +1528,7 @@ async function analisarOLX(){
   try {
     addLog("⚙️ Chamando gerarAnalise...");
     const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
+    analise.oferta_custom = ofertaCustom > 0 ? ofertaCustom : null;
     _pecasExtras = [];
 
     const elapsed = Date.now() - t0;
@@ -1544,6 +1558,30 @@ const _olxLog = [];
 function updateLog(log){
   const el = document.getElementById("olx-log-content");
   if(el) el.textContent = log.join("\n");
+}
+
+function atualizarDesconto(){
+  const pedido = parseFloat(document.getElementById("olx-preco")?.value) || 0;
+  const oferta = parseFloat(document.getElementById("olx-oferta")?.value) || 0;
+  const preview = document.getElementById("desconto-preview");
+  if(!preview) return;
+  if(pedido > 0 && oferta > 0 && oferta < pedido){
+    const economia = pedido - oferta;
+    const pct = Math.round((economia / pedido) * 100);
+    preview.style.display = "block";
+    preview.innerHTML = `💸 Vendedor "perde" <strong>${fmt(economia)}</strong> (${pct}% de desconto) · Você paga <strong>${fmt(oferta)}</strong> em vez de ${fmt(pedido)}`;
+  } else if(pedido > 0 && oferta >= pedido){
+    preview.style.display = "block";
+    preview.style.background = "var(--red-light)";
+    preview.style.borderColor = "var(--red)";
+    preview.style.color = "var(--red)";
+    preview.innerHTML = `⚠️ Oferta maior ou igual ao preço pedido`;
+  } else {
+    preview.style.display = "none";
+    preview.style.background = "var(--green-light)";
+    preview.style.borderColor = "var(--green)";
+    preview.style.color = "#077a4a";
+  }
 }
 
 function toggleLog(){
@@ -1703,7 +1741,10 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   const tela    = temTela    ? (custoTela    || Math.round(base.revenda*0.08)) : 0;
   const bateria = temBateria ? (custoBateria || Math.round(base.revenda*0.04)) : 0;
   const camera  = temCamera  ? Math.round(base.revenda*0.04) : 0;
-  const outros  = extraTotal > 0 ? extraTotal : (defeitos.length === 0 ? 0 : 50);
+  // Extras apenas dos defeitos selecionados que têm custo fixo (conector, placa, molho, etc)
+  // SEM adicionar mão de obra — o técnico faz ele mesmo
+  const extras = defeitos.filter(d=>d.extra>0 && d.custo_key===null).reduce((a,d)=>a+d.extra, 0);
+  const outros = extras;
   const custoTotal = tela + bateria + camera + outros;
 
   // Desconto no preço máximo por defeitos graves
@@ -1962,34 +2003,36 @@ function addPecaExtra(compra, reparo, revenda){
 function gerarCopy(a){
   const modelo = a.modelo_detectado || "celular";
   const precoAnuncio = a.preco_anuncio || 0;
-  const custoReparo = a.estimativa_reparo?.total || 0;
+  const condicao = a.condicao_estimada || "";
 
-  // Oferta = preço máximo recomendado (que já leva em conta o reparo)
-  // Se o preço pedido já é menor que o max recomendado, oferecer ainda menos
-  const oferta = a.preco_maximo_recomendado || 0;
-
-  // Verificar se faz sentido (oferta deve ser menor que preço pedido)
-  const ofertaFinal = precoAnuncio > 0 && oferta >= precoAnuncio
-    ? Math.round(precoAnuncio * 0.65) // se max >= pedido, oferece 65% do pedido
-    : oferta;
+  // Usar oferta customizada se definida, senão usar o máximo recomendado
+  const ofertaBase = a.oferta_custom || a.preco_maximo_recomendado || 0;
+  const ofertaFinal = precoAnuncio > 0 && ofertaBase >= precoAnuncio
+    ? Math.round(precoAnuncio * 0.65)
+    : ofertaBase;
 
   const ofertaStr = fmt(ofertaFinal);
 
+  // Calcular economia para usar no copy
+  const economia = precoAnuncio > 0 ? precoAnuncio - ofertaFinal : 0;
+  const pctDesc = precoAnuncio > 0 ? Math.round((economia/precoAnuncio)*100) : 0;
+  const economiaStr = economia > 0 ? ` (o senhor estaria abrindo mão de ${fmt(economia)})` : "";
+
   const copies = {
     verde: [
-      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos usados sempre têm algum detalhe que aparece só na hora.\n\nConsigo pagar à vista *${ofertaStr}* agora. Se topar, posso buscar hoje mesmo! 🤝`,
+      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos usados sempre têm algum detalhe que aparece só na hora.\n\nConsigo pagar à vista *${ofertaStr}* agora${economiaStr}. Se topar, posso buscar hoje mesmo! 🤝`,
 
-      `Oi! Vi o ${modelo} no seu anúncio. Trabalho com celulares e sei que sempre tem algum ajuste a fazer.\n\nPago *${ofertaStr}* à vista, na hora, sem enrolação. Aceita? 😊`,
+      `Oi! Vi o ${modelo} no seu anúncio. Trabalho com celulares e sei que sempre tem algum ajuste a fazer.\n\nPago *${ofertaStr}* à vista, na hora, sem enrolação${economia>0?` — sei que é ${pctDesc}% abaixo, mas é o máximo viável considerando o estado`:""} . Aceita? 😊`,
     ],
     amarelo: [
-      `Olá! Vi seu ${modelo} na OLX.\n\nEle tem alguns detalhes que vão precisar de conserto (${a.condicao_estimada}), o que reduz bastante o valor.\n\nConsigo pagar *${ofertaStr}* à vista — é o que consigo considerando o reparo necessário. Topa? 💰`,
+      `Olá! Vi seu ${modelo} na OLX.\n\nEle tem alguns detalhes que precisam de conserto (${condicao}), o que reduz bastante o valor de mercado.\n\nConsigo pagar *${ofertaStr}* à vista${economia>0?` — já considerando os ${fmt(a.estimativa_reparo?.total||0)} de reparo necessário`:""} . Topa? 💰`,
 
-      `Oi! Me interessei pelo ${modelo}. Pelo estado que ele tá, preciso investir em reparo antes de usar.\n\nPagaria *${ofertaStr}* à vista, já considerando os consertos. Se quiser, a gente fecha agora! 🤝`,
+      `Oi! Me interessei pelo ${modelo}. Pelo estado que ele tá, preciso investir bastante em conserto.\n\nPagaria *${ofertaStr}* à vista${economia>0?`, que já desconta os reparos necessários`:""} . Se quiser, a gente fecha agora! 🤝`,
     ],
     vermelho: [
-      `Olá! Vi o ${modelo} no seu anúncio.\n\nPelo estado que ele tá (${a.condicao_estimada}), o reparo vai custar bastante. Só consigo pagar *${ofertaStr}* à vista — já tô no limite considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvo hoje! 🙂`,
+      `Olá! Vi o ${modelo} no seu anúncio.\n\nPelo estado que ele tá (${condicao}), o conserto vai custar caro. Só consigo pagar *${ofertaStr}* à vista${economiaStr} — já tô no limite considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvo hoje! 🙂`,
 
-      `Oi! Vi seu ${modelo} na OLX. Pelo estado, o conserto sai caro. Máximo que consigo é *${ofertaStr}* à vista 😅. Aceita?`,
+      `Oi! Vi seu ${modelo} na OLX. Pelo estado, o conserto sai caro demais. Máximo que consigo é *${ofertaStr}* à vista${economia>0?` (${pctDesc}% de desconto)`:""}  😅. Aceita?`,
     ],
   };
 
