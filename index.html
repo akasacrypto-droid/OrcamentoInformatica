@@ -215,33 +215,25 @@ textarea{resize:none;height:70px}
   </div>
 </div>
 
-<!-- PAGE: HISTÓRICO -->
-<div class="page" id="pg-historico">
-  <div style="padding:16px">
-    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">📋 Histórico</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Todos os orçamentos salvos</div>
+<!-- PAGE: OLX ANALYSE -->
+<div class="page" id="pg-olx">
+  <div style="padding:16px;padding-bottom:80px">
 
-    <!-- Backup/Restore -->
-    <div style="display:flex;gap:8px;margin-bottom:16px">
-      <button onclick="exportarBackup()" style="flex:1;background:var(--dark);color:#fff;border:none;border-radius:10px;padding:10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-        ⬇️ Exportar backup
+    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🔍 OLX Analyse</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link do anúncio e a IA analisa se vale a pena comprar</div>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <input type="url" id="olx-url" placeholder="https://go.olx.com.br/..." 
+        style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)">
+      <button onclick="analisarOLX()" id="olx-btn"
+        style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px 16px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap">
+        🔍 Analisar
       </button>
-      <label style="flex:1;background:var(--accent);color:#fff;border-radius:10px;padding:10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
-        ⬆️ Importar backup
-        <input type="file" accept=".json" onchange="importarBackup(event)" style="display:none">
-      </label>
     </div>
 
-    <!-- Filtro status -->
-    <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none">
-      <button class="ftag active" id="hist-todos" onclick="setHistFiltro('todos')">Todos</button>
-      <button class="ftag" id="hist-aberto" onclick="setHistFiltro('aberto')">🔧 Aberto</button>
-      <button class="ftag" id="hist-andamento" onclick="setHistFiltro('andamento')">⚙️ Em andamento</button>
-      <button class="ftag" id="hist-pronto" onclick="setHistFiltro('pronto')">✅ Pronto</button>
-      <button class="ftag" id="hist-entregue" onclick="setHistFiltro('entregue')">📦 Entregue</button>
-    </div>
+    <div id="olx-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px;background:var(--accent-light);color:var(--accent)"></div>
+    <div id="olx-result" style="display:none"></div>
 
-    <div id="hist-list"></div>
   </div>
 </div>
 
@@ -251,9 +243,9 @@ textarea{resize:none;height:70px}
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
     Orçamento
   </button>
-  <button class="bnav" id="bn-historico" onclick="showPage('historico')">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-    Histórico
+  <button class="bnav" id="bn-olx" onclick="showPage('olx')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    OLX
   </button>
   <button class="bnav" id="bn-atualizacao" onclick="showPage('atualizacao')">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
@@ -1255,7 +1247,6 @@ function renderOrc(){
       <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.552 4.103 1.516 5.83L.057 23.007a1 1 0 001.23 1.23l5.243-1.46A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.88 0-3.64-.511-5.148-1.403l-.37-.22-3.112.868.868-3.04-.238-.383A9.959 9.959 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
       Enviar por WhatsApp
     </button>
-    <button onclick="salvarHistorico()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">💾 Salvar no histórico</button>
     <button class="btn-pdf" onclick="savePDF()">📄 Salvar PDF</button>
     <button class="btn-limpar" onclick="limpar()">🗑 Limpar</button>
   </div><div style="height:8px"></div>`;
@@ -1339,176 +1330,285 @@ function showPage(p){
   document.querySelectorAll(".bnav").forEach(e=>e.classList.remove("active"));
   document.getElementById("pg-"+p).classList.add("active");
   document.getElementById("bn-"+p).classList.add("active");
-  if(p==="historico") renderHistorico();
 }
 
 // ══════════════════════════════════════
-// HISTÓRICO DE ORÇAMENTOS
+// OLX ANALYSE — IA + Imagens
 // ══════════════════════════════════════
-const STATUS_LABELS = {
-  aberto:     {label:"🔧 Aberto",     bg:"#fff3e0", color:"#e65100"},
-  andamento:  {label:"⚙️ Em andamento", bg:"var(--accent-light)", color:"var(--accent)"},
-  pronto:     {label:"✅ Pronto",      bg:"var(--green-light)", color:"#077a4a"},
-  entregue:   {label:"📦 Entregue",   bg:"#f3f3f3", color:"var(--muted)"},
-};
-let histFiltro = "todos";
+async function analisarOLX(){
+  const url = document.getElementById("olx-url").value.trim();
+  if(!url || !url.includes("olx")){ alert("Cole um link válido da OLX."); return; }
 
-function loadHistorico(){ try{ return JSON.parse(localStorage.getItem("techfix_historico")||"[]"); }catch(e){ return []; } }
-function saveHistorico(h){ localStorage.setItem("techfix_historico", JSON.stringify(h)); }
+  const btn = document.getElementById("olx-btn");
+  const status = document.getElementById("olx-status");
+  const result = document.getElementById("olx-result");
 
-function salvarHistorico(){
-  const nome = document.getElementById("cli_nome")?.value.trim()||"Cliente";
-  const modelo = document.getElementById("cli_modelo")?.value.trim()||state.model||"—";
-  const tel = document.getElementById("cli_tel")?.value.trim()||"";
-  const obs = document.getElementById("obs")?.value.trim()||"";
-  const items = Object.values(cart);
-  const moItems = Object.values(maoObra);
-  if(!items.length && !moItems.length){ alert("Adicione pelo menos um item."); return; }
+  btn.disabled = true;
+  btn.textContent = "⏳ Analisando...";
+  status.style.display = "block";
+  status.textContent = "🔄 Buscando dados do anúncio...";
+  result.style.display = "none";
 
-  const num = String(Date.now()).slice(-6);
-  const orc = {
-    id: Date.now(),
-    num,
-    data: new Date().toLocaleDateString("pt-BR"),
-    hora: new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"}),
-    nome, modelo, tel, obs,
-    items: items.map(i=>({...i})),
-    moItems: moItems.map(i=>({...i})),
-    total: calcTotal(),
-    status: "aberto"
-  };
+  try {
+    // Buscar HTML da página OLX via proxy
+    let pageText = "";
+    let images = [];
 
-  const hist = loadHistorico();
-  hist.unshift(orc);
-  saveHistorico(hist);
-  showToast("💾 Salvo no histórico!");
-  closeOrc();
-}
+    try {
+      const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(12000)});
+      const proxyData = await proxyRes.json();
+      const html = proxyData.contents || "";
 
-function setHistFiltro(f){
-  histFiltro = f;
-  document.querySelectorAll("[id^='hist-']").forEach(el=>el.classList.remove("active"));
-  document.getElementById("hist-"+f)?.classList.add("active");
-  renderHistorico();
-}
+      // Extrair texto relevante
+      const tmpDoc = new DOMParser().parseFromString(html, "text/html");
 
-function renderHistorico(){
-  const hist = loadHistorico();
-  const filtered = histFiltro === "todos" ? hist : hist.filter(o=>o.status===histFiltro);
-  const el = document.getElementById("hist-list");
-  if(!filtered.length){
-    el.innerHTML=`<div style="text-align:center;padding:40px 20px;color:var(--muted)"><div style="font-size:40px;margin-bottom:10px">📋</div><p>Nenhum orçamento encontrado</p></div>`;
-    return;
-  }
-  el.innerHTML = filtered.map(orc=>{
-    const st = STATUS_LABELS[orc.status]||STATUS_LABELS.aberto;
-    return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px">
-        <div>
-          <div style="font-weight:900;font-size:15px">${orc.nome}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">📱 ${orc.modelo} · #${orc.num}</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:1px">📅 ${orc.data} às ${orc.hora}</div>
-          ${orc.tel?`<div style="font-size:12px;color:var(--muted);margin-top:1px">📞 ${orc.tel}</div>`:''}
-        </div>
-        <div style="text-align:right;flex-shrink:0">
-          <div style="font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green)">${fmt(orc.total)}</div>
-          <span style="background:${st.bg};color:${st.color};border-radius:6px;padding:3px 8px;font-size:11px;font-weight:700">${st.label}</span>
-        </div>
-      </div>
+      // Título
+      const title = tmpDoc.querySelector("h1")?.textContent?.trim() ||
+                    tmpDoc.querySelector('meta[property="og:title"]')?.content || "";
 
-      <!-- Itens resumidos -->
-      <div style="background:var(--bg);border-radius:8px;padding:8px 10px;margin-bottom:10px;font-size:12px;color:var(--text)">
-        ${orc.items.map(i=>`<div>• ${i.name} — ${fmt(i.price)}</div>`).join("")}
-        ${orc.moItems.map(i=>`<div>• 🛠️ ${i.nome} — ${fmt(i.valor)}</div>`).join("")}
-        ${orc.obs?`<div style="margin-top:4px;color:var(--muted)">📝 ${orc.obs}</div>`:''}
-      </div>
+      // Preço
+      const priceEl = tmpDoc.querySelector('[class*="price"]') ||
+                      tmpDoc.querySelector('[data-testid*="price"]');
+      const price = priceEl?.textContent?.trim() || "";
 
-      <!-- Ações -->
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <select onchange="alterarStatus(${orc.id}, this.value)" style="flex:1;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;padding:7px 8px;font-family:'Mulish',sans-serif;font-size:12px;font-weight:700;cursor:pointer;outline:none">
-          <option value="aberto"    ${orc.status==='aberto'?'selected':''}>🔧 Aberto</option>
-          <option value="andamento" ${orc.status==='andamento'?'selected':''}>⚙️ Em andamento</option>
-          <option value="pronto"    ${orc.status==='pronto'?'selected':''}>✅ Pronto</option>
-          <option value="entregue"  ${orc.status==='entregue'?'selected':''}>📦 Entregue</option>
-        </select>
-        <button onclick="reenviarWhats(${orc.id})" style="background:#25d366;color:#fff;border:none;border-radius:8px;padding:7px 10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">💬</button>
-        <button onclick="deletarOrc(${orc.id})" style="background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:8px;padding:7px 10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">🗑</button>
-      </div>
-    </div>`;
-  }).join("");
-}
+      // Descrição
+      const desc = tmpDoc.querySelector('[class*="description"]')?.textContent?.trim() ||
+                   tmpDoc.querySelector('[data-testid*="description"]')?.textContent?.trim() || "";
 
-function alterarStatus(id, status){
-  const hist = loadHistorico();
-  const idx = hist.findIndex(o=>o.id===id);
-  if(idx>=0){ hist[idx].status=status; saveHistorico(hist); renderHistorico(); showToast("✅ Status atualizado!"); }
-}
+      // Localização
+      const loc = tmpDoc.querySelector('[class*="location"]')?.textContent?.trim() || "";
 
-function reenviarWhats(id){
-  const orc = loadHistorico().find(o=>o.id===id);
-  if(!orc) return;
-  let msg=`🔧 *ORÇAMENTO #${orc.num}*\n👤 Cliente: ${orc.nome}\n📱 Aparelho: ${orc.modelo}\n`;
-  if(orc.items.length){ msg+=`\n*🔩 Peças:*\n`; orc.items.forEach(i=>{msg+=`• ${i.name} — ${fmt(i.price*i.qty)}\n`;}); }
-  if(orc.moItems.length){ msg+=`\n*🛠️ Mão de obra:*\n`; orc.moItems.forEach(i=>{msg+=`• ${i.nome} — ${fmt(i.valor)}\n`;}); }
-  msg+=`\n💰 *Total: ${fmt(orc.total)}*\n_TechFix — Assistência Técnica_`;
-  const tel = orc.tel.replace(/\D/g,"");
-  window.open(tel?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
-}
+      // Imagens — pegar URLs das imagens do anúncio
+      const imgEls = [...tmpDoc.querySelectorAll('img[src*="olx"], img[data-src*="olx"], img[src*="imagens"]')];
+      images = imgEls
+        .map(i => i.src || i.getAttribute("data-src") || "")
+        .filter(s => s && s.startsWith("http") && (s.includes("olx") || s.includes("imagens")))
+        .slice(0, 6);
 
-function deletarOrc(id){
-  if(!confirm("Apagar este orçamento?")) return;
-  const hist = loadHistorico().filter(o=>o.id!==id);
-  saveHistorico(hist);
-  renderHistorico();
-  showToast("🗑 Apagado!");
-}
+      // Também tentar pegar de meta og:image
+      const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')].map(m=>m.content).filter(Boolean);
+      images = [...new Set([...images, ...ogImgs])].slice(0, 6);
 
-// ══════════════════════════════════════
-// EXPORTAR / IMPORTAR BACKUP
-// ══════════════════════════════════════
-function exportarBackup(){
-  const dados = {
-    versao: "1.0",
-    data: new Date().toISOString(),
-    historico: loadHistorico(),
-    catalogo: CATALOG,
-  };
-  const blob = new Blob([JSON.stringify(dados, null, 2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `techfix-backup-${new Date().toLocaleDateString("pt-BR").replace(/\//g,"-")}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast("✅ Backup exportado!");
-}
-
-function importarBackup(event){
-  const file = event.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>{
-    try{
-      const dados = JSON.parse(e.target.result);
-      if(!dados.versao) throw new Error("Arquivo inválido");
-      if(dados.historico){ saveHistorico(dados.historico); }
-      if(dados.catalogo){ CATALOG = dados.catalogo; saveCatalog(); }
-      renderHistorico();
-      renderBrands();
-      showToast(`✅ Backup importado! ${(dados.historico||[]).length} orçamentos restaurados.`);
-    } catch(err){
-      alert("❌ Arquivo inválido: "+err.message);
+      pageText = `TÍTULO: ${title}\nPREÇO: ${price}\nDESCRIÇÃO: ${desc}\nLOCALIZAÇÃO: ${loc}\nLINK: ${url}`;
+    } catch(e) {
+      // Se o proxy falhar, usar apenas a URL + contexto
+      pageText = `LINK DO ANÚNCIO: ${url}\n\nNão foi possível extrair dados automaticamente. Analise pelo link acima.`;
     }
-  };
-  reader.readAsText(file);
-  event.target.value="";
+
+    status.textContent = "🤖 Analisando com IA...";
+
+    // Montar mensagem para o Claude
+    const systemPrompt = `Você é um especialista em compra e revenda de celulares usados no Brasil, focado em assistência técnica.
+Analise anúncios de celulares da OLX e dê uma análise detalhada para um técnico que quer comprar para consertar e revender.
+Responda APENAS em JSON válido, sem markdown, sem explicações fora do JSON.`;
+
+    const userPrompt = `Analise este anúncio de celular da OLX para compra e revenda:
+
+${pageText}
+
+Responda em JSON com esta estrutura exata:
+{
+  "modelo_detectado": "ex: iPhone 11 Pro Max 64GB",
+  "preco_anuncio": 0,
+  "preco_maximo_recomendado": 0,
+  "condicao_estimada": "ex: Tela trincada, bateria fraca",
+  "defeitos_identificados": ["defeito1", "defeito2"],
+  "estimativa_reparo": {
+    "tela": 0,
+    "bateria": 0,
+    "carcaca": 0,
+    "camera": 0,
+    "outros": 0,
+    "total": 0
+  },
+  "preco_revenda_medio": 0,
+  "lucro_estimado": 0,
+  "margem_percent": 0,
+  "bandeiras_vermelhas": ["alerta1", "alerta2"],
+  "pontos_positivos": ["ponto1"],
+  "veredito": "verde|amarelo|vermelho",
+  "veredito_texto": "explicação curta do veredito",
+  "resumo": "análise geral em 2-3 frases"
+}`;
+
+    // Montar mensagens — incluir imagens se houver
+    const msgContent = [];
+
+    // Adicionar imagens se conseguiu pegar
+    if(images.length > 0){
+      status.textContent = "🖼️ Analisando imagens + texto com IA...";
+      for(const imgUrl of images.slice(0,3)){
+        try {
+          // Tentar converter imagem para base64
+          const imgRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(imgUrl)}`);
+          const imgData = await imgRes.json();
+          // allorigins retorna imagens como data URL
+          if(imgData.contents && imgData.contents.startsWith("data:image")){
+            const b64 = imgData.contents.split(",")[1];
+            const mime = imgData.contents.split(";")[0].replace("data:","");
+            msgContent.push({type:"image", source:{type:"base64", media_type:mime, data:b64}});
+          }
+        } catch(e){ /* ignora erro de imagem */ }
+      }
+    }
+
+    msgContent.push({type:"text", text:userPrompt});
+
+    // Chamar API Claude
+    const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{role:"user", content: msgContent}]
+      })
+    });
+
+    const apiData = await apiRes.json();
+    const rawText = apiData.content?.map(c=>c.text||"").join("") || "";
+
+    let analysis;
+    try {
+      const clean = rawText.replace(/```json|```/g,"").trim();
+      analysis = JSON.parse(clean);
+    } catch(e) {
+      throw new Error("Erro ao processar resposta da IA");
+    }
+
+    renderOLXResult(analysis, images, url);
+    status.style.display = "none";
+
+  } catch(err) {
+    status.style.background = "var(--red-light)";
+    status.style.color = "var(--red)";
+    status.textContent = "❌ " + err.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = "🔍 Analisar";
 }
 
-// INIT
+function renderOLXResult(a, images, url){
+  const result = document.getElementById("olx-result");
+  const veredito = {
+    verde:    {emoji:"🟢", label:"Vale a pena comprar!",  bg:"var(--green-light)", color:"#077a4a", border:"var(--green)"},
+    amarelo:  {emoji:"🟡", label:"Risco médio — avalie bem", bg:"#fffbe6", color:"#7a5f00", border:"#f0b429"},
+    vermelho: {emoji:"🔴", label:"Não vale a pena",       bg:"var(--red-light)", color:"var(--red)", border:"var(--red)"},
+  }[a.veredito] || {emoji:"🟡", label:"Análise inconclusiva", bg:"#fffbe6", color:"#7a5f00", border:"#f0b429"};
+
+  const fmt2 = v => v>0 ? `R$ ${Number(v).toFixed(2).replace(".",",")}` : "—";
+  const margem = a.margem_percent > 0 ? `${a.margem_percent.toFixed(0)}%` : "—";
+
+  // Imagens do anúncio
+  const imgsHtml = images.length > 0 ? `
+    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:4px">
+      ${images.map(img=>`<img src="${img}" style="width:100px;height:100px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" onerror="this.style.display='none'">`).join("")}
+    </div>` : "";
+
+  // Bandeiras vermelhas
+  const flags = (a.bandeiras_vermelhas||[]).map(f=>
+    `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px"><span>🚩</span><span>${f}</span></div>`
+  ).join("");
+
+  // Pontos positivos
+  const positivos = (a.pontos_positivos||[]).map(p=>
+    `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px"><span>✅</span><span>${p}</span></div>`
+  ).join("");
+
+  result.style.display = "block";
+  result.innerHTML = `
+    <!-- VEREDITO -->
+    <div style="background:${veredito.bg};border:2px solid ${veredito.border};border-radius:16px;padding:16px;margin-bottom:14px;text-align:center">
+      <div style="font-size:36px;margin-bottom:6px">${veredito.emoji}</div>
+      <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;color:${veredito.color}">${veredito.label}</div>
+      <div style="font-size:13px;color:${veredito.color};margin-top:4px;opacity:.85">${a.veredito_texto||""}</div>
+    </div>
+
+    <!-- IMAGENS -->
+    ${imgsHtml}
+
+    <!-- ANÁLISE DO CELULAR -->
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">📱 ANÁLISE DO CELULAR</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="background:var(--bg);border-radius:10px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Modelo</div>
+          <div style="font-weight:900;font-size:13px">${a.modelo_detectado||"—"}</div>
+        </div>
+        <div style="background:var(--bg);border-radius:10px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Preço pedido</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--red)">${fmt2(a.preco_anuncio)}</div>
+        </div>
+        <div style="background:var(--green-light);border-radius:10px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:#077a4a;text-transform:uppercase;margin-bottom:3px">Máx. recomendado</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(a.preco_maximo_recomendado)}</div>
+        </div>
+        <div style="background:var(--accent-light);border-radius:10px;padding:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;margin-bottom:3px">Revenda média</div>
+          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent)">${fmt2(a.preco_revenda_medio)}</div>
+        </div>
+      </div>
+      ${a.condicao_estimada ? `<div style="margin-top:10px;font-size:13px;color:var(--muted)">📋 Condição: ${a.condicao_estimada}</div>` : ""}
+    </div>
+
+    <!-- ESTIMATIVA DE REPARO -->
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">🔧 ESTIMATIVA DE REPARO</div>
+      ${["tela","bateria","carcaca","camera","outros"].map(k=>{
+        const v = a.estimativa_reparo?.[k]||0;
+        if(!v) return "";
+        const labels = {tela:"📱 Tela",bateria:"🔋 Bateria",carcaca:"🧱 Carcaça",camera:"📷 Câmera",outros:"🔩 Outros"};
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+          <span>${labels[k]}</span>
+          <span style="font-weight:700">${fmt2(v)}</span>
+        </div>`;
+      }).join("")}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;font-size:15px;font-weight:900">
+        <span>Total reparo</span>
+        <span style="color:var(--orange)">${fmt2(a.estimativa_reparo?.total||0)}</span>
+      </div>
+    </div>
+
+    <!-- LUCRO -->
+    <div style="background:var(--dark);border-radius:14px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="text-align:center">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;margin-bottom:3px">Lucro estimado</div>
+        <div style="font-family:'Bebas Neue',cursive;font-size:26px;color:var(--green)">${fmt2(a.lucro_estimado)}</div>
+      </div>
+      <div style="text-align:center">
+        <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;margin-bottom:3px">Margem</div>
+        <div style="font-family:'Bebas Neue',cursive;font-size:26px;color:var(--green)">${margem}</div>
+      </div>
+    </div>
+
+    <!-- BANDEIRAS E POSITIVOS -->
+    ${flags ? `<div style="background:var(--red-light);border:1.5px solid var(--red);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;color:var(--red);margin-bottom:10px">🚩 ALERTAS</div>
+      ${flags}
+    </div>` : ""}
+
+    ${positivos ? `<div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;color:#077a4a;margin-bottom:10px">✅ PONTOS POSITIVOS</div>
+      ${positivos}
+    </div>` : ""}
+
+    <!-- RESUMO -->
+    ${a.resumo ? `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--text)">
+      <strong>💬 Resumo:</strong> ${a.resumo}
+    </div>` : ""}
+
+    <a href="${url}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--accent);color:#fff;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">
+      🔗 Ver anúncio na OLX
+    </a>
+  `;
+}
+
+
 loadCatalog();
 renderBrands();
 updateBadge();
-renderHistorico();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
 </script>
