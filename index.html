@@ -172,7 +172,12 @@ textarea{resize:none;height:70px}
 <body>
 <nav>
   <div class="nav-logo">TECH<span>FIX</span></div>
-  <button class="orc-btn" onclick="openOrc()">📋 <span id="badge" class="zero">0</span></button>
+  <div style="display:flex;align-items:center;gap:8px">
+    <div id="version-badge" onclick="checkVersion()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,.1);border-radius:6px;user-select:none" title="Clique para verificar atualização">
+      v<span id="version-num">...</span>
+    </div>
+    <button class="orc-btn" onclick="openOrc()">📋 <span id="badge" class="zero">0</span></button>
+  </div>
 </nav>
 
 <!-- PAGE: ORÇAMENTO -->
@@ -1957,12 +1962,45 @@ function copiarMsgVendedor(){
 }
 
 
+// ══════════════════════════════════════
+// VERSÃO / DEPLOY CHECK
+// ══════════════════════════════════════
+const GITHUB_USER = "akasacrypto-droid";
+const GITHUB_REPO = "OrcamentoInformatica";
+const GITHUB_FILE = "orcamento-celular%20(5).html";
+
+async function checkVersion(){
+  const badge = document.getElementById("version-badge");
+  const num = document.getElementById("version-num");
+  num.textContent = "...";
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/commits?path=${GITHUB_FILE}&per_page=1`, {signal: AbortSignal.timeout(5000)});
+    const data = await res.json();
+    if(!data[0]) throw new Error();
+    const commit = data[0];
+    const sha = commit.sha.slice(0,7);
+    const date = new Date(commit.commit.committer.date);
+    const diffMin = Math.round((new Date() - date) / 60000);
+    let quando = diffMin < 1 ? "agora" : diffMin < 60 ? `${diffMin}min atrás` : diffMin < 1440 ? `${Math.round(diffMin/60)}h atrás` : `${Math.round(diffMin/1440)}d atrás`;
+    num.textContent = sha;
+    badge.title = `Atualizado ${quando}\n${date.toLocaleString("pt-BR")}\n${commit.commit.message}`;
+    if(diffMin < 10){ badge.style.color="var(--green)"; badge.style.borderColor="var(--green)"; }
+    else if(diffMin < 60){ badge.style.color="#f0b429"; badge.style.borderColor="#f0b429"; }
+    else { badge.style.color="rgba(255,255,255,.35)"; badge.style.borderColor="rgba(255,255,255,.1)"; }
+    showToast(`🔄 Site atualizado ${quando} (${sha})`);
+  } catch(e){
+    num.textContent = "—";
+  }
+}
+
 loadCatalog();
 renderBrands();
 updateBadge();
 renderOlxDefeitos();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
+checkVersion();
+
 </script>
 </body>
 </html>
