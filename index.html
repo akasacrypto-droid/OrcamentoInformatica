@@ -1568,8 +1568,7 @@ async function analisarOLX(){
 
   try {
     addLog("⚙️ Chamando gerarAnalise...");
-    const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
-    analise.oferta_custom = ofertaCustom > 0 ? ofertaCustom : null;
+    const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos, ofertaCustom);
     _pecasExtras = [];
 
     const elapsed = Date.now() - t0;
@@ -1695,7 +1694,7 @@ function identificarModelo(slug){
   return null;
 }
 
-function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio=0, defeitos=[]){
+function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio=0, defeitos=[], ofertaCustom=0){
   const mercado = {
     "iphone 5": {revenda:250, max:120},
     "iphone 6": {revenda:300, max:150},
@@ -1799,7 +1798,10 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   const lucroMinimo = 300;
   const maxIdeal = Math.max(revenda - custoTotal - lucroMinimo, Math.round(revenda * 0.2));
   const maxAjustado2 = Math.min(maxAjustado, maxIdeal);
-  const precoCompra = maxAjustado2;
+
+  // Preço que realmente vai pagar = preço do anúncio (o que o vendedor pede)
+  // O lucro é calculado com base no que você REALMENTE vai pagar
+  const precoCompra = precoAnuncio > 0 ? precoAnuncio : maxAjustado2;
   const lucro = revenda - precoCompra - custoTotal;
   const margem = revenda > 0 ? Math.round((lucro/revenda)*100) : 0;
 
@@ -1831,6 +1833,7 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   return {
     modelo_detectado: modelFormatado,
     preco_anuncio: precoAnuncio,
+    oferta_custom: ofertaCustom > 0 ? ofertaCustom : precoAnuncio,
     preco_maximo_recomendado: maxAjustado2,
     condicao_estimada: defeitos.length > 0 ? defeitosNomes.join(", ") : "Sem defeitos informados",
     defeitos_identificados: defeitosNomes,
@@ -1842,7 +1845,7 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
     pontos_positivos: positivos,
     veredito,
     veredito_texto: veredito==="verde"?"Boa oportunidade!":veredito==="amarelo"?"Avalie bem antes de comprar":"Margem baixa ou risco alto",
-    resumo: `Modelo: ${modelFormatado}. Preço máx. recomendado: ${fmt(maxAjustado)}. Reparo estimado: ${fmt(custoTotal)}. Revenda média: ${fmt(revenda)}. Lucro estimado: ${fmt(lucro)} (${margem}%).`
+    resumo: `Modelo: ${modelFormatado}. Preço pedido: ${fmt(precoAnuncio)}. Máx. recomendado: ${fmt(maxAjustado2)}. Peças: ${fmt(custoTotal)}. Revenda: ${fmt(revenda)}. Lucro se pagar ${fmt(precoCompra)}: ${fmt(lucro)} (${margem}%).`
   };
 }
 
@@ -2052,34 +2055,38 @@ function renderOLXResult(a, images, url){
     <!-- CALCULADORA DE CUSTO TOTAL -->
     <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px">
       <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">🧮 CALCULADORA DE CUSTO TOTAL</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Adicione peças extras para ver o custo real do investimento</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Baseado no valor que você vai pagar</div>
 
       <div style="background:var(--bg);border-radius:10px;padding:10px;margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-          <span>Preço de compra</span>
-          <span style="font-weight:700" id="calc-compra">${fmt2(a.preco_anuncio||a.preco_maximo_recomendado)}</span>
+          <span>💳 Você vai pagar</span>
+          <span style="font-weight:700;color:var(--accent)" id="calc-compra">${fmt2(a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado)}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
-          <span>Reparo estimado</span>
+          <span>🔧 Peças necessárias</span>
           <span style="font-weight:700">${fmt2(a.estimativa_reparo?.total||0)}</span>
         </div>
         <div id="calc-extras-list"></div>
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
           <span>INVESTIMENTO TOTAL</span>
-          <span style="color:var(--accent)" id="calc-total">${fmt2((a.preco_anuncio||a.preco_maximo_recomendado) + (a.estimativa_reparo?.total||0))}</span>
+          <span style="color:var(--accent)" id="calc-total">${fmt2((a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado) + (a.estimativa_reparo?.total||0))}</span>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">
-          <span>Lucro final estimado</span>
-          <span style="font-weight:700;color:var(--green)" id="calc-lucro">${fmt2(a.preco_revenda_medio - (a.preco_anuncio||a.preco_maximo_recomendado) - (a.estimativa_reparo?.total||0))}</span>
+          <span>💰 Lucro final estimado</span>
+          <span style="font-weight:700;color:var(--green)" id="calc-lucro">${fmt2(a.preco_revenda_medio - (a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado) - (a.estimativa_reparo?.total||0))}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px">
+          <span>📈 Revenda média</span>
+          <span style="font-weight:700;color:var(--green)">${fmt2(a.preco_revenda_medio)}</span>
         </div>
       </div>
 
       <div style="display:flex;gap:8px;margin-bottom:8px">
-        <input type="text" id="calc-peca-nome" placeholder="Nome da peça (ex: Flex volume)"
+        <input type="text" id="calc-peca-nome" placeholder="Peça extra (ex: Flex volume)"
           style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
         <input type="number" id="calc-peca-val" placeholder="R$" min="0"
           style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
-        <button onclick="addPecaExtra(${a.preco_anuncio||a.preco_maximo_recomendado}, ${a.estimativa_reparo?.total||0}, ${a.preco_revenda_medio})"
+        <button onclick="addPecaExtra(${a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado}, ${a.estimativa_reparo?.total||0}, ${a.preco_revenda_medio})"
           style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
           + Adicionar
         </button>
