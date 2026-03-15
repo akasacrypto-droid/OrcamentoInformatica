@@ -1063,90 +1063,182 @@ function applyAllSyncChanges(){
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
 // ══════════════════════════════════════
-// ══ NOVAPEÇAS — IDs por categoria + modelo ══
-const NP_DISPLAY = {
-  "iPhone 5G":1005,"iPhone 5S":1008,
-  "iPhone 6G":15880,"iPhone 6G Plus":15889,"iPhone 6S":15895,"iPhone 6S Plus":15898,
-  "iPhone 7G":14351,"iPhone 7 Plus":14354,
+// ══ NOVAPEÇAS — mapa por modelo ══
+// Chaves: display, bateria, flexCarga, flexPower, cameraTraseira, cameraFrontal, altoFalante, microfone, botaoHome, carcaca
+const NP = {
+  "iPhone 5G":  { display:1005, bateria:7728 },
+  "iPhone 5S":  { display:1008, bateria:7728 },
+  "iPhone 6G":  { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
+  "iPhone 6G Plus": { display:15889, bateria:7025, flexCarga:25902, flexPower:6743 },
+  "iPhone 6S":  { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
+  "iPhone 6S Plus": { display:15898, bateria:7025, flexCarga:25908, flexPower:6749 },
+  "iPhone 7G":  { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
+  "iPhone 7 Plus": { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
+  "iPhone 8G":  { flexCarga:25917 },
+  "iPhone 8 Plus": { flexCarga:25920 },
+  "iPhone X":   { flexCarga:25923 },
+  "iPhone XR":  { flexCarga:25926 },
+  "iPhone XS":  { flexCarga:25929 },
+  "iPhone XS Max": { flexCarga:25932 },
+  "iPhone 11":  { flexCarga:25782 },
+  "iPhone 11 Pro": { flexCarga:25785 },
+  "iPhone 11 Pro Max": { flexCarga:25788 },
+  "iPhone 12":  { flexCarga:25791 },
+  "iPhone 12 Pro": { flexCarga:25791 },
+  "iPhone 12 Pro Max": { flexCarga:25794 },
+  "iPhone 13":  { flexCarga:25797 },
+  "iPhone 13 Pro": { flexCarga:25800 },
+  "iPhone 13 Pro Max": { flexCarga:25803 },
+  "iPhone 14":  { flexCarga:25806 },
+  "iPhone 14 Plus": { flexCarga:25809 },
+  "iPhone 14 Pro": { flexCarga:25812 },
+  "iPhone 14 Pro Max": { flexCarga:25815 },
+  "iPhone 15":  { flexCarga:20131 },
+  "iPhone 15 Pro": { flexCarga:25821 },
+  "iPhone 15 Pro Max": { flexCarga:25824 },
+  "iPhone 16":  { flexCarga:25827 },
+  "iPhone 16 Pro": { flexCarga:25830 },
+  "iPhone 16 Pro Max": { flexCarga:25833 },
+  "Moto G7 Power": { flexCarga:13163 },
+  "Moto G8 Power": { flexCarga:13175 },
+  "Moto G9 Play": { flexCarga:13178 },
+  "Moto G31":   { flexCarga:13181 },
+  "Moto G32":   { flexCarga:13184 },
+  "Moto G42":   { flexCarga:13187 },
+  "Moto G53":   { flexCarga:13190 },
+  "Moto G54":   { flexCarga:13193 },
+  "Moto G60":   { flexCarga:13196 },
+  "Moto G62":   { flexCarga:13199 },
+  "Moto G71":   { flexCarga:13202 },
+  "Moto G73":   { flexCarga:28289 },
+  "Moto G82":   { flexCarga:28283 },
+  "Moto G84":   { flexCarga:29116 },
+  "Moto G85":   { flexCarga:24818 },
+  "Moto G100":  { flexCarga:9871 },
+  "Moto G200":  { flexCarga:28292 },
+  "Moto G14":   { flexCarga:28232 },
+  "Moto G34":   { flexCarga:24815 },
+  "Moto G52":   { flexCarga:22067 },
+  "Moto G5G":   { flexCarga:9759 },
+  "Moto G9 Plus": { flexCarga:9777 },
+  "Moto G9 Power": { flexCarga:9768 },
+  "Moto G50 5G": { flexCarga:9789 },
+  "Moto One":   { flexCarga:13145 },
+  "Moto One Action": { flexCarga:13148 },
+  "Moto One Fusion": { flexCarga:9795 },
+  "Moto One Fusion Plus": { flexCarga:9741 },
+  "Moto One Hyper": { flexCarga:9744 },
+  "Moto Edge":  { flexCarga:28271 },
+  "Moto Edge Plus": { flexCarga:28262 },
+  "Moto Edge 20": { flexCarga:13118 },
+  "Moto Edge 20 Lite": { flexCarga:13121 },
+  "Moto Edge 30": { flexCarga:13127 },
+  "Moto Edge 30 Neo": { flexCarga:13130 },
+  "Moto Edge 30 Pro": { flexCarga:28229 },
+  "Moto Edge 30 Ultra": { flexCarga:28265 },
+  "Moto E7 Plus": { flexCarga:22070 },
+  "Galaxy A10":  { flexCarga:9816 },
+  "Galaxy A20":  { flexCarga:9850 },
+  "Galaxy A20E": { flexCarga:9849 },
+  "Galaxy A20S": { flexCarga:9874 },
+  "Galaxy A21S": { flexCarga:6305 },
+  "Galaxy A22 5G": { flexCarga:11276 },
+  "Galaxy A24":  { flexCarga:20445 },
+  "Galaxy A25":  { flexCarga:28295 },
+  "Galaxy A31":  { flexCarga:6272 },
+  "Galaxy A32 4G": { flexCarga:9810 },
+  "Galaxy A34":  { flexCarga:20442 },
+  "Galaxy A35":  { flexCarga:20990 },
+  "Galaxy A50":  { flexCarga:22187 },
+  "Galaxy A52":  { flexCarga:28298 },
+  "Galaxy A53":  { flexCarga:22743 },
+  "Galaxy A54":  { flexCarga:20442 },
+  "Galaxy A55":  { flexCarga:20990 },
+  "Galaxy A72":  { flexCarga:9828 },
+  "Galaxy A15":  { flexCarga:23642 },
+  "Galaxy M21":  { flexCarga:28277 },
+  "Galaxy M30":  { flexCarga:9819 },
+  "Galaxy M30S": { flexCarga:26582 },
+  "Galaxy M31S": { flexCarga:28223 },
+  "Galaxy M32":  { flexCarga:9859 },
+  "Galaxy M51":  { flexCarga:9801 },
+  "Galaxy M52":  { flexCarga:9831 },
+  "Galaxy M53":  { flexCarga:9831 },
+  "Galaxy M54":  { flexCarga:28194 },
+  "Galaxy S20":  { flexCarga:21005 },
+  "Galaxy S20 FE": { flexCarga:9840 },
+  "Galaxy S20 Plus": { flexCarga:9807 },
+  "Galaxy S20 Ultra": { flexCarga:22758 },
+  "Galaxy S21":  { flexCarga:22749 },
+  "Galaxy S21 Ultra": { flexCarga:22752 },
+  "Galaxy S22":  { flexCarga:21008 },
+  "Galaxy S22 Plus": { flexCarga:20996 },
+  "Galaxy S22 Ultra": { flexCarga:28185 },
+  "Galaxy S23":  { flexCarga:21017 },
+  "Galaxy S23 FE": { flexCarga:21011 },
+  "Galaxy S23 Plus": { flexCarga:21014 },
+  "Galaxy S23 Ultra": { flexCarga:20999 },
+  "Galaxy S24":  { flexCarga:20993 },
+  "Galaxy S24 Plus": { flexCarga:21020 },
+  "Galaxy S24 Ultra": { flexCarga:21002 },
+  "Galaxy Note 20": { flexCarga:26100 },
+  "Galaxy Note 20 Ultra": { flexCarga:26103 },
+  "Redmi Note 10 4G": { flexCarga:21408 },
+  "Redmi Note 10S": { flexCarga:21408 },
+  "Redmi Note 11 4G": { flexCarga:21411 },
+  "Redmi Note 12 4G": { flexCarga:28203 },
+  "Redmi Note 12 5G": { flexCarga:28206 },
+  "Redmi Note 12 Pro 5G": { flexCarga:28301 },
+  "Redmi Note 13 Pro 5G": { flexCarga:28209 },
+  "Redmi Note 14 Pro 4G": { flexCarga:25212 },
+  "Redmi Note 8T": { flexCarga:9702 },
+  "Redmi 7":     { flexCarga:9693 },
+  "Poco X3":     { flexCarga:18623 },
+  "Poco X3 Pro": { flexCarga:18623 },
+  "Poco X3 GT":  { flexCarga:28217 },
+  "Poco X4 Pro": { flexCarga:28182 },
+  "Poco X5 5G":  { flexCarga:21396 },
+  "Poco X5 Pro": { flexCarga:21396 },
+  "Poco X6 5G":  { flexCarga:28209 },
+  "Poco X6 Pro": { flexCarga:28215 },
+  "Poco F3":     { flexCarga:28238 },
+  "Poco M6 Pro 4G": { flexCarga:21023 },
+  "Poco M7 Pro 5G": { flexCarga:29199 },
+  "Mi 9":        { flexCarga:9645 },
+  "Mi 9 Lite":   { flexCarga:9648 },
+  "Mi 9T Pro":   { flexCarga:9657 },
+  "Mi 10T":      { flexCarga:28200 },
+  "Mi 10T Pro":  { flexCarga:28200 },
+  "Mi 11T":      { flexCarga:28304 },
+  "Mi 12 Lite":  { flexCarga:21026 },
+  "Mi 12T Pro":  { flexCarga:26208 },
+  "LG K41S":     { flexCarga:9675 },
+  "LG K42":      { flexCarga:9687 },
+  "LG K50S":     { flexCarga:9681 },
+  "LG K51S":     { flexCarga:9615 },
+  "LG K61":      { flexCarga:9696 },
+  "Realme C3":   { flexCarga:9868 },
+  "Realme C21Y": { flexCarga:9654 },
+  "Realme C55":  { flexCarga:28286 },
+  "Realme C11 2021": { flexCarga:28259 },
+  "Infinix Hot 11S": { flexCarga:28247 },
+  "Infinix Hot 30": { flexCarga:28170 },
+  "Infinix Note 10 Pro": { flexCarga:28226 },
 };
-const NP_BATERIA = {
-  "iPhone 5G":7728,"iPhone 5S":7728,
-  "iPhone 6G":2642,"iPhone 6G Plus":7025,"iPhone 6S":6993,"iPhone 6S Plus":7025,
-  "iPhone 7G":25413,"iPhone 7 Plus":26531,
+
+// Mapa tipo de defeito → chave no NP
+const NP_KEY = {
+  "Display":"display","Bateria":"bateria","Flex Carga":"flexCarga",
+  "Flex Power":"flexPower","Câmera Traseira":"cameraTraseira",
+  "Câmera Frontal":"cameraFrontal","Alto-falante":"altoFalante",
+  "Microfone":"microfone","Botão Home":"botaoHome","Carcaça":"carcaca",
 };
-const NP_FLEX_POWER = {
-  "iPhone 6G":6740,"iPhone 6G Plus":6743,
-  "iPhone 6S":6746,"iPhone 6S Plus":6749,
-  "iPhone 7G":6752,"iPhone 7 Plus":6755,
-};
-const NP_CAMERA_TRASEIRA = {
-  "iPhone 7G":16720,"iPhone 7 Plus":16726,
-};
-const NP_CAMERA_FRONTAL = {
-  "iPhone 7G":19170,"iPhone 7 Plus":19173,
-};
-const NP_ALTO_FALANTE = {
-  "iPhone 7G":17923,"iPhone 7 Plus":17576,
-};
-const NP_FLEX = {
-  "iPhone 6G":25899,"iPhone 6G Plus":25902,"iPhone 6S":25905,"iPhone 6S Plus":25908,
-  "iPhone 7G":25911,"iPhone 7 Plus":25914,"iPhone 8G":25917,"iPhone 8 Plus":25920,
-  "iPhone X":25923,"iPhone XR":25926,"iPhone XS":25929,"iPhone XS Max":25932,
-  "iPhone 11":25782,"iPhone 11 Pro":25785,"iPhone 11 Pro Max":25788,
-  "iPhone 12":25791,"iPhone 12 Pro":25791,"iPhone 12 Pro Max":25794,
-  "iPhone 13":25797,"iPhone 13 Pro":25800,"iPhone 13 Pro Max":25803,
-  "iPhone 14":25806,"iPhone 14 Plus":25809,"iPhone 14 Pro":25812,"iPhone 14 Pro Max":25815,
-  "iPhone 15":20131,"iPhone 15 Pro":25821,"iPhone 15 Pro Max":25824,
-  "iPhone 16":25827,"iPhone 16 Pro":25830,"iPhone 16 Pro Max":25833,
-  "Moto G7 Power":13163,"Moto G8 Power":13175,"Moto G9 Play":13178,
-  "Moto G31":13181,"Moto G32":13184,"Moto G42":13187,"Moto G53":13190,
-  "Moto G54":13193,"Moto G60":13196,"Moto G62":13199,"Moto G71":13202,
-  "Moto G73":28289,"Moto G73 5G":28289,"Moto G82":28283,"Moto G84":29116,
-  "Moto G85":24818,"Moto G100":9871,"Moto G200":28292,"Moto G34":24815,
-  "Moto G52":22067,"Moto G14":28232,"Moto G5G":9759,"Moto G9 Plus":9777,
-  "Moto G9 Power":9768,"Moto G50 5G":9789,
-  "Moto One":13145,"Moto One Action":13148,"Moto One Fusion":9795,
-  "Moto One Fusion Plus":9741,"Moto One Hyper":9744,
-  "Moto Edge":28271,"Moto Edge Plus":28262,"Moto Edge 20":13118,
-  "Moto Edge 20 Lite":13121,"Moto Edge 30":13127,"Moto Edge 30 Fusion":13127,
-  "Moto Edge 30 Neo":13130,"Moto Edge 30 Pro":28229,"Moto Edge 30 Ultra":28265,
-  "Moto E7 Plus":22070,
-  "Galaxy A10":9816,"Galaxy A20":9850,"Galaxy A20E":9849,"Galaxy A20S":9874,
-  "Galaxy A21S":6305,"Galaxy A22 5G":11276,"Galaxy A24":20445,"Galaxy A25":28295,
-  "Galaxy A31":6272,"Galaxy A32 4G":9810,"Galaxy A34":20442,"Galaxy A35":20990,
-  "Galaxy A50":22187,"Galaxy A52":28298,"Galaxy A53":22743,"Galaxy A54":20442,
-  "Galaxy A55":20990,"Galaxy A72":9828,"Galaxy A15":23642,
-  "Galaxy M21":28277,"Galaxy M30":9819,"Galaxy M30S":26582,"Galaxy M31S":28223,
-  "Galaxy M32":9859,"Galaxy M51":9801,"Galaxy M52":9831,"Galaxy M53":9831,"Galaxy M54":28194,
-  "Galaxy S20":21005,"Galaxy S20 FE":9840,"Galaxy S20 Plus":9807,"Galaxy S20 Ultra":22758,
-  "Galaxy S21":22749,"Galaxy S21 Ultra":22752,"Galaxy S22":21008,"Galaxy S22 Plus":20996,
-  "Galaxy S22 Ultra":28185,"Galaxy S23":21017,"Galaxy S23 FE":21011,"Galaxy S23 Plus":21014,
-  "Galaxy S23 Ultra":20999,"Galaxy S24":20993,"Galaxy S24 Plus":21020,"Galaxy S24 Ultra":21002,
-  "Galaxy Note 20":26100,"Galaxy Note 20 Ultra":26103,
-  "Redmi Note 10 4G":21408,"Redmi Note 10S":21408,"Redmi Note 11 4G":21411,
-  "Redmi Note 12 4G":28203,"Redmi Note 12 5G":28206,"Redmi Note 12 Pro 5G":28301,
-  "Redmi Note 13 5G":28206,"Redmi Note 13 Pro 5G":28209,"Redmi Note 14 Pro 4G":25212,
-  "Redmi Note 8T":9702,"Redmi 7":9693,
-  "Poco X3":18623,"Poco X3 Pro":18623,"Poco X3 GT":28217,"Poco X4 Pro":28182,
-  "Poco X5 5G":21396,"Poco X5 Pro":21396,"Poco X6 5G":28209,"Poco X6 Pro":28215,
-  "Poco F3":28238,"Poco M6 Pro 4G":21023,"Poco M7 Pro 5G":29199,
-  "Mi 9":9645,"Mi 9 Lite":9648,"Mi 9T Pro":9657,"Mi 10T":28200,"Mi 10T Pro":28200,
-  "Mi 11T":28304,"Mi 12 Lite":21026,"Mi 12T Pro":26208,
-  "LG K41S":9675,"LG K42":9687,"LG K50S":9681,"LG K51S":9615,"LG K61":9696,
-  "Asus ZB601KL":9639,"Asus ZC520KL":9630,"Asus ZC553KL":9636,
-  "Asus ZE552KL":9621,"Asus ZE553KL":9669,"Asus ZE554KL":9627,"Asus ZS620KL":9624,
-  "Realme C3":9868,"Realme C21Y":9654,"Realme C55":28286,"Realme C11 2021":28259,
-  "Infinix Hot 11S":28247,"Infinix Hot 30":28170,"Infinix Note 10 Pro":28226,
-};
-const NP_MAPS = {
-  "Display":NP_DISPLAY,
-  "Bateria":NP_BATERIA,
-  "Flex Carga":NP_FLEX,
-  "Flex Power":NP_FLEX_POWER,
-  "Câmera Traseira":NP_CAMERA_TRASEIRA,
-  "Câmera Frontal":NP_CAMERA_FRONTAL,
-  "Alto-falante":NP_ALTO_FALANTE,
-};
+function npId(tipo,model){ return NP[model]?.[NP_KEY[tipo]]; }
+function npLink(tipo,model){
+  const id = npId(tipo,model);
+  if(id) return `https://novapecascell.com.br/produto/${id}`;
+  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`;
+}
 
 
 const BRANDS = [
@@ -1252,7 +1344,7 @@ function renderDefects(){
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
-    const hasNP = NP_MAPS[tipo]?.[state.model];
+    const hasNP = npId(tipo, state.model);
     const sel=state.defects.includes(tipo)?"selected":"";
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
@@ -1273,12 +1365,7 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novapecasLink(tipo,model){
-  const id = NP_MAPS[tipo]?.[model];
-  if(id) return `https://novapecascell.com.br/produto/${id}`;
-  const palavras = model.split(" ").slice(0,3).join(" ");
-  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(palavras)}`;
-}
+function novapecasLink(tipo,model){ return npLink(tipo,model); }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
