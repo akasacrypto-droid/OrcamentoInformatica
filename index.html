@@ -1189,16 +1189,6 @@ function selectModel(m){ state.model=m; state.defects=[]; goStep(3); }
 function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
-  // Mapa tipo → chave no NP_*
-  const NP_MAPS = {
-    "Display":         NP_DISPLAY,
-    "Bateria":         NP_BATERIA,
-    "Flex Carga":      NP_FLEX,
-    "Flex Power":      NP_FLEX_POWER,
-    "Câmera Traseira": NP_CAMERA_TRASEIRA,
-    "Câmera Frontal":  NP_CAMERA_FRONTAL,
-    "Alto-falante":    NP_ALTO_FALANTE,
-  };
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
     const npMap = NP_MAPS[tipo];
@@ -1247,6 +1237,16 @@ const NP_CAMERA_FRONTAL = {
 };
 const NP_ALTO_FALANTE = {
   "iPhone 7G":17923,"iPhone 7 Plus":17576,
+};
+// Mapa global tipo → tabela NovaPeças
+const NP_MAPS = {
+  "Display":         NP_DISPLAY,
+  "Bateria":         NP_BATERIA,
+  "Flex Carga":      NP_FLEX,
+  "Flex Power":      NP_FLEX_POWER,
+  "Câmera Traseira": NP_CAMERA_TRASEIRA,
+  "Câmera Frontal":  NP_CAMERA_FRONTAL,
+  "Alto-falante":    NP_ALTO_FALANTE,
 };
 const NP_FLEX = {
   "iPhone 6G": 25899,
@@ -1417,10 +1417,7 @@ const NP_FLEX = {
   "Infinix Note 10 Pro": 28226,
 };
 function novapecasLink(tipo,model){
-  const npMap = {"Display":NP_DISPLAY,"Bateria":NP_BATERIA,"Flex Carga":NP_FLEX,
-    "Flex Power":NP_FLEX_POWER,"Câmera Traseira":NP_CAMERA_TRASEIRA,
-    "Câmera Frontal":NP_CAMERA_FRONTAL,"Alto-falante":NP_ALTO_FALANTE};
-  const id = npMap[tipo]?.[model];
+  const id = NP_MAPS[tipo]?.[model];
   if(id) return `https://novapecascell.com.br/produto/${id}`;
   const palavras = model.split(" ").slice(0,3).join(" ");
   return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(palavras)}`;
