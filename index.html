@@ -2074,7 +2074,7 @@ function renderOLXResult(a, images, url){
         </div>
         <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
           <span>🔧 Peças necessárias</span>
-          <span style="font-weight:700">${fmt2(a.estimativa_reparo?.total||0)}</span>
+          <span style="font-weight:700" id="calc-pecas-val">${fmt2(a.estimativa_reparo?.total||0)}</span>
         </div>
         <div id="calc-extras-list"></div>
         <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
@@ -2106,7 +2106,7 @@ function renderOLXResult(a, images, url){
 }
 
 function recalcularPecas(precoCompra, revenda){
-  // Somar todos os inputs de peça
+  // Somar todos os inputs de peça editáveis
   const inputs = document.querySelectorAll("[id^='peca-val-']");
   let totalPecas = 0;
   inputs.forEach(inp => { totalPecas += parseFloat(inp.value)||0; });
@@ -2119,22 +2119,23 @@ function recalcularPecas(precoCompra, revenda){
   const lucro = revenda - precoCompra - totalPecas;
   const margem = revenda > 0 ? Math.round((lucro/revenda)*100) : 0;
 
+  // Atualizar bloco de lucro
   const lucroEl = document.getElementById("lucro-val");
   const margemEl = document.getElementById("margem-val");
-  if(lucroEl){
-    lucroEl.textContent = fmt(lucro);
-    lucroEl.style.color = lucro > 0 ? "var(--green)" : "var(--red)";
-  }
+  if(lucroEl){ lucroEl.textContent = fmt(lucro); lucroEl.style.color = lucro > 0 ? "var(--green)" : "var(--red)"; }
   if(margemEl) margemEl.textContent = margem+"%";
 
-  // Atualizar calculadora também
+  // Atualizar calculadora de custo total
+  const extras = _pecasExtras.reduce((a,p)=>a+p.val, 0);
+  const totalInvest = precoCompra + totalPecas + extras;
+  const lucroFinal = revenda - totalInvest;
+
+  const calcPecas = document.getElementById("calc-pecas-val");
   const calcTotal = document.getElementById("calc-total");
   const calcLucro = document.getElementById("calc-lucro");
-  if(calcTotal) calcTotal.textContent = fmt(precoCompra + totalPecas);
-  if(calcLucro){
-    calcLucro.textContent = fmt(lucro);
-    calcLucro.style.color = lucro > 0 ? "var(--green)" : "var(--red)";
-  }
+  if(calcPecas) calcPecas.textContent = fmt(totalPecas);
+  if(calcTotal) calcTotal.textContent = fmt(totalInvest);
+  if(calcLucro){ calcLucro.textContent = fmt(lucroFinal); calcLucro.style.color = lucroFinal > 0 ? "var(--green)" : "var(--red)"; }
 }
 
 
