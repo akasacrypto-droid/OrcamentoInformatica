@@ -236,23 +236,34 @@ textarea{resize:none;height:70px}
     <div id="olx-imgs-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
 
     <!-- Preços -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
-        <input type="number" id="olx-preco" placeholder="Ex: 800" min="0"
-          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
-          oninput="atualizarDesconto()">
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">QUERO PAGAR (R$)</div>
-        <input type="number" id="olx-oferta" placeholder="Ex: 500" min="0"
-          style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
-          oninput="atualizarDesconto()">
-      </div>
+    <div style="margin-bottom:8px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
+      <input type="number" id="olx-preco" placeholder="Ex: 800" min="0"
+        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
+        oninput="atualizarSlider()">
     </div>
 
-    <!-- Preview do desconto -->
-    <div id="desconto-preview" style="display:none;background:var(--green-light);border:1.5px solid var(--green);border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#077a4a;font-weight:700"></div>
+    <!-- Slider de desconto -->
+    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted)">QUANTO QUER PAGAR</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green)" id="slider-valor">—</span>
+          <span style="font-size:13px;font-weight:700;color:var(--muted)" id="slider-pct">(—%)</span>
+        </div>
+      </div>
+      <input type="range" id="olx-slider" min="30" max="100" value="70" step="1"
+        oninput="atualizarSlider()"
+        style="width:100%;height:6px;accent-color:var(--accent);cursor:pointer">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
+        <span>30%</span>
+        <span>50%</span>
+        <span>70%</span>
+        <span>85%</span>
+        <span>100%</span>
+      </div>
+      <div id="desconto-tag" style="margin-top:8px;font-size:12px;font-weight:700;display:none"></div>
+    </div>
 
     <!-- Defeitos -->
     <div style="margin-bottom:14px">
@@ -1470,13 +1481,43 @@ async function tentarCarregarImagens(){
   } catch(e){ /* silencioso — sem imagens */ }
 }
 
+function atualizarSlider(){
+  const preco = parseFloat(document.getElementById("olx-preco")?.value) || 0;
+  const pct = parseInt(document.getElementById("olx-slider")?.value) || 70;
+  const valorPagar = Math.round(preco * pct / 100);
+
+  const sliderValor = document.getElementById("slider-valor");
+  const sliderPct = document.getElementById("slider-pct");
+  const tag = document.getElementById("desconto-tag");
+
+  if(preco > 0){
+    sliderValor.textContent = fmt(valorPagar);
+    sliderPct.textContent = `(${pct}%)`;
+    tag.style.display = "block";
+    const desconto = 100 - pct;
+    if(desconto === 0){
+      tag.style.color = "var(--muted)"; tag.textContent = "Sem desconto — preço cheio";
+    } else if(desconto <= 10){
+      tag.style.color = "#f0b429"; tag.textContent = `Desconto leve de ${desconto}%`;
+    } else if(desconto <= 25){
+      tag.style.color = "var(--accent)"; tag.textContent = `Desconto de ${desconto}% — boa negociação`;
+    } else {
+      tag.style.color = "var(--green)"; tag.textContent = `Desconto agressivo de ${desconto}% 🔥`;
+    }
+  } else {
+    sliderValor.textContent = "—";
+    sliderPct.textContent = `(${pct}%)`;
+    tag.style.display = "none";
+  }
+}
+
 async function analisarOLX(){
   const url = document.getElementById("olx-url").value.trim();
   if(!url || !url.includes("olx")){ alert("Cole um link válido da OLX."); return; }
 
   const precoAnuncio = parseFloat(document.getElementById("olx-preco")?.value) || 0;
-  const ofertaCustom = parseFloat(document.getElementById("olx-oferta")?.value) || 0;
-  const condicao = document.getElementById("olx-condicao")?.value || "usado_bom";
+  const pct = parseInt(document.getElementById("olx-slider")?.value) || 70;
+  const ofertaCustom = precoAnuncio > 0 ? Math.round(precoAnuncio * pct / 100) : 0;
 
   const btn = document.getElementById("olx-btn");
   const status = document.getElementById("olx-status");
@@ -1870,18 +1911,92 @@ function renderOLXResult(a, images, url){
 
     <!-- ESTIMATIVA DE REPARO -->
     <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">🔧 ESTIMATIVA DE REPARO</div>
-      ${["tela","bateria","carcaca","camera","outros"].map(k=>{
-        const v = a.estimativa_reparo?.[k]||0;
-        if(!v) return "";
-        const labels = {tela:"📱 Tela",bateria:"🔋 Bateria",carcaca:"🧱 Carcaça",camera:"📷 Câmera",outros:"🔩 Outros"};
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
-          <span>${labels[k]}</span>
-          <span style="font-weight:700">${fmt2(v)}</span>
-        </div>`;
-      }).join("")}
+      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">🔧 PEÇAS NECESSÁRIAS</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Custo das peças (sem mão de obra — você mesmo faz)</div>
+      ${(()=>{
+        const defeitos = a.defeitos_identificados || [];
+        const modelo = a.modelo_detectado || "";
+        const shopUrl = (peca) => `https://www.google.com/search?q=${encodeURIComponent(peca+" "+modelo+" atacado")}&tbm=shop`;
+        const floritecUrl = (peca) => `https://floritecpecas.kyte.site`;
+        let rows = "";
+
+        // Tela
+        if(a.estimativa_reparo?.tela > 0){
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:700">📱 Tela / Display</div>
+              <div style="display:flex;gap:5px;margin-top:4px">
+                <a href="${floritecUrl("tela")}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>
+                <a href="${shopUrl("tela display")}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>
+              </div>
+            </div>
+            <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(a.estimativa_reparo.tela)}</span>
+          </div>`;
+        }
+
+        // Bateria
+        if(a.estimativa_reparo?.bateria > 0){
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:700">🔋 Bateria</div>
+              <div style="display:flex;gap:5px;margin-top:4px">
+                <a href="${floritecUrl("bateria")}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>
+                <a href="${shopUrl("bateria")}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>
+              </div>
+            </div>
+            <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(a.estimativa_reparo.bateria)}</span>
+          </div>`;
+        }
+
+        // Câmera
+        if(a.estimativa_reparo?.camera > 0){
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:700">📷 Câmera</div>
+              <div style="display:flex;gap:5px;margin-top:4px">
+                <a href="${shopUrl("câmera módulo")}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Google Shopping</a>
+              </div>
+            </div>
+            <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(a.estimativa_reparo.camera)}</span>
+          </div>`;
+        }
+
+        // Outros defeitos com custo (conector, tampa, placa, etc)
+        if(a.estimativa_reparo?.outros > 0){
+          // Descobrir quais defeitos geraram "outros"
+          const outrosDefeitos = OLX_DEFEITOS.filter(d => d.extra > 0 && d.custo_key === null);
+          const defSel = outrosDefeitos.filter(d => (a.defeitos_identificados||[]).includes(d.label));
+          defSel.forEach(d => {
+            rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+              <div>
+                <div style="font-size:13px;font-weight:700">${d.icon} ${d.label}</div>
+                <div style="display:flex;gap:5px;margin-top:4px">
+                  <a href="${shopUrl(d.label)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Google Shopping</a>
+                </div>
+              </div>
+              <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(d.extra)}</span>
+            </div>`;
+          });
+        }
+
+        // Tampa traseira — sem preço no catálogo, só link de busca
+        if((a.defeitos_identificados||[]).includes("Tampa traseira") && !a.estimativa_reparo?.outros){
+          rows += `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+            <div>
+              <div style="font-size:13px;font-weight:700">🧱 Tampa Traseira</div>
+              <div style="display:flex;gap:5px;margin-top:4px">
+                <a href="${shopUrl("tampa traseira carcaça")}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Google Shopping</a>
+              </div>
+            </div>
+            <span style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(60)}</span>
+          </div>`;
+        }
+
+        if(!rows) rows = `<div style="font-size:13px;color:var(--muted);padding:8px 0">Nenhum defeito selecionado</div>`;
+        return rows;
+      })()}
       <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;font-size:15px;font-weight:900">
-        <span>Total reparo</span>
+        <span>Total peças</span>
         <span style="color:var(--orange)">${fmt2(a.estimativa_reparo?.total||0)}</span>
       </div>
     </div>
