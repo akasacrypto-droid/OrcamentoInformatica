@@ -1462,6 +1462,15 @@ async function analisarOLX(){
   status.textContent = "🔍 Identificando modelo...";
   result.style.display = "none";
 
+  // Timer visual
+  let seg = 0;
+  const msgs = ["🔍 Identificando modelo...","📊 Calculando preços de mercado...","🔧 Estimando custo de reparo...","💰 Calculando lucro e margem...","🚩 Verificando alertas...","✅ Quase pronto..."];
+  const timer = setInterval(()=>{
+    seg++;
+    const msg = msgs[Math.min(seg-1, msgs.length-1)];
+    status.textContent = `${msg} (${seg}s)`;
+  }, 1000);
+
   // Não espera imagens — análise é instantânea
   let slug = "";
   try {
@@ -1482,6 +1491,7 @@ async function analisarOLX(){
   const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos);
   _pecasExtras = [];
 
+  clearInterval(timer);
   status.style.display = "none";
   renderOLXResult(analise, _olxImages, url);
   btn.disabled = false;
