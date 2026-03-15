@@ -1806,10 +1806,10 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   const bandeiras = [];
   const positivos = [];
 
-  if(precoAnuncio > 0 && precoAnuncio > maxAjustado)
-    bandeiras.push(`Preço pedido (${fmt(precoAnuncio)}) acima do máximo recomendado (${fmt(maxAjustado)})`);
-  if(precoAnuncio > 0 && precoAnuncio > revenda * 0.8)
-    bandeiras.push("Preço muito alto — margem de lucro baixa");
+  if(precoAnuncio > 0 && precoAnuncio > maxAjustado2 * 1.15)
+    bandeiras.push(`Preço pedido (${fmt(precoAnuncio)}) bem acima do recomendado (${fmt(maxAjustado2)}) — tente negociar`);
+  if(precoAnuncio > 0 && precoAnuncio > revenda * 0.85)
+    bandeiras.push("Preço muito alto — margem de lucro muito baixa");
   if(temPlaca) bandeiras.push("⚠️ Defeito de placa — risco muito alto, evite se puder");
   if(temFaceID) bandeiras.push("⚠️ Face ID com defeito — conserto praticamente inviável");
   if(defeitos.some(d=>d.id==="nao_liga")) bandeiras.push("Celular não liga — pode ser placa ou conector");
