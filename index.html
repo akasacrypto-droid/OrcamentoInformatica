@@ -1539,27 +1539,60 @@ function toggleLog(){
 function identificarModelo(slug){
   const mu = slug.toUpperCase();
 
-  // Normalizar: remover palavras irrelevantes que aparecem em slugs da OLX
   const lixo = ["SINAL","DE","VIDA","COM","ATENCAO","LEIA","DESCRICAO","ESTADO","BOM","RUIM","QUEBRADO",
-    "TRINCADO","USADO","NOVO","VENDO","URGENTE","RAM","GB","TB","WIFI","APENAS","TELA","BATERIA",
-    "CARREGADOR","CAIXA","NOTA","FISCAL","ORIGINAL","SEMI","NOVO","ACEITO","TROCA","PARCELADO","8RAM","6RAM","4RAM","12RAM",
-    "128GB","256GB","512GB","64GB","32GB","16GB","1TB","DESBLOQUEADO","DESBLOQ","ANUNCIO","LISTING"];
+    "TRINCADO","USADO","NOVO","VENDO","URGENTE","RAM","GB","TB","WIFI","APENAS",
+    "CARREGADOR","CAIXA","NOTA","FISCAL","ORIGINAL","SEMI","ACEITO","TROCA","PARCELADO",
+    "8RAM","6RAM","4RAM","12RAM","128GB","256GB","512GB","64GB","32GB","16GB","1TB",
+    "DESBLOQUEADO","DESBLOQ","ANUNCIO","LISTING","PARA","RETIRADA","PECAS","PEÇAS",
+    "PRETO","BRANCO","AZUL","VERDE","DOURADO","ROSA","CINZA","PRATA","PRETO"];
 
   let clean = mu;
-  lixo.forEach(l => { clean = clean.replace(new RegExp("\\b"+l+"\\b","g"), " "); });
+  lixo.forEach(l => { clean = clean.replace(new RegExp("(?:^|\\s)"+l+"(?:\\s|$)","g"), " "); });
   clean = clean.replace(/\s+/g," ").trim();
 
-  // Tentar match direto com chaves do catálogo (do mais longo para o mais curto)
-  const sortedKeys = Object.keys(CATALOG_DEFAULT).sort((a,b)=>b.length-a.length);
-  for(const key of sortedKeys){
+  // Detectar marca pelo slug para filtrar candidatos
+  let brandFilter = null;
+  if(clean.includes("MOTO") || clean.includes("MOTOROLA")) brandFilter = "moto";
+  else if(clean.includes("IPHONE")) brandFilter = "iphone";
+  else if(clean.includes("GALAXY") || clean.includes("SAMSUNG")) brandFilter = "galaxy";
+  else if(clean.includes("REDMI") || clean.includes("XIAOMI")) brandFilter = "redmi";
+  else if(clean.includes("POCO")) brandFilter = "poco";
+  else if(clean.includes("REALME")) brandFilter = "realme";
+  else if(clean.includes("INFINIX")) brandFilter = "infinix";
+  else if(clean.includes(" LG ") || clean.startsWith("LG")) brandFilter = "lg";
+  else if(clean.includes("ASUS")) brandFilter = "asus";
+
+  // Ordenar chaves do mais longo para o mais curto
+  let keys = Object.keys(CATALOG_DEFAULT).sort((a,b)=>b.length-a.length);
+
+  // Filtrar pela marca detectada primeiro (muito mais preciso)
+  if(brandFilter){
+    const filtered = keys.filter(k=>k.toLowerCase().startsWith(brandFilter));
+    // Tentar primeiro só na marca certa
+    for(const key of filtered){
+      const keyUp = key.toUpperCase();
+      const shortKey = keyUp
+        .replace(/^GALAXY /,"").replace(/^IPHONE /,"").replace(/^MOTO /,"")
+        .replace(/^REDMI /,"").replace(/^POCO /,"").replace(/^MI /,"")
+        .replace(/^LG /,"").replace(/^ASUS /,"").replace(/^REALME /,"")
+        .replace(/^INFINIX /,"").replace(/^SAMSUNG TAB /,"").trim();
+      const parts = shortKey.split(" ").filter(p=>p.length>1);
+      if(parts.length > 0 && parts.every(p => clean.includes(p))){
+        return key;
+      }
+    }
+  }
+
+  // Fallback: buscar em todas as marcas mas exigindo prefixo da marca no slug
+  for(const key of keys){
     const keyUp = key.toUpperCase();
+    const brand = keyUp.split(" ")[0]; // ex: "IPHONE", "GALAXY", "MOTO"
+    if(!clean.includes(brand)) continue; // slug deve conter a marca
     const shortKey = keyUp
       .replace(/^GALAXY /,"").replace(/^IPHONE /,"").replace(/^MOTO /,"")
       .replace(/^REDMI /,"").replace(/^POCO /,"").replace(/^MI /,"")
       .replace(/^LG /,"").replace(/^ASUS /,"").replace(/^REALME /,"")
       .replace(/^INFINIX /,"").replace(/^SAMSUNG TAB /,"").trim();
-
-    // Verificar se todas as partes do shortKey estão no slug
     const parts = shortKey.split(" ").filter(p=>p.length>1);
     if(parts.length > 0 && parts.every(p => clean.includes(p))){
       return key;
