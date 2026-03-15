@@ -2247,8 +2247,8 @@ async function verificarOLX(){
   status.style.color = "var(--accent)";
 
   try {
-    // API pública da OLX — retorna JSON sem precisar de proxy
-    const apiUrl = "https://www.olx.com.br/api/relevance/v3/search?sf=1&opst=2&cps=10&cps=11&cps=12&elcd=5&limit=40";
+    // API via Google Apps Script proxy — sem bloqueio CORS
+    const apiUrl = "https://script.google.com/macros/s/AKfycbxDFv2j9LGDiJhro29hJDfeN5PxL8SkTTDYZHInn275cuAolQxAdk920iuX7Iwhtp-_2A/exec";
 
     const res = await fetch(apiUrl, {
       signal: AbortSignal.timeout(8000),
