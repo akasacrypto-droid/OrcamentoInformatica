@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TechFix</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Mulish:wght@400;600;700;900&display=swap');
+:root{--bg:#f0f2f5;--white:#fff;--dark:#12151c;--border:#e2e5ec;--accent:#0057ff;--accent-light:#e8efff;--green:#00c47a;--green-light:#e6faf3;--red:#ff3b55;--red-light:#fff0f2;--muted:#8a91a0;--text:#1e2330;--orange:#ff8c00;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;font-size:15px;min-height:100vh}
+nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.nav-logo{font-family:'Bebas Neue',cursive;font-size:22px;color:#fff;letter-spacing:2px}
+.nav-logo span{color:#4d8fff}
+.orc-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px}
+#badge{background:var(--green);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px}
+#badge.zero{display:none}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--white);border-top:2px solid var(--border);display:flex;height:58px}
+.bnav{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-family:'Mulish',sans-serif;font-weight:700;font-size:11px;transition:color .15s}
+.bnav.active{color:var(--accent)}
+.page{display:none;padding-bottom:76px}
+.page.active{display:block}
+.breadcrumb{display:flex;align-items:center;gap:6px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
+.breadcrumb::-webkit-scrollbar{display:none}
+.bc-item{font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;flex-shrink:0}
+.bc-item.active{color:var(--accent)}
+.bc-sep{color:var(--border);font-size:16px;flex-shrink:0}
+.step{display:none;padding:16px}
+.step.active{display:block}
+.step-title{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px}
+.brand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.brand-card{background:var(--white);border:2px solid var(--border);border-radius:16px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;user-select:none}
+.brand-card:hover,.brand-card:active{border-color:var(--accent);background:var(--accent-light);transform:scale(.97)}
+.brand-emoji{font-size:28px}
+.brand-name{font-weight:900;font-size:12px;text-align:center}
+.brand-count{font-size:11px;color:var(--muted)}
+.model-search-input{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;padding:11px 14px 11px 40px;font-size:15px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);transition:border-color .18s;margin-bottom:12px;background-image:url("data:image/svg+xml,%3Csvg width='16' height='16' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='7' cy='7' r='5' stroke='%238a91a0' stroke-width='1.8'/%3E%3Cpath d='M11 11l3 3' stroke='%238a91a0' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:12px center}
+.model-search-input:focus{border-color:var(--accent);background-color:var(--white)}
+.model-search-input::placeholder{color:var(--muted)}
+.model-list{display:flex;flex-direction:column;gap:7px}
+.model-item{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s}
+.model-item:hover,.model-item:active{border-color:var(--accent);background:var(--accent-light)}
+.model-item-name{font-weight:700;font-size:14px}
+.defect-grid{display:flex;flex-direction:column;gap:8px}
+.defect-card{background:var(--white);border:2px solid var(--border);border-radius:14px;padding:13px 16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;user-select:none}
+.defect-card.selected{border-color:var(--accent);background:var(--accent-light)}
+.defect-icon-wrap{width:42px;height:42px;border-radius:11px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.defect-card.selected .defect-icon-wrap{background:var(--accent)}
+.defect-info{flex:1}
+.defect-name{font-weight:900;font-size:14px}
+.defect-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.has-price{font-size:10px;background:var(--green-light);color:var(--green);border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}
+.defect-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.defect-card.selected .defect-chk{background:var(--accent);border-color:var(--accent)}
+.defect-chk svg{display:none}
+.defect-card.selected .defect-chk svg{display:block}
+.prices-header{background:var(--dark);border-radius:14px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px}
+.prices-model-icon{font-size:26px}
+.prices-model-info{flex:1}
+.prices-model-name{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:1px;color:#fff}
+.prices-model-brand{font-size:11px;color:rgba(255,255,255,.5);margin-top:1px}
+.price-section{margin-bottom:16px}
+.price-section-title{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.price-row{background:var(--white);border:1.5px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:all .15s;user-select:none}
+.price-row:hover{border-color:var(--accent)}
+.price-row.selected{border-color:var(--accent);background:var(--accent-light)}
+.price-row-left{flex:1}
+.price-quality{font-weight:900;font-size:14px}
+.price-fornecedor{font-size:11px;color:var(--muted);margin-top:2px}
+.price-links{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.price-link{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-decoration:none}
+.price-link.floritec{background:var(--accent-light);color:var(--accent)}
+.price-link.shop{background:#fff3e0;color:#e65100}
+.price-right{text-align:right;flex-shrink:0}
+.price-custo{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
+.price-val{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green);line-height:1}
+.price-row.selected .price-val{color:var(--accent)}
+.price-cobrar{font-size:11px;color:var(--accent);font-weight:700;margin-top:2px}
+.price-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.price-row.selected .price-chk{background:var(--accent);border-color:var(--accent)}
+.price-chk svg{display:none}
+.price-row.selected .price-chk svg{display:block}
+.btn-confirm{width:100%;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:4px}
+.no-price-card{background:#fff3e0;border:1.5px solid #ffe0b2;border-radius:12px;padding:12px 14px;margin-bottom:8px}
+/* ATUALIZAÇÃO */
+.upd-wrap{padding:16px}
+.upd-title{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:1.5px;margin-bottom:6px}
+.upd-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6}
+.upd-input{width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);margin-bottom:12px;transition:border-color .18s}
+.upd-input:focus{border-color:var(--accent)}
+.upd-input::placeholder{color:var(--muted)}
+.btn-upd{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:16px}
+.upd-status{border-radius:12px;padding:12px 14px;font-size:13px;font-weight:700;margin-bottom:12px;display:none}
+.upd-status.loading{background:var(--accent-light);color:var(--accent);display:block}
+.upd-status.error{background:var(--red-light);color:var(--red);display:block}
+.upd-status.ok{background:var(--green-light);color:#077a4a;display:block}
+.change-list{display:flex;flex-direction:column;gap:8px}
+.change-card{background:var(--white);border-radius:13px;padding:13px 14px;border:1.5px solid var(--border)}
+.change-card.up{border-color:#ff8c00;background:#fff4e6}
+.change-card.down{border-color:var(--green);background:var(--green-light)}
+.change-card.new{border-color:var(--accent);background:var(--accent-light)}
+.change-model{font-weight:900;font-size:14px}
+.change-detail{font-size:12px;margin-top:4px;color:var(--text)}
+.change-badge{display:inline-block;border-radius:6px;padding:2px 7px;font-size:11px;font-weight:700;margin-bottom:5px}
+.badge-up{background:#fff4e6;color:var(--orange)}
+.badge-down{background:var(--green-light);color:var(--green)}
+.badge-new{background:var(--accent-light);color:var(--accent)}
+.btn-apply{margin-top:10px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer;width:100%}
+.upd-last{font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px}
+.upd-howto{background:#f8f9fc;border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:16px}
+.upd-howto h3{font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1px;margin-bottom:10px}
+.upd-howto ol{padding-left:18px;display:flex;flex-direction:column;gap:8px}
+.upd-howto li{font-size:13px;color:var(--text);line-height:1.5}
+.upd-howto code{background:var(--border);border-radius:4px;padding:1px 5px;font-size:12px}
+
+/* MODAIS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:540px;padding:20px 20px 32px;animation:slideUp .22s ease}
+.modal-orc{max-height:92vh;display:flex;flex-direction:column}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-title{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:1.5px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:var(--bg);border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+input[type=text],input[type=number],textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:15px;color:var(--text);outline:none;margin-bottom:14px;transition:border-color .18s;background:var(--white)}
+input:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:none;height:70px}
+.modal-confirm-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer}
+.orc-body{flex:1;overflow-y:auto}
+.cli-block{background:var(--bg);border-radius:12px;padding:14px;margin-bottom:16px}
+.cli-row{display:flex;gap:10px}
+.cli-row>div{flex:1}
+.orc-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.orc-item-icon{font-size:18px;margin-top:1px}
+.orc-item-info{flex:1}
+.orc-item-name{font-weight:700;font-size:14px}
+.orc-item-desc{font-size:12px;color:var(--muted)}
+.orc-item-price{font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green);white-space:nowrap}
+.orc-remove{background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px}
+.qty-row{display:flex;align-items:center;gap:8px;margin-top:4px}
+.qty-btn{width:28px;height:28px;background:var(--bg);border:1.5px solid var(--border);border-radius:7px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+.qty-n{font-weight:900;font-size:14px;min-width:20px;text-align:center}
+.total-bar{background:var(--dark);border-radius:14px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin:14px 0}
+.total-label{color:rgba(255,255,255,.6);font-size:13px;font-weight:700}
+.total-value{font-family:'Bebas Neue',cursive;font-size:30px;color:var(--green);letter-spacing:1px}
+.action-btns{display:flex;flex-direction:column;gap:10px}
+.btn-wo{width:100%;background:#25d366;color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-copy{width:100%;background:var(--dark);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-pdf{width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-limpar{width:100%;background:var(--red-light);color:var(--red);border:1.5px solid var(--red);border-radius:12px;padding:12px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer}
+.markup-hint{background:#f0fff8;border:1px solid #b2f0d8;border-radius:8px;padding:8px 12px;font-size:12px;color:#077a4a;margin-bottom:14px}
+.cost-badge{background:var(--green-light);color:#077a4a;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;margin-bottom:14px}
+.sec-lbl{font-family:'Bebas Neue',cursive;font-size:13px;letter-spacing:2px;color:var(--muted);margin-bottom:8px}
+.mo-item{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;margin-bottom:7px}
+.mo-item.ativo{border-color:var(--accent);background:var(--accent-light)}
+.mo-icon{width:34px;height:34px;background:var(--bg);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.mo-item.ativo .mo-icon{background:var(--accent)}
+.mo-info{flex:1}
+.mo-nome{font-weight:700;font-size:14px}
+.mo-padrao{font-size:11px;color:var(--muted);margin-top:1px}
+.mo-val{font-family:'Bebas Neue',cursive;font-size:19px;color:var(--muted)}
+.mo-item.ativo .mo-val{color:var(--accent)}
+.mo-edit{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.mo-chk{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mo-item.ativo .mo-chk{background:var(--accent);border-color:var(--accent)}
+.subtotais{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:4px}
+.sub-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
+.toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-logo">TECH<span>FIX</span></div>
+  <button class="orc-btn" onclick="openOrc()">📋 <span id="badge" class="zero">0</span></button>
+</nav>
+
+<!-- PAGE: ORÇAMENTO -->
+<div class="page active" id="pg-orcamento">
+  <div class="breadcrumb" id="breadcrumb"><span class="bc-item active" onclick="goStep(1)">Marca</span></div>
+  <div class="step active" id="step1">
+    <div class="step-title">📱 Selecione a marca</div>
+    <div class="brand-grid" id="brand-grid"></div>
+  </div>
+  <div class="step" id="step2">
+    <div class="step-title" id="step2-title">Selecione o modelo</div>
+    <input class="model-search-input" id="modelFilter" type="text" placeholder="Filtrar modelo..." oninput="filterModels()">
+    <div class="model-list" id="model-list"></div>
+  </div>
+  <div class="step" id="step3">
+    <div class="step-title" id="step3-title">Qual é o defeito?</div>
+    <div class="defect-grid" id="defect-grid"></div>
+    <br>
+    <button class="btn-confirm" id="defect-confirm" onclick="goStep(4)" style="display:none">Ver preços →</button>
+  </div>
+  <div class="step" id="step4">
+    <div class="step-title">💰 Preços (Floritec)</div>
+    <div id="prices-wrap"></div>
+    <button class="btn-confirm" onclick="openOrc()">📋 Ir para o Orçamento</button>
+  </div>
+</div>
+
+<!-- PAGE: ATUALIZAÇÃO -->
+<div class="page" id="pg-atualizacao">
+  <div class="upd-wrap">
+    <div class="upd-title">🔄 Atualizar Preços</div>
+    <div class="upd-desc">Cole o link do Google Docs da Floritec abaixo e toque em verificar. O app busca automaticamente e mostra o que mudou.</div>
+
+    <div class="upd-last" id="upd-last" style="display:none"></div>
+
+    <input class="upd-input" id="upd-url" type="url" placeholder="https://docs.google.com/document/..." style="width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);margin-bottom:12px">
+
+    <div style="margin-bottom:12px">
+      <button onclick="document.getElementById('upd-url').value='https://docs.google.com/document/u/0/d/e/2PACX-1vTgSZf5Lp8dfhKBNS5hicGm3pWyVhVFI-dhzpI0C8kKj_7TALqFmeqZsFI2W5r1GnKIkDiQhd4DDk-2/pub?pli=1'"
+        style="background:var(--accent-light);color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;padding:8px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+        📋 Usar link da Floritec
+      </button>
+    </div>
+
+    <button class="btn-upd" onclick="checkUpdates()">🔍 Verificar mudanças</button>
+
+    <div class="upd-last" id="upd-last" style="display:none"></div>
+
+    <textarea id="upd-texto" style="width:100%;min-height:120px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);margin-bottom:12px;resize:vertical" placeholder="Cole aqui o conteúdo copiado do Google Docs da Floritec..."></textarea>
+    <button class="btn-upd" onclick="checkUpdates()">🔍 Verificar mudanças</button>
+    <div class="upd-status" id="upd-status"></div>
+    <div class="change-list" id="change-list"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bnav active" id="bn-orcamento" onclick="showPage('orcamento')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="9" y1="7" x2="15" y2="7"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+    Orçamento
+  </button>
+  <button class="bnav" id="bn-atualizacao" onclick="showPage('atualizacao')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+    Atualizar
+  </button>
+</div>
+
+<!-- MODAL PREÇO -->
+<div class="overlay" id="priceOverlay">
+  <div class="modal">
+    <div class="modal-title"><span id="price-modal-title">Quanto cobrar?</span><button class="modal-close" onclick="closePriceModal()">✕</button></div>
+    <div class="cost-badge" id="cost-badge">💰 Custo: R$ —</div>
+    <label>Valor que vai cobrar do cliente (R$)</label>
+    <input type="number" id="priceInput" placeholder="0,00" min="0" step="0.01">
+    <button class="modal-confirm-btn" onclick="confirmPrice()">✅ Confirmar e adicionar</button>
+  </div>
+</div>
+
+<!-- MODAL ORÇAMENTO -->
+<div class="overlay" id="orcOverlay">
+  <div class="modal modal-orc">
+    <div class="modal-title">Orçamento <button class="modal-close" onclick="closeOrc()">✕</button></div>
+    <div class="orc-body" id="orc-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+// CATÁLOGO — preços Floritec embutidos
+// ══════════════════════════════════════
+const FL = "https://floritecpecas.kyte.site";
+function d(q,c){return{tipo:"Display",q,c,f:"Floritec",link:FL};}
+function b(q,c){return{tipo:"Bateria",q,c,f:"Floritec",link:FL};}
+
+// Catálogo salvo em localStorage (pode ser atualizado pela aba Atualização)
+const CATALOG_DEFAULT = {
+"iPhone 5G":[d("Compatível",60)],
+"iPhone 5S":[d("Compatível",70)],
+"iPhone 6G":[d("Compatível",65),b("Compatível",60)],
+"iPhone 6S":[d("Compatível",65),b("Compatível",60)],
+"iPhone 6 Plus":[d("Compatível",75),b("Compatível",60)],
+"iPhone 6S Plus":[d("Compatível",75),b("Compatível",60)],
+"iPhone 7G":[d("Compatível",70),d("ZL",80),b("Compatível",65)],
+"iPhone 7 Plus":[d("Compatível",75),b("Compatível",70)],
+"iPhone 8G":[d("Compatível",70),d("ZL",105),b("Compatível",70)],
+"iPhone 8 Plus":[d("Compatível",75),d("ZL",105),b("Compatível",70)],
+"iPhone X":[d("ZL",180),d("Original Nova",475)],
+"iPhone XR":[d("HD",95),d("ZL",120),d("Original Nova",365),b("Compatível",80),b("Sem Flex",85)],
+"iPhone XS":[d("ZL",175),d("Original Nova",475),b("Compatível",80),b("Sem Flex",85)],
+"iPhone XS Max":[d("HD",95),d("Incell 120Hz ZL",130),d("ZL",245),d("Original Nova",500),b("Compatível",80),b("Sem Flex",85)],
+"iPhone 11":[d("HD",95),d("ZL CI Removível",110),d("Original Retirada",320),b("Compatível",85),b("Sem Flex",85)],
+"iPhone 11 Pro":[d("Incell ZL",125),d("ZL CI Removível",215),b("Compatível",90),b("Sem Flex",95)],
+"iPhone 11 Pro Max":[d("HD",105),d("Incell ZL",130),d("ZL CI Removível",255),b("Compatível",90),b("Sem Flex",95)],
+"iPhone 12":[d("HD",115),d("Incell ZL",125),d("ZL",265),d("Original Retirada",425),b("Compatível",85),b("Sem Flex",90),b("Calibra",145)],
+"iPhone 12 Pro":[d("HD",115),d("Incell ZL",125),d("ZL",265),b("Compatível",85),b("Sem Flex",90),b("Calibra",145)],
+"iPhone 12 Mini":[d("Nacional",405),b("Compatível",85),b("Sem Flex",90),b("Calibra",145)],
+"iPhone 12 Pro Max":[d("Incell ZL",165),d("ZL",375),b("Compatível",95),b("Sem Flex",100),b("Calibra",155)],
+"iPhone 13":[d("Incell ZL",195),d("ZL",325),d("Soft OLED",365),d("Original Retirada",650),b("Compatível",90),b("Sem Flex",95),b("Calibra",145)],
+"iPhone 13 Mini":[d("ZL CI Removível",345),d("Original",650),b("Compatível",85),b("Sem Flex",90)],
+"iPhone 13 Pro":[d("Incell ZL",295),d("ZL",475),d("Original Retirada",1200),d("Original Nova",1600),b("Compatível",105),b("Sem Flex",110),b("Calibra",155)],
+"iPhone 13 Pro Max":[d("Incell ZL",345),d("ZL",600),d("Soft OLED",650),d("Original Nova",1750),b("Compatível",110),b("Sem Flex",115),b("Calibra",155)],
+"iPhone 14":[d("Incell ZL",245),d("ZL",325),d("Soft OLED",365),b("Compatível",105),b("Sem Flex",110),b("Calibra",145)],
+"iPhone 14 Plus":[d("Original Nova",1250),b("Compatível",105),b("Sem Flex",110),b("Calibra",145)],
+"iPhone 14 Pro":[d("Incell ZL",365),d("ZL",685),d("Original Retirada",1400),d("Original Nova",1500),b("Compatível",105),b("Sem Flex",115),b("Calibra",155)],
+"iPhone 14 Pro Max":[d("Incell ZL",425),d("ZL",725),d("Soft OLED",850),d("Original Retirada",1400),b("Compatível",115),b("Sem Flex",115),b("Calibra",155)],
+"iPhone 15":[d("Incell ZL",350),d("ZL",650),d("Original Retirada",850),b("Compatível",115),b("Sem Flex",125),b("Calibra",155)],
+"iPhone 15 Plus":[d("Original Retirada",1100),b("Compatível",125),b("Sem Flex",130),b("Calibra",155)],
+"iPhone 15 Pro":[d("Incell ZL",400),d("ZL",725),d("Original Nova",1800),b("Compatível",120),b("Sem Flex",125),b("Calibra",160)],
+"iPhone 15 Pro Max":[d("Incell ZL",450),d("ZL",800),d("Original Retirada",1900),d("Original Nova",2000),b("Compatível",125),b("Sem Flex",135),b("Calibra",165)],
+"iPhone 16":[d("Incell ZL",450),d("ZL",780),d("Original Retirada",1300)],
+"iPhone 16 Pro":[d("ZL",780),d("Original Retirada",1500)],
+"iPhone 16 Pro Max":[d("ZL",1000),d("Original Retirada",1600)],
+"iPhone 17 Pro":[d("Original Retirada",2200)],
+"iPhone 17 Pro Max":[d("Original Retirada",2700)],
+"iPhone SE 2020":[b("Compatível",70)],
+"iPhone SE 2023":[b("Compatível",90)],
+"Galaxy A01":[d("S/A",70),d("C/A",85)],
+"Galaxy A01 Core":[d("S/A",75),d("C/A",85)],
+"Galaxy A02":[d("S/A",75),d("C/A",80),d("ZL C/A",95)],
+"Galaxy A02S":[d("S/A",75),d("C/A",85),d("ZL C/A",90)],
+"Galaxy A03":[d("S/A",75),d("C/A",85),d("ZL C/A",95)],
+"Galaxy A03 Core":[d("S/A",75),d("C/A",85),d("ZL C/A",90)],
+"Galaxy A03S":[d("C/A",85),d("ZL C/A",105),d("Nacional",145)],
+"Galaxy A04":[d("S/A",75),d("ZL C/A",105)],
+"Galaxy A04E":[d("C/A",80),d("ZL C/A",90)],
+"Galaxy A04S":[d("S/A",80),d("ZL C/A",105)],
+"Galaxy A05":[d("S/A",80),d("ZL C/A",110)],
+"Galaxy A05S":[d("S/A",85),d("ZL C/A",105)],
+"Galaxy A06 4G":[d("S/A",95),d("C/A",105),d("ZL C/A",120)],
+"Galaxy A06 5G":[d("S/A",95),d("ZL C/A",120)],
+"Galaxy A07":[d("S/A",100),d("ZL C/A",105)],
+"Galaxy A10":[d("S/A",75),d("C/A",85)],
+"Galaxy A10E":[d("S/A",125)],
+"Galaxy A10S":[d("S/A",75),d("C/A",85)],
+"Galaxy A11":[d("S/A",75),d("C/A",85),d("ZL C/A",90)],
+"Galaxy A12":[d("S/A",75),d("C/A",85),d("ZL C/A",105)],
+"Galaxy A13 4G":[d("S/A",85),d("C/A",90),d("ZL C/A",100)],
+"Galaxy A13 5G":[d("S/A",80),d("ZL C/A",115)],
+"Galaxy A14 4G":[d("C/A",95),d("ZL C/A",115)],
+"Galaxy A14 5G":[d("S/A",95),d("ZL C/A",120)],
+"Galaxy A15":[d("Incell C/A",125),d("Incell ZL",135),d("LCD Red C/A",185),d("ZL C/A",245)],
+"Galaxy A16 4G":[d("S/A",235),d("ZL C/A",265)],
+"Galaxy A16 5G":[d("S/A",235),d("ZL C/A",265)],
+"Galaxy A17":[d("S/A",235),d("ZL C/A",275)],
+"Galaxy A20":[d("Incell C/A",90),d("Incell ZL",120),d("C/A",155),d("ZL C/A",170)],
+"Galaxy A20E":[d("S/A",125)],
+"Galaxy A20S":[d("S/A",80),d("C/A",90)],
+"Galaxy A21":[d("C/A",115)],
+"Galaxy A21S":[d("S/A",75),d("C/A",85)],
+"Galaxy A22 4G":[d("Incell C/A",100),d("Incell ZL",125),d("C/A",165),d("ZL C/A",190)],
+"Galaxy A22 5G":[d("S/A",80),d("ZL C/A",115)],
+"Galaxy A23 4G":[d("S/A",85),d("C/A",95),d("ZL C/A",115)],
+"Galaxy A23 5G":[d("S/A",85),d("ZL C/A",115)],
+"Galaxy A24":[d("S/A",180),d("ZL C/A",295)],
+"Galaxy A25":[d("Incell ZL",125),d("LCD Red C/A",265)],
+"Galaxy A26":[d("C/A",225),d("ZL C/A",275)],
+"Galaxy A30":[d("Incell C/A",100),d("Incell ZL",120),d("C/A",160),d("ZL C/A",175)],
+"Galaxy A30S":[d("Incell C/A",100),d("C/A",160),d("ZL C/A",175),d("Nacional",425)],
+"Galaxy A31":[d("Incell C/A",100),d("Incell ZL",120),d("LCD Red C/A",160),d("ZL C/A",180)],
+"Galaxy A32 4G":[d("Incell C/A",100),d("Incell ZL",120),d("C/A",170),d("ZL C/A",185)],
+"Galaxy A32 5G":[d("S/A",75),d("ZL C/A",120)],
+"Galaxy A33":[d("Incell C/A",120),d("ZL C/A",265)],
+"Galaxy A34":[d("C/A",195),d("ZL C/A",315)],
+"Galaxy A35":[d("S/A",195),d("C/A",205),d("ZL C/A",305)],
+"Galaxy A36":[d("C/A",245),d("ZL C/A",275)],
+"Galaxy A40":[d("Nacional C/A",325)],
+"Galaxy A50":[d("Incell C/A",100),d("Incell ZL",120),d("C/A",160),d("ZL C/A",175)],
+"Galaxy A51":[d("Incell C/A",100),d("LCD Red C/A",160),d("ZL C/A",225),d("Nacional C/A",495)],
+"Galaxy A52":[d("Incell C/A",110),d("Incell ZL",145),d("LCD Red C/A",195),d("ZL C/A",265),d("Nacional C/A",555)],
+"Galaxy A52S":[d("Incell C/A",110),d("ZL C/A",265)],
+"Galaxy A53":[d("ZL C/A",285),d("Nacional C/A",565)],
+"Galaxy A54":[d("LCD Red C/A",195),d("ZL C/A",275)],
+"Galaxy A55":[d("S/A",195),d("ZL C/A",305)],
+"Galaxy A56":[d("ZL C/A",305)],
+"Galaxy A70":[d("Incell C/A",105),d("LCD Red C/A",160),d("ZL C/A",245)],
+"Galaxy A71":[d("Incell C/A",105),d("Incell ZL",120),d("LCD Red C/A",165),d("ZL C/A",265)],
+"Galaxy A72":[d("LCD Red C/A",195),d("ZL C/A",275),d("Nacional C/A",495)],
+"Galaxy A73":[d("ZL C/A",295)],
+"Galaxy A80":[d("Nacional C/A",300)],
+"Galaxy A5 2016":[d("S/A",140)],
+"Galaxy A5 2017":[d("S/A",140)],
+"Galaxy A8 2018":[d("S/A",235)],
+"Galaxy A7 2016":[d("S/A",175)],
+"Galaxy A7 2017":[d("S/A",165)],
+"Galaxy A8 Plus 2018":[d("S/A",185)],
+"Galaxy A7 2018":[d("S/A",195),d("ZL C/A",235)],
+"Galaxy J2 Core":[d("S/A",135)],
+"Galaxy J2 Pro":[d("S/A",75)],
+"Galaxy J4":[d("S/A",140)],
+"Galaxy J4 Plus":[d("S/A",75)],
+"Galaxy J5 Metal":[d("S/A",125)],
+"Galaxy J5 Pro":[d("S/A",130)],
+"Galaxy J5 Prime":[d("S/A",75)],
+"Galaxy J6":[d("S/A",185)],
+"Galaxy J6 Plus":[d("S/A",75)],
+"Galaxy J7":[d("S/A",155)],
+"Galaxy J7 Neo":[d("S/A",120)],
+"Galaxy J7 Metal":[d("S/A",125)],
+"Galaxy J7 Pro":[d("S/A",140)],
+"Galaxy J7 Prime":[d("S/A",85)],
+"Galaxy J8":[d("Incell S/A",80),d("S/A",175)],
+"Galaxy M10":[d("S/A",75),d("C/A",80)],
+"Galaxy M12":[d("S/A",75),d("ZL C/A",100)],
+"Galaxy M13":[d("S/A",85),d("ZL C/A",110)],
+"Galaxy M14 5G":[d("S/A",95),d("ZL C/A",115)],
+"Galaxy M15":[d("ZL C/A",275)],
+"Galaxy M20":[d("ZL C/A",110)],
+"Galaxy M21":[d("Incell S/A",80),d("S/A",140)],
+"Galaxy M22":[d("ZL C/A",185)],
+"Galaxy M23":[d("S/A",85),d("ZL C/A",115)],
+"Galaxy M30":[d("Incell S/A",80),d("S/A",140),d("ZL C/A",175)],
+"Galaxy M31":[d("Incell S/A",80),d("S/A",140)],
+"Galaxy M32":[d("C/A",185),d("ZL C/A",195)],
+"Galaxy M33":[d("S/A",85),d("ZL C/A",115)],
+"Galaxy M34":[d("S/A",180),d("Incell ZL",125),d("ZL C/A",265)],
+"Galaxy M35":[d("ZL C/A",200)],
+"Galaxy M51":[d("C/A",295),d("ZL C/A",295)],
+"Galaxy M52":[d("ZL C/A",295)],
+"Galaxy M53":[d("ZL C/A",295),d("Nacional C/A",495)],
+"Galaxy M54":[d("ZL C/A",295)],
+"Galaxy M55":[d("ZL C/A",355)],
+"Galaxy M62":[d("Incell C/A",100),d("ZL C/A",280)],
+"Galaxy Note 10":[d("ZL C/A",1050),d("Nacional C/A",1250)],
+"Galaxy Note 10 Lite":[d("ZL C/A",680),d("Nacional C/A",1175)],
+"Galaxy Note 10 Plus":[d("ZL C/A",850),d("Nacional C/A",1750)],
+"Galaxy Note 20":[d("ZL C/A",700),d("Nacional C/A",1250)],
+"Galaxy Note 20 Ultra":[d("ZL C/A",1050),d("Nacional C/A",1850)],
+"Galaxy S10":[d("ZL C/A",900),d("Nacional C/A",1100)],
+"Galaxy S10E":[d("ZL C/A",475),d("Nacional C/A",545)],
+"Galaxy S10 Lite":[d("ZL C/A",650),d("Nacional C/A",950)],
+"Galaxy S10 Plus":[d("ZL C/A",1050),d("Nacional C/A",1250)],
+"Galaxy S20":[d("ZL C/A",750),d("Nacional C/A",1050)],
+"Galaxy S20 FE":[d("Incell ZL",165),d("C/A",250),d("ZL C/A",265),d("Nacional C/A",545)],
+"Galaxy S20 Plus":[d("ZL C/A",700),d("Nacional C/A",1150)],
+"Galaxy S20 Ultra":[d("ZL C/A",700),d("Nacional C/A",1300)],
+"Galaxy S21":[d("ZL C/A",650),d("Nacional C/A",950)],
+"Galaxy S21 FE":[d("Incell ZL",220),d("C/A",355),d("Nacional C/A",900)],
+"Galaxy S21 Plus":[d("ZL C/A",750),d("Nacional C/A",1150)],
+"Galaxy S21 Ultra":[d("ZL C/A",850),d("Nacional C/A",1500)],
+"Galaxy S22":[d("ZL C/A",950),d("Nacional C/A",1350)],
+"Galaxy S22 Plus":[d("ZL C/A",850),d("Nacional C/A",1350)],
+"Galaxy S22 Ultra":[d("ZL C/A",800),d("Nacional C/A",1750)],
+"Galaxy S23":[d("ZL C/A",925),d("Nacional C/A",1200)],
+"Galaxy S23 FE":[d("ZL C/A",525)],
+"Galaxy S23 Plus":[d("ZL C/A",750),d("Nacional C/A",1300)],
+"Galaxy S23 Ultra":[d("ZL C/A",950),d("Nacional C/A",1900)],
+"Galaxy S24 FE":[d("ZL C/A",375)],
+"Galaxy S24 Ultra":[d("ZL C/A",1200)],
+"Samsung Tab T220/T225":[d("",175)],
+"Samsung Tab T280":[d("",155)],
+"Samsung Tab T285":[d("",155)],
+"Samsung Tab T290":[d("",155)],
+"Samsung Tab T295":[d("",155)],
+"Samsung Tab T500/T505":[d("",255)],
+"Samsung Tab T510/T515":[d("",225)],
+"Samsung Tab T720/T725":[d("",1350)],
+"Samsung Tab T870/T875":[d("",295)],
+"Samsung Tab X200/X205":[d("",295)],
+"Samsung Tab X210/X215/X216":[d("",295)],
+"Samsung Tab X510/X516":[d("",295)],
+"Moto E6":[d("S/A",75)],
+"Moto E6i":[d("S/A",75)],
+"Moto E7":[d("S/A",75),d("C/A",85),d("ZL C/A",100),d("Nacional C/A",115)],
+"Moto E7 Power":[d("S/A",75),d("ZL C/A",110)],
+"Moto E7 Plus":[d("S/A",75),d("ZL C/A",100)],
+"Moto E13":[d("S/A",75),d("C/A",85),d("ZL C/A",100)],
+"Moto E14":[d("S/A",95)],
+"Moto E15":[d("S/A",90)],
+"Moto E20":[d("S/A",75),d("C/A",90),d("ZL C/A",105)],
+"Moto E22":[d("S/A",75),d("C/A",85),d("ZL C/A",115)],
+"Moto E30":[d("S/A",90),d("ZL C/A",105)],
+"Moto E32":[d("S/A",85),d("ZL C/A",110),d("Nacional C/A",145)],
+"Moto E40":[d("S/A",90),d("ZL C/A",105)],
+"Moto G04":[d("S/A",95),d("C/A",100),d("ZL C/A",115)],
+"Moto G05":[d("S/A",90),d("ZL C/A",140)],
+"Moto G06":[d("S/A",105)],
+"Moto G5G":[d("S/A",85),d("ZL C/A",155)],
+"Moto G5G Plus":[d("ZL C/A",235)],
+"Moto G6 Play":[d("S/A",80),d("C/A",110)],
+"Moto G7":[d("S/A",85)],
+"Moto G7 Play":[d("S/A",75)],
+"Moto G7 Plus":[d("S/A",85)],
+"Moto G7 Power":[d("S/A",75),d("ZL C/A",115)],
+"Moto G8":[d("S/A",80),d("ZL C/A",110)],
+"Moto G8 Play":[d("S/A",75),d("C/A",95),d("ZL C/A",115)],
+"Moto G8 Plus":[d("S/A",95),d("C/A",125),d("ZL C/A",140)],
+"Moto G8 Power":[d("S/A",95),d("ZL C/A",140)],
+"Moto G8 Power Lite":[d("S/A",80),d("C/A",90),d("ZL C/A",100)],
+"Moto G9":[d("S/A",90)],
+"Moto G9 Play":[d("S/A",75),d("C/A",85),d("ZL C/A",100)],
+"Moto G9 Plus":[d("S/A",95),d("C/A",140)],
+"Moto G9 Power":[d("S/A",90),d("C/A",95),d("ZL C/A",120)],
+"Moto G10":[d("S/A",75),d("C/A",85),d("ZL C/A",105)],
+"Moto G13":[d("S/A",85)],
+"Moto G14":[d("S/A",95),d("C/A",115),d("ZL C/A",130)],
+"Moto G15":[d("S/A",95),d("ZL C/A",125)],
+"Moto G20":[d("S/A",75),d("C/A",85),d("ZL C/A",105)],
+"Moto G22":[d("S/A",85),d("C/A",95),d("ZL C/A",115)],
+"Moto G23":[d("S/A",85)],
+"Moto G24":[d("S/A",95),d("C/A",115),d("ZL C/A",125)],
+"Moto G24 Power":[d("S/A",95),d("C/A",115),d("ZL C/A",125)],
+"Moto G30":[d("S/A",75),d("C/A",85),d("ZL C/A",105)],
+"Moto G31":[d("S/A",165),d("ZL C/A",195)],
+"Moto G32":[d("S/A",90),d("ZL C/A",125)],
+"Moto G34":[d("S/A",85),d("C/A",95),d("ZL C/A",105)],
+"Moto G35":[d("S/A",90),d("ZL C/A",110)],
+"Moto G41":[d("S/A",165),d("ZL C/A",190)],
+"Moto G42":[d("ZL C/A",195)],
+"Moto G45":[d("S/A",85)],
+"Moto G50 5G":[d("S/A",85),d("ZL C/A",105)],
+"Moto G52":[d("Incell C/A",115),d("Incell ZL",140),d("S/A",260),d("ZL C/A",275)],
+"Moto G53":[d("S/A",85),d("ZL C/A",120)],
+"Moto G54":[d("S/A",85),d("C/A",95),d("ZL C/A",105)],
+"Moto G55":[d("S/A",85),d("ZL C/A",105)],
+"Moto G56":[d("S/A",100)],
+"Moto G60":[d("S/A",90),d("ZL C/A",125)],
+"Moto G62":[d("S/A",105),d("ZL C/A",125)],
+"Moto G71":[d("S/A",165),d("ZL C/A",195)],
+"Moto G72":[d("ZL C/A",435)],
+"Moto G73 5G":[d("S/A",90),d("ZL C/A",140)],
+"Moto G75":[d("S/A",140)],
+"Moto G82":[d("Incell C/A",115),d("S/A",260),d("ZL C/A",275)],
+"Moto G84":[d("S/A",205),d("ZL C/A",295)],
+"Moto G85":[d("S/A",365),d("ZL C/A",435)],
+"Moto G86":[d("S/A",365),d("ZL C/A",395)],
+"Moto G100":[d("S/A",110),d("ZL C/A",245)],
+"Moto G200":[d("S/A",115),d("ZL C/A",255)],
+"Moto Edge":[d("S/A",425)],
+"Moto Edge Plus":[d("S/A",425),d("C/A",495)],
+"Moto Edge 20":[d("S/A",375),d("ZL C/A",395)],
+"Moto Edge 20 Lite":[d("S/A",285),d("ZL C/A",325)],
+"Moto Edge 20 Fusion":[d("S/A",285),d("ZL C/A",325)],
+"Moto Edge 30":[d("S/A",260),d("ZL C/A",295)],
+"Moto Edge 30 Fusion":[d("S/A",310)],
+"Moto Edge 30 Neo":[d("S/A",390),d("ZL C/A",415)],
+"Moto Edge 30 Pro":[d("S/A",375),d("ZL C/A",395)],
+"Moto Edge 30 Ultra":[d("S/A",225)],
+"Moto Edge 40":[d("S/A",325),d("ZL C/A",445)],
+"Moto Edge 40 Neo":[d("S/A",325),d("ZL C/A",445)],
+"Moto Edge 50":[d("S/A",435),d("ZL C/A",445)],
+"Moto Edge 50 Fusion":[d("S/A",365),d("ZL C/A",435)],
+"Moto Edge 50 Neo":[d("S/A",485)],
+"Moto Edge 50 Pro":[d("S/A",435)],
+"Moto Edge 50 Ultra":[d("S/A",495)],
+"Moto Edge 60":[d("S/A",375)],
+"Moto Edge 60 Fusion":[d("S/A",375)],
+"Moto Edge 60 Pro":[d("ZL C/A",455)],
+"Moto One":[d("S/A",75),d("ZL C/A",115)],
+"Moto One Action":[d("S/A",210)],
+"Moto One Fusion":[d("S/A",75),d("C/A",85),d("ZL C/A",100)],
+"Moto One Fusion Plus":[d("S/A",85),d("ZL C/A",140)],
+"Moto One Hyper":[d("S/A",90)],
+"Moto One Vision":[d("S/A",210)],
+"Moto Z Play":[d("S/A",125)],
+"Moto Z2 Play":[d("S/A",140)],
+"Moto Z3 Play":[d("S/A",185)],
+"Redmi Note 5":[d("S/A",80)],
+"Redmi Note 6":[d("S/A",80),d("ZL C/A",125)],
+"Redmi Note 7":[d("S/A",75),d("ZL C/A",115)],
+"Redmi Note 8":[d("S/A",80),d("ZL C/A",115)],
+"Redmi Note 8T":[d("S/A",75),d("ZL C/A",115)],
+"Redmi Note 8 Pro":[d("S/A",80),d("ZL C/A",115)],
+"Redmi Note 9":[d("S/A",90),d("ZL C/A",110)],
+"Redmi Note 9S":[d("S/A",90),d("ZL C/A",120)],
+"Redmi Note 9 Pro":[d("S/A",90),d("ZL C/A",120)],
+"Redmi Note 10 4G":[d("Incell S/A",85),d("S/A",165),d("ZL C/A",195)],
+"Redmi Note 10S":[d("Incell S/A",85),d("S/A",165),d("ZL C/A",195)],
+"Redmi Note 10 5G":[d("S/A",95),d("ZL C/A",130)],
+"Redmi Note 10 Pro 4G":[d("Incell S/A",90),d("S/A",225),d("ZL C/A",255)],
+"Redmi Note 11 4G":[d("Incell S/A",90),d("S/A",195),d("ZL C/A",215)],
+"Redmi Note 11S":[d("Incell S/A",90),d("S/A",195),d("ZL C/A",215)],
+"Redmi Note 11 5G":[d("S/A",85),d("ZL C/A",155)],
+"Redmi Note 11 Pro":[d("S/A",225),d("ZL C/A",245)],
+"Redmi Note 12 4G":[d("S/A",225),d("ZL C/A",265)],
+"Redmi Note 12 5G":[d("S/A",225),d("ZL C/A",260)],
+"Redmi Note 12 Pro 4G":[d("S/A",225),d("ZL C/A",265)],
+"Redmi Note 12 Pro 5G":[d("Incell ZL",135),d("S/A",245),d("ZL C/A",265)],
+"Redmi Note 12 Pro Plus":[d("ZL C/A",285)],
+"Redmi Note 12 Turbo":[d("S/A",225)],
+"Redmi Note 13 4G":[d("S/A",275),d("ZL C/A",335)],
+"Redmi Note 13 5G":[d("Incell ZL",125),d("S/A",275),d("ZL C/A",335)],
+"Redmi Note 13 Pro 4G":[d("S/A",365),d("ZL C/A",395)],
+"Redmi Note 13 Pro 5G":[d("S/A",375),d("ZL C/A",405)],
+"Redmi Note 14 4G":[d("S/A",275),d("ZL C/A",325)],
+"Redmi Note 14 5G":[d("S/A",275),d("ZL C/A",325)],
+"Redmi Note 14 Pro 4G":[d("S/A",375)],
+"Redmi 6":[d("S/A",115)],
+"Redmi 6A":[d("S/A",115)],
+"Redmi 7":[d("S/A",75)],
+"Redmi 7A":[d("S/A",75)],
+"Redmi 8":[d("S/A",75)],
+"Redmi 8A":[d("S/A",75)],
+"Redmi 9":[d("S/A",75),d("C/A",110)],
+"Redmi 9A":[d("S/A",85),d("C/A",95),d("ZL C/A",105)],
+"Redmi 9C":[d("S/A",85),d("C/A",95),d("ZL C/A",105)],
+"Redmi 9T":[d("S/A",85),d("ZL C/A",110)],
+"Redmi 10":[d("S/A",90),d("C/A",115)],
+"Redmi 10C":[d("S/A",85),d("ZL C/A",115)],
+"Redmi 12":[d("S/A",100),d("ZL C/A",140)],
+"Redmi 12C":[d("S/A",90),d("ZL C/A",120)],
+"Redmi 13C":[d("S/A",90),d("C/A",100),d("ZL C/A",120)],
+"Redmi 14C":[d("S/A",95),d("C/A",110),d("ZL C/A",125)],
+"Redmi 15C":[d("S/A",95),d("ZL C/A",110)],
+"Redmi A1":[d("S/A",85)],
+"Redmi A3":[d("S/A",90),d("ZL C/A",110)],
+"Redmi A5":[d("S/A",95)],
+"Poco C3":[d("S/A",95)],
+"Poco C40":[d("S/A",85)],
+"Poco C51":[d("S/A",85)],
+"Poco C61":[d("S/A",90)],
+"Poco C65":[d("S/A",90),d("C/A",100),d("ZL C/A",120)],
+"Poco C71":[d("S/A",95)],
+"Poco C75":[d("S/A",95),d("C/A",110),d("ZL C/A",125)],
+"Poco C85":[d("S/A",95),d("ZL C/A",110)],
+"Poco F1":[d("S/A",80),d("ZL C/A",115)],
+"Poco F3":[d("Incell S/A",95),d("S/A",230),d("ZL C/A",275)],
+"Poco F4":[d("Incell S/A",95),d("S/A",230),d("ZL C/A",285)],
+"Poco F5":[d("S/A",225)],
+"Poco F5 Pro":[d("Incell ZL",245),d("S/A",475)],
+"Poco M3":[d("S/A",85),d("ZL C/A",110)],
+"Poco M3 Pro":[d("S/A",95),d("ZL C/A",130)],
+"Poco M4":[d("S/A",95),d("ZL C/A",115)],
+"Poco M4 Pro 4G":[d("S/A",195),d("ZL C/A",215)],
+"Poco M4 Pro 5G":[d("ZL C/A",155)],
+"Poco M5":[d("S/A",95),d("ZL C/A",115)],
+"Poco M5S":[d("Incell S/A",85),d("S/A",165)],
+"Poco M6 4G":[d("S/A",100)],
+"Poco M6 Pro 4G":[d("S/A",365),d("ZL C/A",395)],
+"Poco M7 Pro 5G":[d("S/A",275)],
+"Poco X3":[d("S/A",90),d("ZL C/A",135)],
+"Poco X3 Pro":[d("S/A",90),d("ZL C/A",135)],
+"Poco X3 GT":[d("S/A",115),d("ZL C/A",145)],
+"Poco X4 Pro":[d("Incell S/A",90),d("S/A",225),d("ZL C/A",245)],
+"Poco X4 GT":[d("ZL C/A",235)],
+"Poco X5 4G":[d("S/A",225),d("ZL C/A",265)],
+"Poco X5 5G":[d("S/A",225),d("ZL C/A",260)],
+"Poco X5 Pro":[d("Incell ZL",135),d("S/A",245),d("ZL C/A",265)],
+"Poco X6 5G":[d("S/A",375),d("ZL C/A",405)],
+"Poco X6 Pro":[d("S/A",385)],
+"Poco X7":[d("S/A",295)],
+"Poco X7 Pro":[d("S/A",395)],
+"Mi A2":[d("S/A",85)],
+"Mi A2 Lite":[d("S/A",80),d("C/A",110)],
+"Mi A3":[d("S/A",185),d("ZL C/A",235)],
+"Mi 9":[d("S/A",170)],
+"Mi 9 Lite":[d("S/A",175),d("ZL C/A",235)],
+"Mi 9T":[d("S/A",275),d("ZL C/A",295)],
+"Mi 9T Pro":[d("S/A",275),d("ZL C/A",295)],
+"Mi 10T":[d("S/A",155),d("ZL C/A",195)],
+"Mi 10T Pro":[d("S/A",155),d("ZL C/A",195)],
+"Mi 10T Lite":[d("ZL C/A",235)],
+"Mi 11 Lite":[d("S/A",315),d("ZL C/A",375)],
+"Mi 11T":[d("S/A",315),d("ZL C/A",335)],
+"Mi 11T Pro":[d("S/A",315),d("ZL C/A",335)],
+"Mi 12 Lite":[d("S/A",275),d("C/A",295)],
+"Mi 12T":[d("S/A",275)],
+"Mi 12T Pro":[d("S/A",275)],
+"Mi 13 Lite":[d("S/A",385)],
+"Mi 13T":[d("Incell C/A",225),d("Nacional S/A",315)],
+"Mi 13T Pro":[d("Incell C/A",225),d("Nacional S/A",315)],
+"LG K8":[d("S/A",90)],
+"LG K9":[d("S/A",100)],
+"LG K10 2017":[d("S/A",90)],
+"LG K10 2018":[d("S/A",115)],
+"LG K10 Pro":[d("S/A",125)],
+"LG K10 Power":[d("S/A",115)],
+"LG K11":[d("C/A",115)],
+"LG K11 Plus":[d("C/A",95)],
+"LG K12":[d("C/A",110),d("ZL C/A",110)],
+"LG K12 Prime":[d("C/A",90)],
+"LG K22":[d("ZL C/A",110)],
+"LG K40":[d("C/A",110)],
+"LG K40S":[d("S/A",75),d("C/A",110)],
+"LG K41S":[d("S/A",80),d("C/A",95),d("ZL C/A",110)],
+"LG K42":[d("S/A",80),d("ZL C/A",110)],
+"LG K50":[d("S/A",80)],
+"LG K50S":[d("S/A",80),d("C/A",110)],
+"LG K51":[d("S/A",90)],
+"LG K51S":[d("S/A",90),d("C/A",100),d("ZL C/A",115)],
+"LG K52":[d("S/A",80),d("ZL C/A",135)],
+"LG K61":[d("S/A",85),d("ZL C/A",115)],
+"LG K62":[d("S/A",80),d("ZL C/A",135)],
+"LG K71":[d("S/A",235)],
+"Asus ZB501KL":[d("S/A",95)],
+"Asus ZB601KL":[d("S/A",110)],
+"Asus ZB631KL":[d("S/A",105)],
+"Asus ZB634KL":[d("S/A",90),d("ZL C/A",145)],
+"Asus ZC520KL":[d("S/A",115)],
+"Asus ZC553KL":[d("S/A",145)],
+"Asus ZE553KL":[d("S/A",155)],
+"Asus ZE554KL":[d("S/A",95)],
+"Asus ZS620KL":[d("S/A",115)],
+"Infinix Hot 11 2022":[d("S/A",110)],
+"Infinix Hot 11S":[d("S/A",115)],
+"Infinix Hot 20i":[d("ZL C/A",125)],
+"Infinix Hot 30":[d("S/A",125)],
+"Infinix Note 10 Pro":[d("S/A",125)],
+"Infinix Note 11 Pro":[d("S/A",125)],
+"Realme 6":[d("S/A",135)],
+"Realme 7":[d("S/A",135)],
+"Realme 7 Pro":[d("S/A",225),d("ZL C/A",255)],
+"Realme 8 Pro":[d("S/A",225),d("ZL C/A",275)],
+"Realme C3":[d("S/A",135),d("ZL C/A",165)],
+"Realme C11 2020":[d("S/A",165)],
+"Realme C11 2021":[d("S/A",165)],
+"Realme C17":[d("S/A",165)],
+"Realme C21Y":[d("S/A",135)],
+"Realme C25Y":[d("S/A",135)],
+"Realme C30S":[d("S/A",145)],
+"Realme C51":[d("S/A",90),d("ZL C/A",110)],
+"Realme C53":[d("S/A",90)],
+"Realme C55":[d("S/A",95)],
+"Realme C61":[d("S/A",90)],
+"Realme C65":[d("S/A",110)],
+"Realme C67 4G":[d("S/A",95)],
+"Realme C71":[d("S/A",100),d("ZL C/A",140)],
+"Realme C75 4G":[d("S/A",95)],
+"Realme Note 50":[d("S/A",90),d("ZL C/A",110)],
+"Realme Note 60":[d("S/A",90),d("ZL C/A",130)],
+"Realme Note 70":[d("S/A",105)],
+"Realme 14":[d("S/A",375)],
+"Realme 14T":[d("S/A",375)],
+};
+
+// Carregar catálogo do localStorage se houver
+let CATALOG = {};
+function loadCatalog(){
+  try{
+    const saved = localStorage.getItem("techfix_catalog");
+    if(saved) CATALOG = JSON.parse(saved);
+    else CATALOG = {...CATALOG_DEFAULT};
+  }catch(e){ CATALOG = {...CATALOG_DEFAULT}; }
+}
+function saveCatalog(){
+  localStorage.setItem("techfix_catalog",JSON.stringify(CATALOG));
+}
+
+// ══════════════════════════════════════
+// COMPARADOR DE PREÇOS
+// ══════════════════════════════════════
+async function checkUpdates(){
+  const url = document.getElementById("upd-url").value.trim();
+  if(!url){ alert("Cole o link do Google Docs da Floritec."); return; }
+
+  const status = document.getElementById("upd-status");
+  const changeList = document.getElementById("change-list");
+  status.className = "upd-status loading";
+  status.textContent = "🔄 Buscando dados da Floritec...";
+  changeList.innerHTML = "";
+
+  try {
+    // Buscar direto — funciona pois estamos no GitHub Pages (sem bloqueio de CORS para docs públicos)
+    let fetchUrl = url;
+    // Garantir que é a versão publicada
+    if(url.includes("/edit") || url.includes("/view")){
+      const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+      if(match) fetchUrl = `https://docs.google.com/document/d/${match[1]}/pub`;
+    }
+
+    const res = await fetch(fetchUrl, {mode:"cors"});
+    if(!res.ok) throw new Error("Não foi possível acessar o documento.");
+    const html = await res.text();
+    if(!html || html.length < 100) throw new Error("Documento vazio.");
+
+    const newPrices = extractPricesFromText(html);
+    if(Object.keys(newPrices).length === 0)
+      throw new Error("Não encontrei preços. Verifique se o link é da lista publicada da Floritec.");
+
+    const changes = compareWithCurrent(newPrices);
+
+    if(changes.length === 0){
+      status.className = "upd-status ok";
+      status.textContent = `✅ Tudo igual! ${Object.keys(newPrices).length} preços verificados.`;
+    } else {
+      status.className = "upd-status ok";
+      status.textContent = `🔍 ${changes.length} mudança(s) encontrada(s):`;
+      renderChanges(changes, newPrices);
+    }
+
+    localStorage.setItem("upd_last","Última verificação: "+new Date().toLocaleString("pt-BR"));
+    document.getElementById("upd-last").textContent = localStorage.getItem("upd_last");
+    document.getElementById("upd-last").style.display = "block";
+    localStorage.setItem("floritec_url", url);
+
+  } catch(err) {
+    status.className = "upd-status error";
+    status.textContent = "❌ " + err.message;
+  }
+}
+
+function extractPricesFromText(html){
+  const prices = {};
+  // Remover HTML tags
+  const text = html.replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&nbsp;/g," ");
+  const lines = text.split(/\n|\r|\|/).map(l=>l.trim()).filter(Boolean);
+
+  // Procurar linhas com R$ e tentar associar a modelos do catálogo
+  for(const key of Object.keys(CATALOG_DEFAULT)){
+    const modelParts = key.split(" ");
+    const modelBase = modelParts.slice(-2).join(" "); // pega últimas 2 partes
+    const shortName = key.replace(/Galaxy |iPhone |Moto |Redmi |Poco |Mi |LG |Asus |Realme |Infinix /gi,"").trim();
+
+    for(let i=0; i<lines.length; i++){
+      const line = lines[i];
+      if(!line.toUpperCase().includes(shortName.toUpperCase())) continue;
+      // Procura valor R$ nessa linha ou próxima
+      const priceMatch = line.match(/R\$\s*([\d.]+,\d{2})/);
+      if(priceMatch){
+        const price = parseFloat(priceMatch[1].replace(".","").replace(",","."));
+        if(!prices[key]) prices[key] = [];
+        prices[key].push(price);
+      }
+    }
+  }
+  return prices;
+}
+
+function compareWithCurrent(newPrices){
+  const changes = [];
+  for(const [model, newVals] of Object.entries(newPrices)){
+    if(!CATALOG[model]) continue;
+    const currentPrices = CATALOG[model].map(p=>p.c);
+    for(const newVal of newVals){
+      // Ver se esse valor é diferente de algum preço atual
+      const closest = currentPrices.reduce((a,b)=>Math.abs(b-newVal)<Math.abs(a-newVal)?b:a, currentPrices[0]);
+      const diff = newVal - closest;
+      if(Math.abs(diff) >= 1){ // mudança de pelo menos R$1
+        changes.push({model, oldVal: closest, newVal, diff});
+      }
+    }
+  }
+  return changes;
+}
+
+function renderChanges(changes, newPrices){
+  const changeList = document.getElementById("change-list");
+  // Agrupar por modelo
+  const byModel = {};
+  changes.forEach(c=>{
+    if(!byModel[c.model]) byModel[c.model]={up:[],down:[]};
+    if(c.diff>0) byModel[c.model].up.push(c);
+    else byModel[c.model].down.push(c);
+  });
+
+  let html = "";
+  for(const [model, {up,down}] of Object.entries(byModel)){
+    const allChanges = [...up,...down];
+    const isUp = up.length > down.length;
+    html += `<div class="change-card ${isUp?'up':'down'}">
+      <span class="change-badge ${isUp?'badge-up':'badge-down'}">${isUp?'⬆ Subiu':'⬇ Baixou'}</span>
+      <div class="change-model">${model}</div>`;
+    allChanges.forEach(c=>{
+      html += `<div class="change-detail">${fmt(c.oldVal)} → <strong>${fmt(c.newVal)}</strong> (${c.diff>0?'+':''}${fmt(c.diff)})</div>`;
+    });
+    html += `<button class="btn-apply" onclick="applyChange('${model.replace(/'/g,"\\'")}',${JSON.stringify(newPrices[model])})">✅ Aplicar atualização</button>
+    </div>`;
+  }
+
+  // Botão aplicar tudo
+  html += `<div style="margin-top:12px">
+    <button onclick="applyAllChanges(${JSON.stringify(Object.fromEntries(Object.entries(newPrices).filter(([k])=>byModel[k])))})" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer">
+      ✅ Aplicar TODAS as mudanças (${changes.length})
+    </button>
+  </div>`;
+
+  changeList.innerHTML = html;
+}
+
+function applyChange(model, newVals){
+  if(!CATALOG[model]) return;
+  // Atualizar preços mantendo qualidades
+  newVals.forEach((newVal, i)=>{
+    if(CATALOG[model][i]) CATALOG[model][i].c = newVal;
+  });
+  saveCatalog();
+  showToast(`✅ ${model} atualizado!`);
+  // Remover card
+  event.target.closest(".change-card").remove();
+}
+
+function applyAllChanges(newPrices){
+  for(const [model, newVals] of Object.entries(newPrices)){
+    if(!CATALOG[model]) continue;
+    newVals.forEach((newVal, i)=>{
+      if(CATALOG[model][i]) CATALOG[model][i].c = newVal;
+    });
+  }
+  saveCatalog();
+  showToast("✅ Todos os preços atualizados!");
+  document.getElementById("change-list").innerHTML = `<div style="text-align:center;padding:20px;color:var(--green);font-weight:700;font-size:15px">✅ Catálogo atualizado com sucesso!</div>`;
+  document.getElementById("upd-status").textContent = "✅ Preços aplicados no app!";
+}
+
+// ══════════════════════════════════════
+// MARCAS / MODELOS / DEFEITOS
+// ══════════════════════════════════════
+const BRANDS = [
+  {id:"apple",    name:"Apple",       emoji:"🍎", test: k=>k.startsWith("iPhone")},
+  {id:"samsung",  name:"Samsung",     emoji:"🌌", test: k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab")},
+  {id:"motorola", name:"Motorola",    emoji:"〽️", test: k=>k.startsWith("Moto")},
+  {id:"xiaomi",   name:"Xiaomi",      emoji:"🔴", test: k=>k.startsWith("Redmi")||k.startsWith("Poco")||k.startsWith("Mi ")},
+  {id:"lg",       name:"LG",          emoji:"🔵", test: k=>k.startsWith("LG")},
+  {id:"asus",     name:"Asus",        emoji:"🟣", test: k=>k.startsWith("Asus")},
+  {id:"infinix",  name:"Infinix",     emoji:"♾️", test: k=>k.startsWith("Infinix")},
+  {id:"realme",   name:"Realme/Oppo", emoji:"🟢", test: k=>k.startsWith("Realme")||k.startsWith("Oppo")},
+];
+
+const DEFECT_TIPOS = {
+  "Display":         {icon:"📱", desc:"Tela quebrada, manchas, sem imagem"},
+  "Bateria":         {icon:"🔋", desc:"Bateria fraca, não carrega, incha"},
+  "Conector":        {icon:"🔌", desc:"Não carrega, conector frouxo"},
+  "Câmera Traseira": {icon:"📷", desc:"Embaçada, manchas, não foca"},
+  "Câmera Frontal":  {icon:"🤳", desc:"Selfie com defeito, Face ID"},
+  "Flex Carga":      {icon:"⚡", desc:"Flex interna do conector"},
+  "Flex Volume":     {icon:"🔘", desc:"Flex dos botões de volume"},
+  "Flex Power":      {icon:"⏻", desc:"Flex do botão power"},
+  "Alto-falante":    {icon:"🔊", desc:"Sem som, distorcido"},
+  "Microfone":       {icon:"🎙️", desc:"Não grava voz, chamadas mudas"},
+  "Botão Home":      {icon:"⬜", desc:"Botão home físico com defeito"},
+  "Carcaça":         {icon:"🧱", desc:"Traseira quebrada, frame torto"},
+  "Molho":           {icon:"💧", desc:"Caiu na água, não liga"},
+  "Placa":           {icon:"🔧", desc:"Micro-soldagem, BGA"},
+};
+
+const MAO_OBRA = [
+  {id:"mo_display",  icon:"📱", nome:"Troca de Tela",          valor:50},
+  {id:"mo_bateria",  icon:"🔋", nome:"Troca de Bateria",        valor:40},
+  {id:"mo_conector", icon:"🔌", nome:"Troca de Conector",       valor:50},
+  {id:"mo_cam_t",    icon:"📷", nome:"Troca Câmera Traseira",   valor:50},
+  {id:"mo_cam_f",    icon:"🤳", nome:"Troca Câmera Frontal",    valor:50},
+  {id:"mo_flex",     icon:"⚡", nome:"Troca de Flex",           valor:40},
+  {id:"mo_alto",     icon:"🔊", nome:"Troca Alto-falante",      valor:40},
+  {id:"mo_mic",      icon:"🎙️", nome:"Troca de Microfone",      valor:40},
+  {id:"mo_botao",    icon:"⬜", nome:"Troca de Botão",          valor:40},
+  {id:"mo_carcaca",  icon:"🧱", nome:"Troca de Carcaça",        valor:60},
+  {id:"mo_molho",    icon:"💧", nome:"Limpeza / Molho d'água",  valor:80},
+  {id:"mo_placa",    icon:"🔧", nome:"Soldagem / Placa",        valor:120},
+  {id:"mo_higie",    icon:"🫧", nome:"Higienização",            valor:50},
+  {id:"mo_format",   icon:"🖥️", nome:"Formatação / Flash",     valor:60},
+];
+
+let state = {brand:null, model:null, defects:[], step:1};
+let cart = {}, maoObra = {}, pendingPrice = null;
+
+function getModels(brandId){ return Object.keys(CATALOG).filter(k=>BRANDS.find(b=>b.id===brandId)?.test(k)).sort(); }
+
+function renderBrands(){
+  document.getElementById("brand-grid").innerHTML = BRANDS.map(b=>{
+    const count = getModels(b.id).length;
+    if(!count) return "";
+    return `<div class="brand-card" onclick="selectBrand('${b.id}')">
+      <div class="brand-emoji">${b.emoji}</div>
+      <div class="brand-name">${b.name}</div>
+      <div class="brand-count">${count} modelos</div>
+    </div>`;
+  }).join("");
+}
+
+function goStep(n){
+  state.step=n;
+  document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
+  document.getElementById("step"+n).classList.add("active");
+  buildBC();
+  if(n===1) renderBrands();
+  if(n===2) renderModels();
+  if(n===3) renderDefects();
+  if(n===4) renderPrices();
+}
+function buildBC(){
+  const b=BRANDS.find(x=>x.id===state.brand);
+  let h=`<span class="bc-item ${state.step===1?'active':''}" onclick="goStep(1)">Marca</span>`;
+  if(b) h+=`<span class="bc-sep">›</span><span class="bc-item ${state.step===2?'active':''}" onclick="goStep(2)">${b.emoji} ${b.name}</span>`;
+  if(state.model) h+=`<span class="bc-sep">›</span><span class="bc-item ${state.step===3?'active':''}" onclick="goStep(3)">${state.model}</span>`;
+  if(state.step===4) h+=`<span class="bc-sep">›</span><span class="bc-item active">Preços</span>`;
+  document.getElementById("breadcrumb").innerHTML=h;
+}
+function selectBrand(id){ state.brand=id; state.model=null; state.defects=[]; document.getElementById("modelFilter").value=""; goStep(2); }
+function renderModels(){
+  const b=BRANDS.find(x=>x.id===state.brand);
+  document.getElementById("step2-title").textContent=`${b.emoji} Selecione o modelo`;
+  const q=document.getElementById("modelFilter").value.toLowerCase();
+  const models=getModels(state.brand).filter(m=>m.toLowerCase().includes(q));
+  document.getElementById("model-list").innerHTML=models.length
+    ? models.map(m=>`<div class="model-item" onclick="selectModel('${m.replace(/'/g,"\\'")}')">
+        <span class="model-item-name">${m}</span>
+        <span style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:12px;color:var(--accent);font-weight:700">${CATALOG[m].length} peça${CATALOG[m].length>1?'s':''}</span>
+          <span style="color:var(--muted);font-size:18px">›</span>
+        </span>
+      </div>`).join("")
+    : `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Nenhum modelo encontrado</div>`;
+}
+function filterModels(){ renderModels(); }
+function selectModel(m){ state.model=m; state.defects=[]; goStep(3); }
+function renderDefects(){
+  document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
+  const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
+  document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
+    const hasPart=tiposDisp.includes(tipo);
+    const sel=state.defects.includes(tipo)?"selected":"";
+    return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
+      <div class="defect-icon-wrap">${info.icon}</div>
+      <div class="defect-info">
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}</div>
+        <div class="defect-sub">${info.desc}</div>
+      </div>
+      <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    </div>`;
+  }).join("");
+  const btn=document.getElementById("defect-confirm");
+  btn.style.display=state.defects.length?"flex":"none";
+  if(state.defects.length) btn.textContent=`Ver preços (${state.defects.length}) →`;
+}
+function toggleDefect(tipo){
+  const i=state.defects.indexOf(tipo);
+  if(i>-1) state.defects.splice(i,1); else state.defects.push(tipo);
+  renderDefects();
+}
+function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
+function renderPrices(){
+  const b=BRANDS.find(x=>x.id===state.brand);
+  const parts=CATALOG[state.model]||[];
+  let html=`<div class="prices-header"><div class="prices-model-icon">${b.emoji}</div>
+    <div class="prices-model-info"><div class="prices-model-name">${state.model}</div>
+    <div class="prices-model-brand">${b.name} · ${state.defects.join(", ")}</div></div></div>`;
+  state.defects.forEach(tipo=>{
+    const info=DEFECT_TIPOS[tipo];
+    const tipoPartes=parts.filter(p=>p.tipo===tipo);
+    html+=`<div class="price-section"><div class="price-section-title">${info.icon} ${tipo}</div>`;
+    if(tipoPartes.length){
+      tipoPartes.forEach((p,i)=>{
+        const ck=state.model+"_"+tipo+"_"+i;
+        const inC=cart[ck];
+        html+=`<div class="price-row ${inC?'selected':''}" onclick="selectPrice('${ck.replace(/'/g,"\\'")}','${state.model.replace(/'/g,"\\'")}','${tipo}','${p.q}',${p.c},'${p.f}','${p.link}')">
+          <div class="price-row-left">
+            <div class="price-quality">${p.q}</div>
+            <div class="price-fornecedor">📦 ${p.f}</div>
+            <div class="price-links">
+              <a class="price-link floritec" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Ver no site</a>
+              <a class="price-link shop" href="${shopLink(tipo+' '+p.q,state.model)}" target="_blank" onclick="event.stopPropagation()">🛒 Google Shopping</a>
+            </div>
+          </div>
+          <div class="price-right">
+            <div class="price-custo">Custo ref.</div>
+            <div class="price-val">${fmt(p.c)}</div>
+            ${inC?`<div class="price-cobrar">Cobrar: ${fmt(inC.price)}</div>`:''}
+          </div>
+          <div class="price-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        </div>`;
+      });
+    } else {
+      const ck=state.model+"_"+tipo+"_manual";
+      const inC=cart[ck];
+      html+=`<div class="no-price-card"><p>⚠️ Sem preço no catálogo. Consulte:</p>
+        <a class="price-link shop" href="${shopLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🛒 Google Shopping</a>
+      </div>
+      <div class="price-row ${inC?'selected':''}" onclick="selectPrice('${ck}','${state.model.replace(/'/g,"\\'")}','${tipo}','Manual',0,'Manual','')">
+        <div class="price-row-left"><div class="price-quality">Digitar valor manualmente</div></div>
+        <div class="price-right"><div class="price-val" style="color:var(--muted)">R$ —</div>${inC?`<div class="price-cobrar">Cobrar: ${fmt(inC.price)}</div>`:''}</div>
+        <div class="price-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      </div>`;
+    }
+    html+=`</div>`;
+  });
+  document.getElementById("prices-wrap").innerHTML=html;
+}
+
+function selectPrice(ck,model,tipo,q,c,f,link){
+  if(cart[ck]){delete cart[ck];updateBadge();renderPrices();return;}
+  pendingPrice={ck,model,tipo,q,c,f,link};
+  document.getElementById("price-modal-title").textContent=`${tipo} — ${q}`;
+  document.getElementById("cost-badge").textContent=`💰 Custo ref.: ${c>0?fmt(c):"—"} (${f})`;
+  document.getElementById("priceInput").value="";
+  document.getElementById("priceInput").placeholder=c>0?`Sugestão: ${fmt(c*1.8)}`:"0,00";
+  document.getElementById("priceOverlay").classList.add("open");
+  setTimeout(()=>document.getElementById("priceInput").focus(),300);
+}
+function closePriceModal(){document.getElementById("priceOverlay").classList.remove("open");pendingPrice=null;}
+function confirmPrice(){
+  const price=parseFloat(document.getElementById("priceInput").value);
+  if(isNaN(price)||price<0){alert("Valor inválido.");return;}
+  const {ck,model,tipo,q,c}=pendingPrice;
+  const info=DEFECT_TIPOS[tipo]||{icon:"🔧"};
+  cart[ck]={id:ck,icon:info.icon,name:`${tipo} — ${model}`,desc:`${q} · Custo ref.: ${c>0?fmt(c):"—"}`,qty:1,price,custo:c};
+  closePriceModal();updateBadge();renderPrices();showToast("✅ Adicionado!");
+}
+
+function calcTotalMO(){return Object.values(maoObra).reduce((a,i)=>a+i.valor,0);}
+function calcTotalP(){return Object.values(cart).reduce((a,i)=>a+i.price*i.qty,0);}
+function calcTotal(){return calcTotalP()+calcTotalMO();}
+function updateBadge(){
+  const t=Object.values(cart).reduce((a,i)=>a+i.qty,0);
+  const b=document.getElementById("badge");
+  b.textContent=t||"";b.classList.toggle("zero",!t);
+}
+
+function openOrc(){renderOrc();document.getElementById("orcOverlay").classList.add("open");}
+function closeOrc(){document.getElementById("orcOverlay").classList.remove("open");}
+function renderOrc(){
+  const items=Object.values(cart);
+  const totalCusto=items.reduce((a,i)=>a+(i.custo||0)*i.qty,0);
+  const totalP=calcTotalP(), totalMO=calcTotalMO(), grand=totalP+totalMO;
+  let html=`<div class="cli-block">
+    <label>Nome do cliente</label>
+    <input type="text" id="cli_nome" placeholder="Ex: João Silva" style="margin-bottom:10px">
+    <div class="cli-row">
+      <div><label>Aparelho</label><input type="text" id="cli_modelo" placeholder="${state.model||'Modelo'}"></div>
+      <div><label>WhatsApp</label><input type="text" id="cli_tel" placeholder="(48) 99999-0000"></div>
+    </div>
+  </div>`;
+  if(items.length){
+    html+=`<div class="sec-lbl">🔩 PEÇAS</div>`;
+    if(totalCusto>0) html+=`<div class="markup-hint">💡 Custo total: <strong>${fmt(totalCusto)}</strong> · Lucro estimado: <strong>${fmt(grand-totalCusto)}</strong></div>`;
+    items.forEach(item=>{
+      html+=`<div class="orc-item">
+        <div class="orc-item-icon">${item.icon}</div>
+        <div class="orc-item-info">
+          <div class="orc-item-name">${item.name}</div>
+          <div class="orc-item-desc">${item.desc}</div>
+          <div class="qty-row">
+            <button class="qty-btn" onclick="chQty('${item.id}',-1)">−</button>
+            <span class="qty-n" id="qty_${item.id}">${item.qty}</span>
+            <button class="qty-btn" onclick="chQty('${item.id}',1)">+</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+          <div class="orc-item-price" id="ip_${item.id}">${fmt(item.price*item.qty)}</div>
+          <button class="orc-remove" onclick="rmItem('${item.id}')">🗑</button>
+        </div>
+      </div>`;
+    });
+  }
+  html+=`<div class="sec-lbl" style="margin-top:${items.length?'18':'4'}px">🛠️ MÃO DE OBRA</div>`;
+  MAO_OBRA.forEach(m=>{
+    const ativo=!!maoObra[m.id];
+    html+=`<div class="mo-item ${ativo?'ativo':''}" onclick="toggleMO('${m.id}')">
+      <div class="mo-icon">${m.icon}</div>
+      <div class="mo-info"><div class="mo-nome">${m.nome}</div><div class="mo-padrao">Padrão: ${fmt(m.valor)}</div></div>
+      ${ativo?`<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        <div class="mo-val">${fmt(maoObra[m.id].valor)}</div>
+        <button class="mo-edit" onclick="event.stopPropagation();editMO('${m.id}')">✏️ Editar</button>
+      </div>`:`<div class="mo-val">${fmt(m.valor)}</div>`}
+      <div class="mo-chk">${ativo?`<svg width="11" height="8" fill="none"><path d="M1 3.5l3 3L10 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`:''}</div>
+    </div>`;
+  });
+  if(totalMO>0||totalP>0){
+    html+=`<div class="subtotais" style="margin-top:10px">`;
+    if(totalP>0) html+=`<div class="sub-row"><span style="color:var(--muted);font-weight:700">Peças</span><span style="font-weight:700">${fmt(totalP)}</span></div>`;
+    if(totalMO>0) html+=`<div class="sub-row"><span style="color:var(--muted);font-weight:700">Mão de obra</span><span style="font-weight:700">${fmt(totalMO)}</span></div>`;
+    html+=`</div>`;
+  }
+  html+=`<div style="margin:10px 0 0"><label>Observações</label><textarea id="obs" placeholder="Prazo, garantia, condições..."></textarea></div>
+  <div class="total-bar">
+    <div><div class="total-label">TOTAL GERAL</div><div style="font-size:12px;color:rgba(255,255,255,.4)">${items.length} peça(s) + ${Object.keys(maoObra).length} serviço(s)</div></div>
+    <div class="total-value" id="total-val">${fmt(grand)}</div>
+  </div>
+  <div class="action-btns">
+    <button class="btn-copy" onclick="copyMsg()">📋 Copiar mensagem pro cliente</button>
+    <button class="btn-wo" onclick="sendWhats()">
+      <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.117.552 4.103 1.516 5.83L.057 23.007a1 1 0 001.23 1.23l5.243-1.46A11.94 11.94 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.88 0-3.64-.511-5.148-1.403l-.37-.22-3.112.868.868-3.04-.238-.383A9.959 9.959 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+      Enviar por WhatsApp
+    </button>
+    <button class="btn-pdf" onclick="savePDF()">📄 Salvar PDF</button>
+    <button class="btn-limpar" onclick="limpar()">🗑 Limpar</button>
+  </div><div style="height:8px"></div>`;
+  document.getElementById("orc-body").innerHTML=html;
+}
+
+function toggleMO(id){
+  if(maoObra[id]) delete maoObra[id];
+  else{const m=MAO_OBRA.find(x=>x.id===id);maoObra[id]={...m};}
+  renderOrc();
+}
+function editMO(id){
+  const m=maoObra[id]||MAO_OBRA.find(x=>x.id===id);
+  const novo=prompt(`Mão de obra — ${m.nome}:`,m.valor);
+  if(novo===null)return;
+  const v=parseFloat(novo);
+  if(isNaN(v)||v<0){alert("Valor inválido.");return;}
+  if(!maoObra[id])maoObra[id]={...m};
+  maoObra[id].valor=v; renderOrc();
+}
+function chQty(id,d){
+  if(!cart[id])return;
+  cart[id].qty=Math.max(1,cart[id].qty+d);
+  document.getElementById("qty_"+id).textContent=cart[id].qty;
+  document.getElementById("ip_"+id).textContent=fmt(cart[id].price*cart[id].qty);
+  document.getElementById("total-val").textContent=fmt(calcTotal());
+  updateBadge();
+}
+function rmItem(id){delete cart[id];updateBadge();renderOrc();}
+function limpar(){if(!confirm("Limpar tudo?"))return;cart={};maoObra={};updateBadge();renderOrc();}
+
+function buildMsg(){
+  const nome=document.getElementById("cli_nome")?.value.trim()||"";
+  const modelo=document.getElementById("cli_modelo")?.value.trim()||state.model||"";
+  const obs=document.getElementById("obs")?.value.trim()||"";
+  const items=Object.values(cart), moItems=Object.values(maoObra);
+  const num=String(Date.now()).slice(-6);
+  let msg=`🔧 *ORÇAMENTO #${num}*\n`;
+  if(nome) msg+=`👤 Cliente: ${nome}\n`;
+  if(modelo) msg+=`📱 Aparelho: ${modelo}\n`;
+  if(items.length){msg+=`\n*🔩 Peças:*\n`;items.forEach(i=>{msg+=`• ${i.name}${i.qty>1?` x${i.qty}`:""} — ${fmt(i.price*i.qty)}\n`;});}
+  if(moItems.length){msg+=`\n*🛠️ Mão de obra:*\n`;moItems.forEach(i=>{msg+=`• ${i.nome} — ${fmt(i.valor)}\n`;});}
+  msg+=`\n💰 *Total: ${fmt(calcTotal())}*\n`;
+  if(obs) msg+=`\n📝 ${obs}\n`;
+  msg+=`\n_TechFix — Assistência Técnica_`;
+  return msg;
+}
+function copyMsg(){
+  const items=Object.values(cart), moItems=Object.values(maoObra);
+  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  const msg=buildMsg();
+  navigator.clipboard?.writeText(msg).then(()=>showToast("✅ Mensagem copiada! Cole no WhatsApp")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=msg;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);showToast("✅ Copiado!");
+  });
+}
+function sendWhats(){
+  const items=Object.values(cart), moItems=Object.values(maoObra);
+  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  const tel=document.getElementById("cli_tel")?.value.trim().replace(/\D/g,"")||"";
+  const msg=buildMsg();
+  window.open(tel?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+}
+function savePDF(){
+  const nome=document.getElementById("cli_nome")?.value.trim()||"—";
+  const modelo=document.getElementById("cli_modelo")?.value.trim()||state.model||"—";
+  const obs=document.getElementById("obs")?.value.trim()||"";
+  const items=Object.values(cart), moItems=Object.values(maoObra);
+  if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  const grand=calcTotal(), num=String(Date.now()).slice(-6), data=new Date().toLocaleDateString("pt-BR");
+  const pRows=items.map(i=>`<tr><td>${i.name}</td><td align="center">${i.qty}</td><td align="right">${fmt(i.price)}</td><td align="right"><strong>${fmt(i.price*i.qty)}</strong></td></tr>`).join("");
+  const mRows=moItems.map(i=>`<tr style="background:#f9f9f9"><td>🛠️ ${i.nome}</td><td align="center">1</td><td align="right">${fmt(i.valor)}</td><td align="right"><strong>${fmt(i.valor)}</strong></td></tr>`).join("");
+  const w=window.open("","_blank");
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:32px;color:#1e2330;font-size:14px}h1{font-size:22px;margin-bottom:4px}.sub{color:#888;font-size:13px;margin-bottom:20px}.info{background:#f5f7fa;border-radius:8px;padding:12px 16px;margin-bottom:20px}.info div{margin-bottom:4px}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#12151c;color:#fff;padding:9px 12px;text-align:left;font-size:12px}td{padding:9px 12px;border-bottom:1px solid #e2e5ec}.sec{background:#f0f0f0;font-weight:700;font-size:12px;padding:6px 12px;color:#555}.tot td{font-size:16px;font-weight:bold;background:#e6faf3;border-top:2px solid #00c47a}.obs{background:#fffbf0;border:1px solid #ffe08a;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:20px}footer{text-align:center;color:#aaa;font-size:12px;margin-top:30px;border-top:1px solid #e2e5ec;padding-top:14px}</style></head><body><h1>🔧 Orçamento #${num}</h1><div class="sub">Emitido em ${data}</div><div class="info"><div><strong>Cliente:</strong> ${nome}</div><div><strong>Aparelho:</strong> ${modelo}</div></div><table><thead><tr><th>Serviço / Peça</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead><tbody>${items.length?`<tr><td colspan="4" class="sec">🔩 PEÇAS</td></tr>${pRows}`:''}${moItems.length?`<tr><td colspan="4" class="sec">🛠️ MÃO DE OBRA</td></tr>${mRows}`:''}</tbody><tfoot><tr class="tot"><td colspan="3">TOTAL</td><td align="right">${fmt(grand)}</td></tr></tfoot></table>${obs?`<div class="obs">📝 ${obs}</div>`:''}<footer>TechFix — Assistência Técnica</footer><script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.close();
+}
+function fmt(v){return"R$ "+Number(v).toFixed(2).replace(".",",");}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+
+function showPage(p){
+  document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
+  document.querySelectorAll(".bnav").forEach(e=>e.classList.remove("active"));
+  document.getElementById("pg-"+p).classList.add("active");
+  document.getElementById("bn-"+p).classList.add("active");
+}
+
+// INIT
+loadCatalog();
+renderBrands();
+updateBadge();
+const last=localStorage.getItem("upd_last");
+if(last){document.getElementById("upd-last").textContent=last;document.getElementById("upd-last").style.display="block";}
+const savedUrl=localStorage.getItem("floritec_url");
+if(savedUrl) document.getElementById("upd-url").value=savedUrl;
+</script>
+</body>
+</html>
