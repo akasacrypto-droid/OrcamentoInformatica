@@ -49,7 +49,7 @@ nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;jus
 .defect-info{flex:1}
 .defect-name{font-weight:900;font-size:14px}
 .defect-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.has-price{font-size:10px;background:var(--green-light);color:var(--green);border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}
+.has-price{font-size:10px;background:var(--green-light);color:var(--green);border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}.has-np{font-size:10px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:1px 5px;font-weight:700;margin-left:5px}
 .defect-chk{width:24px;height:24px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .defect-card.selected .defect-chk{background:var(--accent);border-color:var(--accent)}
 .defect-chk svg{display:none}
@@ -1189,13 +1189,17 @@ function selectModel(m){ state.model=m; state.defects=[]; goStep(3); }
 function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
+  // Mapa tipo → chave no NP_*
+  const NP_MAPS = {"Flex Carga": NP_FLEX};
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
+    const npMap = NP_MAPS[tipo];
+    const hasNP = npMap && npMap[state.model];
     const sel=state.defects.includes(tipo)?"selected":"";
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
       <div class="defect-info">
-        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}</div>
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${hasNP?'<span class="has-np">🔵 NP</span>':''}</div>
         <div class="defect-sub">${info.desc}</div>
       </div>
       <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
