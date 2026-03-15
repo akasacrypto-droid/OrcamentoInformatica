@@ -1257,7 +1257,7 @@ function renderDefects(){
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
       <div class="defect-info">
-        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${hasNP?'<span class="has-np">🔵 NP</span>":''}</div>
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${hasNP?'<span class="has-np">🔵 NP</span>':''}</div>
         <div class="defect-sub">${info.desc}</div>
       </div>
       <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
