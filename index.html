@@ -203,28 +203,28 @@ textarea{resize:none;height:70px}
 <!-- PAGE: ATUALIZAÇÃO -->
 <div class="page" id="pg-atualizacao">
   <div class="upd-wrap">
-    <div class="upd-title">🔄 Atualizar Preços</div>
-    <div class="upd-desc">Cole o link do Google Docs da Floritec abaixo e toque em verificar. O app busca automaticamente e mostra o que mudou.</div>
+    <div class="upd-title">🔄 Editar Preços</div>
+    <div class="upd-desc">Selecione a marca e edite os preços diretamente. Toque no valor para alterar.</div>
 
-    <div class="upd-last" id="upd-last" style="display:none"></div>
-
-    <input class="upd-input" id="upd-url" type="url" placeholder="https://docs.google.com/document/..." style="width:100%;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);margin-bottom:12px">
-
-    <div style="margin-bottom:12px">
-      <button onclick="document.getElementById('upd-url').value='https://docs.google.com/document/u/0/d/e/2PACX-1vTgSZf5Lp8dfhKBNS5hicGm3pWyVhVFI-dhzpI0C8kKj_7TALqFmeqZsFI2W5r1GnKIkDiQhd4DDk-2/pub?pli=1'"
-        style="background:var(--accent-light);color:var(--accent);border:1.5px solid var(--accent);border-radius:10px;padding:8px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
-        📋 Usar link da Floritec
-      </button>
+    <!-- Filtro de marca -->
+    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:10px">
+      <button class="ftag active" id="edt-all" onclick="setEdtBrand('all')">Todos</button>
+      <button class="ftag" id="edt-apple" onclick="setEdtBrand('apple')">🍎 Apple</button>
+      <button class="ftag" id="edt-samsung" onclick="setEdtBrand('samsung')">🌌 Samsung</button>
+      <button class="ftag" id="edt-motorola" onclick="setEdtBrand('motorola')">〽️ Motorola</button>
+      <button class="ftag" id="edt-xiaomi" onclick="setEdtBrand('xiaomi')">🔴 Xiaomi</button>
+      <button class="ftag" id="edt-lg" onclick="setEdtBrand('lg')">🔵 LG</button>
+      <button class="ftag" id="edt-outros" onclick="setEdtBrand('outros')">➕ Outros</button>
     </div>
 
-    <button class="btn-upd" onclick="checkUpdates()">🔍 Verificar mudanças</button>
+    <!-- Busca -->
+    <input type="text" id="edt-search" placeholder="🔍 Buscar modelo..." oninput="renderEditor()"
+      style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--white)">
 
-    <div class="upd-last" id="upd-last" style="display:none"></div>
+    <div id="edt-list"></div>
 
-    <textarea id="upd-texto" style="width:100%;min-height:120px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;font-size:14px;font-family:'Mulish',sans-serif;outline:none;color:var(--text);margin-bottom:12px;resize:vertical" placeholder="Cole aqui o conteúdo copiado do Google Docs da Floritec..."></textarea>
-    <button class="btn-upd" onclick="checkUpdates()">🔍 Verificar mudanças</button>
-    <div class="upd-status" id="upd-status"></div>
-    <div class="change-list" id="change-list"></div>
+    <div style="height:10px"></div>
+    <div id="upd-last" style="font-size:12px;color:var(--muted);text-align:center;display:none"></div>
   </div>
 </div>
 
@@ -733,175 +733,83 @@ function saveCatalog(){
 }
 
 // ══════════════════════════════════════
-// COMPARADOR DE PREÇOS
+// EDITOR MANUAL DE PREÇOS
 // ══════════════════════════════════════
-async function checkUpdates(){
-  const url = document.getElementById("upd-url").value.trim();
-  if(!url){ alert("Cole o link do Google Docs da Floritec."); return; }
+const EDT_BRANDS = {
+  apple:    k=>k.startsWith("iPhone"),
+  samsung:  k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab"),
+  motorola: k=>k.startsWith("Moto"),
+  xiaomi:   k=>k.startsWith("Redmi")||k.startsWith("Poco")||k.startsWith("Mi "),
+  lg:       k=>k.startsWith("LG"),
+  outros:   k=>k.startsWith("Asus")||k.startsWith("Infinix")||k.startsWith("Realme")||k.startsWith("Oppo"),
+};
+let edtBrand = "all";
 
-  const status = document.getElementById("upd-status");
-  const changeList = document.getElementById("change-list");
-  status.className = "upd-status loading";
-  status.textContent = "🔄 Buscando dados da Floritec...";
-  changeList.innerHTML = "";
-
-  try {
-    // Buscar direto — funciona pois estamos no GitHub Pages (sem bloqueio de CORS para docs públicos)
-    let fetchUrl = url;
-    // Garantir que é a versão publicada
-    if(url.includes("/edit") || url.includes("/view")){
-      const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-      if(match) fetchUrl = `https://docs.google.com/document/d/${match[1]}/pub`;
-    }
-
-    const res = await fetch(fetchUrl, {mode:"cors"});
-    if(!res.ok) throw new Error("Não foi possível acessar o documento.");
-    const html = await res.text();
-    if(!html || html.length < 100) throw new Error("Documento vazio.");
-
-    const newPrices = extractPricesFromText(html);
-    if(Object.keys(newPrices).length === 0)
-      throw new Error("Não encontrei preços. Verifique se o link é da lista publicada da Floritec.");
-
-    const changes = compareWithCurrent(newPrices);
-
-    if(changes.length === 0){
-      status.className = "upd-status ok";
-      status.textContent = `✅ Tudo igual! ${Object.keys(newPrices).length} preços verificados.`;
-    } else {
-      status.className = "upd-status ok";
-      status.textContent = `🔍 ${changes.length} mudança(s) encontrada(s):`;
-      renderChanges(changes, newPrices);
-    }
-
-    localStorage.setItem("upd_last","Última verificação: "+new Date().toLocaleString("pt-BR"));
-    document.getElementById("upd-last").textContent = localStorage.getItem("upd_last");
-    document.getElementById("upd-last").style.display = "block";
-    localStorage.setItem("floritec_url", url);
-
-  } catch(err) {
-    status.className = "upd-status error";
-    status.textContent = "❌ " + err.message;
-  }
+function setEdtBrand(b){
+  edtBrand = b;
+  document.querySelectorAll("[id^='edt-']").forEach(el=>el.classList.remove("active"));
+  document.getElementById("edt-"+b)?.classList.add("active");
+  renderEditor();
 }
 
-function extractPricesFromText(html){
-  const prices = {};
-  // Parsear tabelas do HTML da Floritec
-  // Cada linha da tabela tem: | modelo | R$ valor |
-  const rowRegex = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
-  const cellRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+function renderEditor(){
+  const q = document.getElementById("edt-search")?.value.toLowerCase().trim()||"";
+  const list = document.getElementById("edt-list");
 
-  let rowMatch;
-  while((rowMatch = rowRegex.exec(html)) !== null){
-    const rowContent = rowMatch[1];
-    const cells = [];
-    let cellMatch;
-    const cellRe = /<td[^>]*>([\s\S]*?)<\/td>/gi;
-    while((cellMatch = cellRe.exec(rowContent)) !== null){
-      // Limpar HTML de dentro da célula
-      const cellText = cellMatch[1].replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&nbsp;/g," ").trim();
-      cells.push(cellText);
-    }
-    if(cells.length < 2) continue;
+  const models = Object.keys(CATALOG).filter(k=>{
+    if(edtBrand !== "all" && !EDT_BRANDS[edtBrand]?.(k)) return false;
+    if(q && !k.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort();
 
-    // Célula 0 = modelo(s), Célula 1 = valor
-    const modelCell = cells[0];
-    const valueCell = cells[cells.length-1];
-
-    // Extrair preço
-    const priceMatch = valueCell.match(/R\$\s*([\d]+,\d{2})/);
-    if(!priceMatch) continue;
-    const price = parseFloat(priceMatch[1].replace(",","."));
-    if(price < 10 || price > 10000) continue;
-
-    // Modelos podem ser separados por |
-    const modelParts = modelCell.split("|").map(s=>s.trim()).filter(Boolean);
-
-    for(const mp of modelParts){
-      // Tentar encontrar qual chave do catálogo corresponde
-      const mpUp = mp.toUpperCase();
-
-      for(const key of Object.keys(CATALOG_DEFAULT)){
-        const keyUp = key.toUpperCase();
-        // Nome curto sem prefixo
-        const shortKey = keyUp
-          .replace("GALAXY ","").replace("IPHONE ","").replace("MOTO ","")
-          .replace("REDMI ","").replace("POCO ","").replace("MI ","")
-          .replace("LG ","").replace("ASUS ","").replace("REALME ","").replace("INFINIX ","");
-
-        // Verificar se o modelo da linha contém o nome curto da chave
-        if(mpUp.includes(shortKey) || shortKey.includes(mpUp)){
-          if(!prices[key]) prices[key] = [];
-          if(!prices[key].includes(price)) prices[key].push(price);
-        }
-      }
-    }
+  if(!models.length){
+    list.innerHTML=`<div style="text-align:center;padding:30px;color:var(--muted)">Nenhum modelo encontrado</div>`;
+    return;
   }
-  return prices;
+
+  list.innerHTML = models.map(model=>{
+    const parts = CATALOG[model];
+    const rows = parts.map((p,i)=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:12px;font-weight:700;color:var(--muted)">${p.tipo} · ${p.q}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-family:'Bebas Neue',cursive;font-size:18px;color:var(--green)" id="val-${model.replace(/[^a-z0-9]/gi,'_')}-${i}">${fmt(p.c)}</div>
+          <button onclick="editPrice('${model.replace(/'/g,"\\'")}',${i})"
+            style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">
+            ✏️
+          </button>
+        </div>
+      </div>`).join("");
+
+    return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px">
+      <div style="font-weight:900;font-size:14px;margin-bottom:6px">${model}</div>
+      ${rows}
+    </div>`;
+  }).join("");
 }
 
-function compareWithCurrent(newPrices){
-  const changes = [];
-  for(const [model, newVals] of Object.entries(newPrices)){
-    if(!CATALOG[model]) continue;
-    // Para cada peça do catálogo, procura se o novo preço mudou
-    CATALOG[model].forEach((part, idx) => {
-      // Encontrar o valor mais próximo no novo doc para essa peça
-      const match = newVals.reduce((best, v) => {
-        return Math.abs(v - part.c) < Math.abs(best - part.c) ? v : best;
-      }, newVals[0]);
-      if(match === undefined) return;
-      const diff = match - part.c;
-      // Só reportar mudança >= R$5 para evitar falsos positivos
-      if(Math.abs(diff) >= 5){
-        changes.push({model, idx, qualidade: part.q, oldVal: part.c, newVal: match, diff});
-      }
-    });
-  }
-  return changes;
-}
-
-function renderChanges(changes, newPrices){
-  const changeList = document.getElementById("change-list");
-  const byModel = {};
-  changes.forEach(c=>{
-    if(!byModel[c.model]) byModel[c.model]=[];
-    byModel[c.model].push(c);
-  });
-  let html = "";
-  for(const [model, items] of Object.entries(byModel)){
-    const isUp = items.some(i=>i.diff>0);
-    html += `<div class="change-card ${isUp?'up':'down'}">
-      <div class="change-model">${model}</div>`;
-    items.forEach(c=>{
-      html += `<span class="change-badge ${c.diff>0?'badge-up':'badge-down'}">${c.diff>0?'⬆ Subiu':'⬇ Baixou'}</span>
-      <div class="change-detail">${c.qualidade}: ${fmt(c.oldVal)} → <strong>${fmt(c.newVal)}</strong> (${c.diff>0?'+':''}${fmt(c.diff)})</div>`;
-    });
-    html += `<button class="btn-apply" onclick="applyModelChange('${model.replace(/'/g,"\\'")}')">✅ Aplicar</button></div>`;
-  }
-  html += `<div style="margin-top:12px"><button onclick="applyAllChanges()" style="width:100%;background:var(--green);color:#fff;border:none;border-radius:12px;padding:14px;font-family:'Mulish',sans-serif;font-weight:900;font-size:15px;cursor:pointer">✅ Aplicar TODAS (${changes.length})</button></div>`;
-  changeList.innerHTML = html;
-  window._pendingChanges = changes;
-}
-
-function applyModelChange(model){
-  const changes = (window._pendingChanges||[]).filter(c=>c.model===model);
-  changes.forEach(c=>{ if(CATALOG[model]?.[c.idx]) CATALOG[model][c.idx].c = c.newVal; });
+function editPrice(model, idx){
+  const part = CATALOG[model]?.[idx];
+  if(!part) return;
+  const novo = prompt(`${model}\n${part.tipo} · ${part.q}\n\nValor atual: ${fmt(part.c)}\nNovo valor (R$):`, part.c);
+  if(novo === null) return;
+  const v = parseFloat(novo.replace(",","."));
+  if(isNaN(v) || v <= 0){ alert("Valor inválido."); return; }
+  CATALOG[model][idx].c = v;
   saveCatalog();
-  showToast(`✅ ${model} atualizado!`);
-  event.target.closest(".change-card").remove();
+  showToast(`✅ ${model} — ${part.q} atualizado para ${fmt(v)}`);
+  // Atualizar valor na tela
+  const el = document.getElementById("val-"+model.replace(/[^a-z0-9]/gi,"_")+"-"+idx);
+  if(el) el.textContent = fmt(v);
+  // Salvar data
+  const now = "Última edição: "+new Date().toLocaleString("pt-BR");
+  localStorage.setItem("upd_last", now);
+  const el2 = document.getElementById("upd-last");
+  if(el2){ el2.textContent=now; el2.style.display="block"; }
 }
 
-function applyAllChanges(){
-  (window._pendingChanges||[]).forEach(c=>{
-    if(CATALOG[c.model]?.[c.idx]) CATALOG[c.model][c.idx].c = c.newVal;
-  });
-  saveCatalog();
-  showToast("✅ Todos os preços atualizados!");
-  document.getElementById("change-list").innerHTML=`<div style="text-align:center;padding:20px;color:var(--green);font-weight:700">✅ Catálogo atualizado!</div>`;
-  document.getElementById("upd-status").textContent="✅ Preços aplicados!";
-}
 
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
@@ -1262,9 +1170,10 @@ loadCatalog();
 renderBrands();
 updateBadge();
 const last=localStorage.getItem("upd_last");
-if(last){document.getElementById("upd-last").textContent=last;document.getElementById("upd-last").style.display="block";}
+if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
 const savedUrl=localStorage.getItem("floritec_url");
-if(savedUrl) document.getElementById("upd-url").value=savedUrl;
+if(savedUrl){const el=document.getElementById("upd-url");if(el)el.value=savedUrl;}
+renderEditor();
 </script>
 </body>
 </html>
