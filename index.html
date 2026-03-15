@@ -2248,11 +2248,10 @@ async function verificarOLX(){
 
   try {
     // API via Google Apps Script proxy — sem bloqueio CORS
-    const apiUrl = "https://script.google.com/macros/s/AKfycbyQKtNCdh81Vsfok2RU-r_nb0QtDydWX3YZL8g4NxkTVx4ddcuiKh9aKQwa3hBvT4n0Iw/exec";
+    const apiUrl = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrSEc2GMt2_FhBhHWJUaxp00uNqvzSjcFk-c0xhLYTh7eiFkyXOE7dp07hmTfeNLImcALCT3Bm1nfBJF3q4gkxAjBjjaygbrrzymPTAxyq_b0ks1Kwr07W2ZReGvNjUudkhec6wHF_dem1NdTQWRp5W6MNScWc3-GKrT0nI0tX3PKeUqXmJbmcJa2zOxKANSlkRdxb3by_oqsliSwi43g51JwpbAbF7RVeRaKUOE9llgTqK8FK9EYAEW8m7zG90SW7a84Ejdf_9d_zLwf3fuI3MwHbpkUDQKaJTP9jaP&lib=MVZUyNCCK_nS7OtUgFYODAL_x8weaNtAO";
 
     const res = await fetch(apiUrl, {
-      signal: AbortSignal.timeout(8000),
-      headers: { "Accept": "application/json" }
+      signal: AbortSignal.timeout(10000)
     });
 
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
