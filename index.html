@@ -2245,52 +2245,35 @@ async function verificarOLX(){
   const agora = new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
   status.textContent = `🔄 Verificando... (${agora})`;
   status.style.color = "var(--accent)";
-  status.style.display = "block";
 
-  // Tenta extrair anúncios de um texto/html via múltiplas estratégias
-  function extrairAnuncios(texto){
+  try {
+    // API via Google Apps Script proxy — sem bloqueio CORS
+    const apiUrl = "https://script.google.com/macros/s/AKfycbyQKtNCdh81Vsfok2RU-r_nb0QtDydWX3YZL8g4NxkTVx4ddcuiKh9aKQwa3hBvT4n0Iw/exec";
+
+    const res = await fetch(apiUrl, {
+      signal: AbortSignal.timeout(8000),
+      headers: { "Accept": "application/json" }
+    });
+
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // Extrair anúncios do JSON da OLX
+    const listings = data?.data?.ads || data?.listings || data?.data || [];
     const cards = [];
-    // Estratégia 1: JSON embutido no HTML (window.__NEXT_DATA__ ou similar)
-    const jsonMatches = [
-      texto.match(/"listId"\s*:\s*(\d+)/g),
-      texto.match(/"list_id"\s*:\s*(\d+)/g),
-    ];
-    // Estratégia 2: parsear JSON direto
-    try {
-      const json = JSON.parse(texto);
-      const listings = json?.data?.ads || json?.listings || json?.data || json?.ads || [];
-      listings.forEach(item => {
-        const id = String(item.listId || item.list_id || item.id || "");
-        const title = item.subject || item.title || item.name || "";
-        const price = item.price || item.priceValue || item.priceLabel || "";
-        const link = item.url || item.link || `https://www.olx.com.br/vi/${id}`;
-        const time = item.date || item.listTime || item.insertedDate || "";
-        const img = item.images?.[0]?.original || item.thumbnail || "";
-        if(id && title) cards.push({id, title, price: price ? (String(price).startsWith("R$") ? price : `R$ ${price}`) : "—", link, time, img});
-      });
-    } catch(e){}
-    // Estratégia 3: buscar blocos JSON no HTML
-    if(cards.length === 0){
-      try {
-        const m = texto.match(/window\.__NEXT_DATA__\s*=\s*(\{[\s\S]*?\});\s*<\/script>/);
-        if(m){
-          const nd = JSON.parse(m[1]);
-          const listings = nd?.props?.pageProps?.listings || nd?.props?.pageProps?.ads || [];
-          listings.forEach(item => {
-            const id = String(item.listId || item.id || "");
-            const title = item.subject || item.title || "";
-            const price = item.price || "";
-            const link = item.url || `https://www.olx.com.br/vi/${id}`;
-            const img = item.images?.[0]?.original || "";
-            if(id && title) cards.push({id, title, price: price ? `R$ ${price}` : "—", link, time:"", img});
-          });
-        }
-      } catch(e){}
-    }
-    return cards;
-  }
 
-  function processarCards(cards){
+    listings.forEach(item => {
+      const id = String(item.listId || item.list_id || item.id || "");
+      const title = item.subject || item.title || item.name || "";
+      const price = item.price || item.priceValue || "";
+      const link = item.url || `https://www.olx.com.br/vi/${id}`;
+      const time = item.date || item.listTime || "";
+      if(id && title) cards.push({id, title, price: price ? `R$ ${price}` : "—", link, time});
+    });
+
+    if(cards.length === 0) throw new Error("Sem anúncios na resposta da API");
+
+    // Detectar novos
     let novosCount = 0;
     cards.forEach(card => {
       if(!_monitorVistos.has(card.id)){
@@ -2299,74 +2282,59 @@ async function verificarOLX(){
         novosCount++;
       }
     });
+
     localStorage.setItem("monitor_vistos", JSON.stringify([..._monitorVistos].slice(-500)));
+
     if(novosCount > 0){
       _monitorNovos += novosCount;
       atualizarBadgeMonitor();
+      renderMonitorList();
       showToast(`🔔 ${novosCount} anúncio(s) novo(s)!`);
       if(Notification.permission === "granted")
         new Notification(`TechFix — ${novosCount} novo(s) na OLX`, {body: _monitorAnuncios[0]?.title||""});
       status.style.color = "var(--green)";
     } else {
       status.style.color = "var(--muted)";
+      // Renderizar mesmo sem novos para mostrar os que já tem
       if(_monitorAnuncios.length === 0 && cards.length > 0){
         cards.forEach(c => _monitorAnuncios.push({...c, novo:false, visto:true}));
+        renderMonitorList();
       }
     }
-    renderMonitorList();
-    return novosCount;
-  }
 
-  // ── TENTATIVA 1: Apps Script (sua URL nova) ──
-  try {
-    const gasUrl = "https://script.google.com/macros/s/AKfycbxDFv2j9LGDiJhro29hJDfeN5PxL8SkTTDYZHlnn275cuAolQxAdk920iuX7Iw/exec";
-    const res = await fetch(gasUrl, {signal: AbortSignal.timeout(8000)});
-    const texto = await res.text();
-    // Verificar se retornou HTML (erro de autenticação)
-    if(texto.trim().startsWith("<")) throw new Error("Apps Script retornou HTML — verifique se está publicado como 'Anyone'");
-    const cards = extrairAnuncios(texto);
-    if(cards.length === 0) throw new Error("Apps Script sem anúncios");
-    const novos = processarCards(cards);
-    status.textContent = `✅ Apps Script · ${cards.length} anúncios · ${novos > 0 ? novos+" novos 🆕" : "nenhum novo"} (${agora})`;
-    return;
-  } catch(e1){
-    console.warn("Apps Script falhou:", e1.message);
-  }
+    status.textContent = `✅ ${cards.length} anúncios · ${novosCount > 0 ? novosCount+" novos 🆕" : "nenhum novo"} (${agora})`;
 
-  // ── TENTATIVA 2: API da OLX via allorigins ──
-  try {
-    const olxApi = "https://www.olx.com.br/api/relevance/v3/search?sf=1&opst=2&cps=10&cps=11&cps=12&elcd=5&limit=40";
-    const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(olxApi)}`, {signal: AbortSignal.timeout(10000)});
-    const data2 = await res2.json();
-    const texto2 = data2.contents || "";
-    if(!texto2 || texto2.trim().startsWith("<")) throw new Error("allorigins retornou HTML");
-    const cards = extrairAnuncios(texto2);
-    if(cards.length === 0) throw new Error("allorigins sem anúncios");
-    const novos = processarCards(cards);
-    status.textContent = `✅ Via proxy · ${cards.length} anúncios · ${novos > 0 ? novos+" novos 🆕" : "nenhum novo"} (${agora})`;
-    return;
-  } catch(e2){
-    console.warn("allorigins falhou:", e2.message);
-  }
+  } catch(e){
+    // Fallback: tentar via allorigins com URL da API
+    try {
+      const apiUrl = "https://www.olx.com.br/api/relevance/v3/search?sf=1&opst=2&cps=10&cps=11&cps=12&elcd=5&limit=40";
+      const res2 = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(apiUrl)}`, {signal: AbortSignal.timeout(8000)});
+      const data2 = await res2.json();
+      const json = JSON.parse(data2.contents || "{}");
+      const listings = json?.data?.ads || json?.listings || [];
+      if(listings.length > 0){
+        listings.forEach(item => {
+          const id = String(item.listId || item.id || "");
+          const title = item.subject || item.title || "";
+          const price = item.price ? `R$ ${item.price}` : "—";
+          const link = item.url || `https://www.olx.com.br/vi/${id}`;
+          if(id && title && !_monitorVistos.has(id)){
+            _monitorVistos.add(id);
+            _monitorAnuncios.unshift({id, title, price, link, time:"", novo:true, visto:false});
+            _monitorNovos++;
+          }
+        });
+        atualizarBadgeMonitor();
+        renderMonitorList();
+        status.textContent = `✅ Via proxy (${agora})`;
+        status.style.color = "var(--green)";
+        return;
+      }
+    } catch(e2){}
 
-  // ── TENTATIVA 3: corsproxy.io ──
-  try {
-    const olxApi = "https://www.olx.com.br/api/relevance/v3/search?sf=1&opst=2&cps=10&cps=11&cps=12&elcd=5&limit=40";
-    const res3 = await fetch(`https://corsproxy.io/?${encodeURIComponent(olxApi)}`, {signal: AbortSignal.timeout(10000)});
-    const texto3 = await res3.text();
-    if(!texto3 || texto3.trim().startsWith("<")) throw new Error("corsproxy retornou HTML");
-    const cards = extrairAnuncios(texto3);
-    if(cards.length === 0) throw new Error("corsproxy sem anúncios");
-    const novos = processarCards(cards);
-    status.textContent = `✅ Via corsproxy · ${cards.length} anúncios · ${novos > 0 ? novos+" novos 🆕" : "nenhum novo"} (${agora})`;
-    return;
-  } catch(e3){
-    console.warn("corsproxy falhou:", e3.message);
+    status.textContent = `❌ ${e.message} (${agora})`;
+    status.style.color = "var(--red)";
   }
-
-  // ── TODAS FALHARAM ──
-  status.textContent = `❌ Não foi possível buscar anúncios (${agora}) — tente novamente`;
-  status.style.color = "var(--red)";
 }
 
 function renderMonitorList(){
