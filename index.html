@@ -1211,7 +1211,27 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novapecasLink(tipo,model){ return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(tipo+" "+model)}`; }
+function novapecasLink(tipo,model){
+  // Mapear defeito para termo de busca do site NovaPeças
+  const mapa = {
+    "Display":         "frontal",
+    "Bateria":         "bateria",
+    "Conector":        "conector carga",
+    "Câmera Traseira": "camera traseira",
+    "Câmera Frontal":  "camera frontal",
+    "Flex Carga":      "flex carga",
+    "Flex Volume":     "flex volume",
+    "Flex Power":      "flex power",
+    "Alto-falante":    "alto falante",
+    "Microfone":       "microfone",
+    "Botão Home":      "botao home",
+    "Carcaça":         "tampa traseira",
+    "Molho":           "placa",
+    "Placa":           "placa",
+  };
+  const termo = mapa[tipo] || tipo;
+  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(termo+" "+model)}`;
+}
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1994,7 +2014,7 @@ function renderOLXResult(a, images, url){
         };
 
         const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
-        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q)}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
+        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q.replace("tela","frontal").replace("display","frontal"))}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
         const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
