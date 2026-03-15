@@ -1445,15 +1445,31 @@ async function analisarOLX(){
 }
 
 function identificarModelo(slug){
-  const slugUp = slug.toUpperCase();
-  // Tentar encontrar chave no catálogo
-  for(const key of Object.keys(CATALOG_DEFAULT)){
+  const mu = slug.toUpperCase();
+
+  // Normalizar: remover palavras irrelevantes que aparecem em slugs da OLX
+  const lixo = ["SINAL","DE","VIDA","COM","ATENCAO","LEIA","DESCRICAO","ESTADO","BOM","RUIM","QUEBRADO",
+    "TRINCADO","USADO","NOVO","VENDO","URGENTE","RAM","GB","TB","WIFI","APENAS","TELA","BATERIA",
+    "CARREGADOR","CAIXA","NOTA","FISCAL","ORIGINAL","SEMI","NOVO","ACEITO","TROCA","PARCELADO","8RAM","6RAM","4RAM","12RAM",
+    "128GB","256GB","512GB","64GB","32GB","16GB","1TB","DESBLOQUEADO","DESBLOQ","ANUNCIO","LISTING"];
+
+  let clean = mu;
+  lixo.forEach(l => { clean = clean.replace(new RegExp("\\b"+l+"\\b","g"), " "); });
+  clean = clean.replace(/\s+/g," ").trim();
+
+  // Tentar match direto com chaves do catálogo (do mais longo para o mais curto)
+  const sortedKeys = Object.keys(CATALOG_DEFAULT).sort((a,b)=>b.length-a.length);
+  for(const key of sortedKeys){
     const keyUp = key.toUpperCase();
     const shortKey = keyUp
-      .replace("GALAXY ","").replace("IPHONE ","").replace("MOTO ","")
-      .replace("REDMI ","").replace("POCO ","").replace(/^MI /,"")
-      .replace("LG ","").replace("ASUS ","").replace("REALME ","").replace("INFINIX ","");
-    if(slugUp.includes(shortKey) || shortKey.split(" ").every(p=>slugUp.includes(p))){
+      .replace(/^GALAXY /,"").replace(/^IPHONE /,"").replace(/^MOTO /,"")
+      .replace(/^REDMI /,"").replace(/^POCO /,"").replace(/^MI /,"")
+      .replace(/^LG /,"").replace(/^ASUS /,"").replace(/^REALME /,"")
+      .replace(/^INFINIX /,"").replace(/^SAMSUNG TAB /,"").trim();
+
+    // Verificar se todas as partes do shortKey estão no slug
+    const parts = shortKey.split(" ").filter(p=>p.length>1);
+    if(parts.length > 0 && parts.every(p => clean.includes(p))){
       return key;
     }
   }
