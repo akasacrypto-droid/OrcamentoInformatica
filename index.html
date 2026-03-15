@@ -71,7 +71,6 @@ nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;jus
 .price-link{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-decoration:none}
 .price-link.floritec{background:var(--accent-light);color:var(--accent)}
 .price-link.shop{background:#fff3e0;color:#e65100}
-.price-link.novapecas{background:#e8f4fd;color:#0066cc}
 .price-right{text-align:right;flex-shrink:0}
 .price-custo{font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase}
 .price-val{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green);line-height:1}
@@ -168,6 +167,97 @@ textarea{resize:none;height:70px}
 .sub-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
+
+/* ── DESKTOP RESPONSIVE ── */
+@media (min-width: 768px) {
+  body { font-size: 15px; }
+
+  /* Container central com largura máxima */
+  nav { padding: 14px 32px; }
+  nav .nav-logo { font-size: 26px; }
+
+  .bottom-nav { 
+    left: 50%; transform: translateX(-50%);
+    width: 480px; border-radius: 20px 20px 0 0;
+    border-left: 2px solid var(--border);
+    border-right: 2px solid var(--border);
+  }
+
+  /* Wrapper central para conteúdo */
+  .page { 
+    max-width: 680px; 
+    margin: 0 auto; 
+    padding-bottom: 90px;
+  }
+
+  .breadcrumb { 
+    max-width: 680px; 
+    margin: 0 auto;
+    border-radius: 0 0 12px 12px;
+  }
+
+  /* Grid de marcas: 4 por linha no desktop */
+  .brand-grid { 
+    grid-template-columns: repeat(4, 1fr); 
+    gap: 12px;
+  }
+
+  .brand-card { 
+    padding: 20px 12px; 
+    border-radius: 18px;
+  }
+  .brand-emoji { font-size: 32px; }
+  .brand-name { font-size: 13px; }
+
+  /* Defeitos em 2 colunas */
+  .defect-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px; 
+  }
+
+  /* Step padding maior */
+  .step { padding: 20px 24px; }
+
+  /* Modal centralizado */
+  .overlay { align-items: center; }
+  .modal { 
+    border-radius: 20px; 
+    max-width: 480px; 
+    margin: 0 auto;
+  }
+  .modal-orc { 
+    max-height: 85vh; 
+    border-radius: 20px;
+  }
+
+  /* Preços em layout melhor */
+  .price-row { padding: 14px 16px; }
+  .price-val { font-size: 26px; }
+
+  /* OLX page */
+  #pg-olx > div, #pg-atualizacao > div {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  /* Melhorar step title */
+  .step-title { font-size: 22px; margin-bottom: 18px; }
+
+  /* Model list em 2 colunas */
+  .model-list { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 8px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .brand-grid { grid-template-columns: repeat(4, 1fr); }
+  .page { max-width: 720px; }
+  .breadcrumb { max-width: 720px; }
+  #pg-olx > div, #pg-atualizacao > div { max-width: 720px; }
+}
 </style>
 </head>
 <body>
@@ -1210,7 +1300,6 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novaLink(tipo,model){ return `https://novapecascell.com.br/busca?q=${encodeURIComponent(tipo+" "+model)}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1231,7 +1320,6 @@ function renderPrices(){
             <div class="price-fornecedor">📦 ${p.f}</div>
             <div class="price-links">
               <a class="price-link floritec" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Ver no site</a>
-              <a class="price-link novapecas" href="${novaLink(tipo,state.model)}" target="_blank" onclick="event.stopPropagation()">🔩 NovaPeças</a>
               <a class="price-link shop" href="${shopLink(tipo+' '+p.q,state.model)}" target="_blank" onclick="event.stopPropagation()">🛒 Google Shopping</a>
             </div>
           </div>
@@ -1991,7 +2079,7 @@ function renderOLXResult(a, images, url){
           </div>`;
         };
 
-        const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a><a href="https://novapecascell.com.br/busca?q=${encodeURIComponent(modelo)}" target="_blank" style="font-size:11px;background:#e8f4fd;color:#0066cc;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none;margin-left:4px">🔩 NovaPeças</a>`;
+        const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
         const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
