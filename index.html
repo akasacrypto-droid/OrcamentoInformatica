@@ -168,26 +168,7 @@ textarea{resize:none;height:70px}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 
-@media(min-width:768px){
-  nav{padding:14px 32px}.nav-logo{font-size:26px}
-  .breadcrumb,.page{max-width:700px;margin:0 auto}
-  .page{padding-bottom:90px}
-  #pg-olx>div,#pg-atualizacao>div{max-width:700px;margin:0 auto}
-  .bottom-nav{left:50%;transform:translateX(-50%);width:420px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}
-  .brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}
-  .brand-card{padding:22px 14px;border-radius:18px}
-  .brand-emoji{font-size:34px}.brand-name{font-size:13px}
-  .model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}
-  .price-val{font-size:26px}.price-row{padding:14px 18px}
-  .overlay{align-items:center}
-  .modal{border-radius:20px;max-width:500px;margin:0 auto}
-  .modal-orc{max-height:85vh;border-radius:20px}
-}
-@media(min-width:1024px){
-  .page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div{max-width:760px}
-}
+@media(min-width:768px){nav{padding:14px 32px}.nav-logo{font-size:26px}.breadcrumb,.page{max-width:700px;margin:0 auto}.page{padding-bottom:90px}#pg-olx>div,#pg-atualizacao>div{max-width:700px;margin:0 auto}.bottom-nav{left:50%;transform:translateX(-50%);width:420px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}.brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}.brand-card{padding:22px 14px;border-radius:18px}.brand-emoji{font-size:34px}.brand-name{font-size:13px}.model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}.price-val{font-size:26px}.price-row{padding:14px 18px}.overlay{align-items:center}.modal{border-radius:20px;max-width:500px;margin:0 auto}.modal-orc{max-height:85vh;border-radius:20px}}@media(min-width:1024px){.page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div{max-width:760px}}
 </style>
 </head>
 <body>
@@ -1059,6 +1040,24 @@ function applyAllSyncChanges(){
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
 // ══════════════════════════════════════
+// ══ NOVAPEÇAS — IDs por modelo ══
+const NP = {
+  "iPhone 5G":      { display:1005, bateria:7728 },
+  "iPhone 5S":      { display:1008, bateria:7728 },
+  "iPhone 6G":      { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
+  "iPhone 6G Plus": { display:15889, bateria:7025, flexCarga:25902, flexPower:6743 },
+  "iPhone 6S":      { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
+  "iPhone 6S Plus": { display:15898, bateria:7025, flexCarga:25908, flexPower:6749 },
+  "iPhone 7G":      { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
+  "iPhone 7 Plus":  { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
+};
+const NP_KEY = {
+  "Display":"display", "Bateria":"bateria", "Flex Carga":"flexCarga",
+  "Flex Power":"flexPower", "Camara Traseira":"cameraTraseira",
+  "Camara Frontal":"cameraFrontal", "Alto-falante":"altoFalante",
+  "Microfone":"microfone", "Botao Home":"botaoHome", "Carcaca":"carcaca",
+};
+
 const BRANDS = [
   {id:"apple",    name:"Apple",       emoji:"🍎", test: k=>k.startsWith("iPhone")},
   {id:"samsung",  name:"Samsung",     emoji:"🌌", test: k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab")},
@@ -1160,14 +1159,16 @@ function selectModel(m){ state.model=m; state.defects=[]; goStep(3); }
 function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
+  const _npM=NP[state.model]||{};
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
-    const hasNP=NP[state.model]?.[NP_KEY[tipo]];
+    const hasNP=NP_KEY[tipo]&&_npM[NP_KEY[tipo]];
     const sel=state.defects.includes(tipo)?"selected":"";
+    const npBadge=hasNP?'<span class="has-np">🔵 NP</span>':'';
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
       <div class="defect-info">
-        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}\${hasNP?'<span class="has-np">🔵 NP</span>':''}</div>
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${npBadge}</div>
         <div class="defect-sub">${info.desc}</div>
       </div>
       <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -1183,10 +1184,7 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function npLink(tipo,model){
-  const q = model.split(" ").slice(0,3).join(" ");
-  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(q)}`;
-}
+function npLink(tipo,model){ const id=NP[model]&&NP_KEY[tipo]?NP[model][NP_KEY[tipo]]:null; if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`; return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -2155,18 +2153,18 @@ function gerarCopy(a){
   const copies = {
     verde: [
       `Oi, tudo bem? Tenho interesse no ${modelo}, ainda tá disponível?\n\nConsigo pagar *${ofertaStr}* à vista agora. Me avisa! 🤝`,
-      `Oi! Ainda vende o ${modelo}?\n\nPago *${ofertaStr}* à vista, sem enrolação. Se topar, combino hoje. 😊`,
-      `Boa tarde! Vi o ${modelo} e me interessei.\n\nFecho *${ofertaStr}* à vista agora. Tem como?`,
+
+      `Olá! Me interessei pelo seu ${modelo}.\n\nPago *${ofertaStr}* à vista. Pagamento na hora, sem enrolação. Fecha? 😊`,
     ],
     amarelo: [
-      `Oi, tudo bem? Vi o ${modelo} e tenho interesse.\n\nJá comprei vários assim pra uso, mas preciso de desconto. Topo *${ofertaStr}* à vista. Fecha?`,
-      `Olá! O ${modelo} ainda tá disponível?\n\nTrabalho com eletrônicos, preciso de margem. Pago *${ofertaStr}* à vista na hora. Aceita? 🤝`,
-      `Oi! Me interesso pelo ${modelo}.\n\nPago *${ofertaStr}* à vista hoje. Fecha? 😊`,
+      `Oi! Vi seu ${modelo} na OLX.\n\nVi que ele tem ${condicao}, então vou precisar de reparo. Pago *${ofertaStr}* à vista, já considerando o conserto. Fecha? 💰`,
+
+      `Olá! Tenho interesse no ${modelo}, mas ele precisa de reparo (${condicao}).\n\nConsigo pagar *${ofertaStr}* à vista. Busco hoje se fechar! 🤝`,
     ],
     vermelho: [
-      `Oi! Vi o ${modelo} e tenho interesse, mas meu limite é *${ofertaStr}* à vista.\n\nSe topar, busco hoje. Me avisa! 🙂`,
-      `Olá, tudo bem? Tenho interesse no ${modelo}.\n\nO máximo que consigo pagar é *${ofertaStr}* à vista agora. Aceita?`,
-      `Oi! Ainda vende o ${modelo}?\n\nConsigo *${ofertaStr}* à vista na hora. Fecha? 😅`,
+      `Oi! Vi seu ${modelo} na OLX.\n\nPelo estado que ele tá (${condicao}), o conserto sai caro. O máximo que consigo pagar é *${ofertaStr}* à vista. Fecha? 🙂`,
+
+      `Olá! Me interessei pelo ${modelo}, mas com ${condicao} o valor de mercado cai bastante.\n\nPago *${ofertaStr}* à vista, na hora. Aceita? 😅`,
     ],
   };
 
