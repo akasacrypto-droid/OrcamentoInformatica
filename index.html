@@ -1346,115 +1346,100 @@ async function analisarOLX(){
   btn.disabled = true;
   btn.textContent = "⏳ Analisando...";
   status.style.display = "block";
+  status.style.background = "var(--accent-light)";
+  status.style.color = "var(--accent)";
   status.textContent = "🔄 Buscando dados do anúncio...";
   result.style.display = "none";
 
-  try {
-    // Buscar HTML da página OLX via proxy
-    let pageText = "";
-    let images = [];
+  let pageText = "";
+  let images = [];
 
+  // Extrair modelo do URL (ex: iphone-11-pro-max)
+  const urlModel = url.split("/").pop()?.split("?")[0]?.replace(/-\d+$/, "").replace(/-/g," ") || "";
+
+  // Tentar proxies
+  const proxies = [
+    `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  ];
+
+  for(const proxyUrl of proxies){
     try {
-      const proxyRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(12000)});
-      const proxyData = await proxyRes.json();
-      const html = proxyData.contents || "";
+      const res = await fetch(proxyUrl, {signal: AbortSignal.timeout(8000)});
+      let html = "";
+      if(proxyUrl.includes("allorigins")){
+        const d = await res.json();
+        html = d.contents || "";
+      } else {
+        html = await res.text();
+      }
+      if(!html || html.length < 500) continue;
 
-      // Extrair texto relevante
       const tmpDoc = new DOMParser().parseFromString(html, "text/html");
 
-      // Título
       const title = tmpDoc.querySelector("h1")?.textContent?.trim() ||
-                    tmpDoc.querySelector('meta[property="og:title"]')?.content || "";
-
-      // Preço
-      const priceEl = tmpDoc.querySelector('[class*="price"]') ||
-                      tmpDoc.querySelector('[data-testid*="price"]');
+                    tmpDoc.querySelector('meta[property="og:title"]')?.getAttribute("content") || "";
+      const priceEl = tmpDoc.querySelector('[class*="price"],[data-testid*="price"]');
       const price = priceEl?.textContent?.trim() || "";
+      const descEl = tmpDoc.querySelector('[class*="description"],[data-testid*="description"]');
+      const desc = descEl?.textContent?.trim().slice(0,500) || "";
+      const loc = tmpDoc.querySelector('[class*="location"],[data-testid*="location"]')?.textContent?.trim() || "";
 
-      // Descrição
-      const desc = tmpDoc.querySelector('[class*="description"]')?.textContent?.trim() ||
-                   tmpDoc.querySelector('[data-testid*="description"]')?.textContent?.trim() || "";
+      // Imagens
+      const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')].map(m=>m.getAttribute("content")).filter(Boolean);
+      const srcImgs = [...tmpDoc.querySelectorAll("img")].map(i=>i.src||i.getAttribute("data-src")||"").filter(s=>s&&s.startsWith("http")&&(s.includes("olx")||s.includes("imagens")||s.includes("static")));
+      images = [...new Set([...ogImgs,...srcImgs])].slice(0,4);
 
-      // Localização
-      const loc = tmpDoc.querySelector('[class*="location"]')?.textContent?.trim() || "";
+      if(title || price || desc){
+        pageText = `TÍTULO: ${title}\nPREÇO: ${price}\nDESCRIÇÃO: ${desc}\nLOCALIZAÇÃO: ${loc}`;
+        break;
+      }
+    } catch(e){ continue; }
+  }
 
-      // Imagens — pegar URLs das imagens do anúncio
-      const imgEls = [...tmpDoc.querySelectorAll('img[src*="olx"], img[data-src*="olx"], img[src*="imagens"]')];
-      images = imgEls
-        .map(i => i.src || i.getAttribute("data-src") || "")
-        .filter(s => s && s.startsWith("http") && (s.includes("olx") || s.includes("imagens")))
-        .slice(0, 6);
+  // Se não conseguiu nada, usar dados da URL
+  if(!pageText){
+    pageText = `MODELO PELO LINK: ${urlModel}\nLINK: ${url}\n\nNota: Não foi possível acessar a página. Analise pelo modelo identificado na URL e forneça estimativas baseadas no mercado brasileiro atual.`;
+  }
 
-      // Também tentar pegar de meta og:image
-      const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')].map(m=>m.content).filter(Boolean);
-      images = [...new Set([...images, ...ogImgs])].slice(0, 6);
+  status.textContent = "🤖 IA analisando...";
 
-      pageText = `TÍTULO: ${title}\nPREÇO: ${price}\nDESCRIÇÃO: ${desc}\nLOCALIZAÇÃO: ${loc}\nLINK: ${url}`;
-    } catch(e) {
-      // Se o proxy falhar, usar apenas a URL + contexto
-      pageText = `LINK DO ANÚNCIO: ${url}\n\nNão foi possível extrair dados automaticamente. Analise pelo link acima.`;
-    }
+  try {
+    const systemPrompt = `Você é especialista em compra e revenda de celulares usados no Brasil para assistência técnica.
+Analise anúncios da OLX e responda APENAS em JSON válido, sem markdown.
+Use preços realistas do mercado brasileiro de 2025.
+Se faltar informação, estime com base no modelo identificado.`;
 
-    status.textContent = "🤖 Analisando com IA...";
-
-    // Montar mensagem para o Claude
-    const systemPrompt = `Você é um especialista em compra e revenda de celulares usados no Brasil, focado em assistência técnica.
-Analise anúncios de celulares da OLX e dê uma análise detalhada para um técnico que quer comprar para consertar e revender.
-Responda APENAS em JSON válido, sem markdown, sem explicações fora do JSON.`;
-
-    const userPrompt = `Analise este anúncio de celular da OLX para compra e revenda:
+    const userPrompt = `Analise este anúncio para compra e revenda:
 
 ${pageText}
+LINK: ${url}
 
-Responda em JSON com esta estrutura exata:
+Responda em JSON:
 {
-  "modelo_detectado": "ex: iPhone 11 Pro Max 64GB",
-  "preco_anuncio": 0,
-  "preco_maximo_recomendado": 0,
-  "condicao_estimada": "ex: Tela trincada, bateria fraca",
-  "defeitos_identificados": ["defeito1", "defeito2"],
+  "modelo_detectado": "modelo completo",
+  "preco_anuncio": numero,
+  "preco_maximo_recomendado": numero,
+  "condicao_estimada": "descrição",
+  "defeitos_identificados": ["defeito1"],
   "estimativa_reparo": {
-    "tela": 0,
-    "bateria": 0,
-    "carcaca": 0,
-    "camera": 0,
-    "outros": 0,
-    "total": 0
+    "tela": numero,
+    "bateria": numero,
+    "carcaca": numero,
+    "camera": numero,
+    "outros": numero,
+    "total": numero
   },
-  "preco_revenda_medio": 0,
-  "lucro_estimado": 0,
-  "margem_percent": 0,
-  "bandeiras_vermelhas": ["alerta1", "alerta2"],
+  "preco_revenda_medio": numero,
+  "lucro_estimado": numero,
+  "margem_percent": numero,
+  "bandeiras_vermelhas": ["alerta1"],
   "pontos_positivos": ["ponto1"],
   "veredito": "verde|amarelo|vermelho",
-  "veredito_texto": "explicação curta do veredito",
-  "resumo": "análise geral em 2-3 frases"
+  "veredito_texto": "texto curto",
+  "resumo": "2-3 frases"
 }`;
 
-    // Montar mensagens — incluir imagens se houver
-    const msgContent = [];
-
-    // Adicionar imagens se conseguiu pegar
-    if(images.length > 0){
-      status.textContent = "🖼️ Analisando imagens + texto com IA...";
-      for(const imgUrl of images.slice(0,3)){
-        try {
-          // Tentar converter imagem para base64
-          const imgRes = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(imgUrl)}`);
-          const imgData = await imgRes.json();
-          // allorigins retorna imagens como data URL
-          if(imgData.contents && imgData.contents.startsWith("data:image")){
-            const b64 = imgData.contents.split(",")[1];
-            const mime = imgData.contents.split(";")[0].replace("data:","");
-            msgContent.push({type:"image", source:{type:"base64", media_type:mime, data:b64}});
-          }
-        } catch(e){ /* ignora erro de imagem */ }
-      }
-    }
-
-    msgContent.push({type:"text", text:userPrompt});
-
-    // Chamar API Claude
     const apiRes = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
@@ -1462,28 +1447,22 @@ Responda em JSON com esta estrutura exata:
         model: "claude-sonnet-4-20250514",
         max_tokens: 1000,
         system: systemPrompt,
-        messages: [{role:"user", content: msgContent}]
+        messages: [{role:"user", content: userPrompt}]
       })
     });
 
     const apiData = await apiRes.json();
     const rawText = apiData.content?.map(c=>c.text||"").join("") || "";
-
-    let analysis;
-    try {
-      const clean = rawText.replace(/```json|```/g,"").trim();
-      analysis = JSON.parse(clean);
-    } catch(e) {
-      throw new Error("Erro ao processar resposta da IA");
-    }
+    const clean = rawText.replace(/```json|```/g,"").trim();
+    const analysis = JSON.parse(clean);
 
     renderOLXResult(analysis, images, url);
     status.style.display = "none";
 
-  } catch(err) {
+  } catch(err){
     status.style.background = "var(--red-light)";
     status.style.color = "var(--red)";
-    status.textContent = "❌ " + err.message;
+    status.textContent = "❌ Erro na análise: " + err.message;
   }
 
   btn.disabled = false;
