@@ -1236,7 +1236,7 @@ const NP_KEY = {
 function npId(tipo,model){ return NP[model]?.[NP_KEY[tipo]]; }
 function npLink(tipo,model){
   const id = npId(tipo,model);
-  if(id) return `https://novapecascell.com.br/produto/${id}`;
+  if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`;
   return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`;
 }
 
