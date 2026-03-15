@@ -168,29 +168,25 @@ textarea{resize:none;height:70px}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 
-@media (min-width: 768px) {
-  nav { padding: 14px 32px; }
-  .nav-logo { font-size: 26px; }
-  .breadcrumb { max-width: 700px; margin: 0 auto; border-radius: 0 0 12px 12px; }
-  .page { max-width: 700px; margin: 0 auto; padding-bottom: 90px; }
-  #pg-olx > div, #pg-atualizacao > div { max-width: 700px; margin: 0 auto; }
-  .bottom-nav { left: 50%; transform: translateX(-50%); width: 420px; border-radius: 20px 20px 0 0; border-left: 2px solid var(--border); border-right: 2px solid var(--border); box-shadow: 0 -4px 24px rgba(0,0,0,.08); }
-  .brand-grid { grid-template-columns: repeat(4,1fr); gap: 14px; }
-  .brand-card { padding: 22px 14px; border-radius: 18px; }
-  .brand-emoji { font-size: 34px; }
-  .brand-name { font-size: 13px; }
-  .model-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .defect-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .step { padding: 22px 26px; }
-  .step-title { font-size: 22px; margin-bottom: 20px; }
-  .price-val { font-size: 26px; }
-  .price-row { padding: 14px 18px; }
-  .overlay { align-items: center; }
-  .modal { border-radius: 20px; max-width: 500px; margin: 0 auto; }
-  .modal-orc { max-height: 85vh; border-radius: 20px; }
+@media(min-width:768px){
+  nav{padding:14px 32px}.nav-logo{font-size:26px}
+  .breadcrumb,.page{max-width:700px;margin:0 auto}
+  .page{padding-bottom:90px}
+  #pg-olx>div,#pg-atualizacao>div{max-width:700px;margin:0 auto}
+  .bottom-nav{left:50%;transform:translateX(-50%);width:420px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}
+  .brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}
+  .brand-card{padding:22px 14px;border-radius:18px}
+  .brand-emoji{font-size:34px}.brand-name{font-size:13px}
+  .model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}
+  .price-val{font-size:26px}.price-row{padding:14px 18px}
+  .overlay{align-items:center}
+  .modal{border-radius:20px;max-width:500px;margin:0 auto}
+  .modal-orc{max-height:85vh;border-radius:20px}
 }
-@media (min-width: 1024px) {
-  .page, .breadcrumb, #pg-olx > div, #pg-atualizacao > div { max-width: 760px; }
+@media(min-width:1024px){
+  .page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div{max-width:760px}
 }
 </style>
 </head>
@@ -1063,182 +1059,23 @@ function applyAllSyncChanges(){
 // ══════════════════════════════════════
 // MARCAS / MODELOS / DEFEITOS
 // ══════════════════════════════════════
-// ══ NOVAPEÇAS — mapa por modelo ══
-// Chaves: display, bateria, flexCarga, flexPower, cameraTraseira, cameraFrontal, altoFalante, microfone, botaoHome, carcaca
+// ══ NOVAPEÇAS — IDs por modelo (adicione um por vez) ══
 const NP = {
-  "iPhone 5G":  { display:1005, bateria:7728 },
-  "iPhone 5S":  { display:1008, bateria:7728 },
-  "iPhone 6G":  { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
+  "iPhone 5G":      { display:1005, bateria:7728 },
+  "iPhone 5S":      { display:1008, bateria:7728 },
+  "iPhone 6G":      { display:15880, bateria:2642, flexCarga:25899, flexPower:6740 },
   "iPhone 6G Plus": { display:15889, bateria:7025, flexCarga:25902, flexPower:6743 },
-  "iPhone 6S":  { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
+  "iPhone 6S":      { display:15895, bateria:6993, flexCarga:25905, flexPower:6746 },
   "iPhone 6S Plus": { display:15898, bateria:7025, flexCarga:25908, flexPower:6749 },
-  "iPhone 7G":  { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
-  "iPhone 7 Plus": { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
-  "iPhone 8G":  { flexCarga:25917 },
-  "iPhone 8 Plus": { flexCarga:25920 },
-  "iPhone X":   { flexCarga:25923 },
-  "iPhone XR":  { flexCarga:25926 },
-  "iPhone XS":  { flexCarga:25929 },
-  "iPhone XS Max": { flexCarga:25932 },
-  "iPhone 11":  { flexCarga:25782 },
-  "iPhone 11 Pro": { flexCarga:25785 },
-  "iPhone 11 Pro Max": { flexCarga:25788 },
-  "iPhone 12":  { flexCarga:25791 },
-  "iPhone 12 Pro": { flexCarga:25791 },
-  "iPhone 12 Pro Max": { flexCarga:25794 },
-  "iPhone 13":  { flexCarga:25797 },
-  "iPhone 13 Pro": { flexCarga:25800 },
-  "iPhone 13 Pro Max": { flexCarga:25803 },
-  "iPhone 14":  { flexCarga:25806 },
-  "iPhone 14 Plus": { flexCarga:25809 },
-  "iPhone 14 Pro": { flexCarga:25812 },
-  "iPhone 14 Pro Max": { flexCarga:25815 },
-  "iPhone 15":  { flexCarga:20131 },
-  "iPhone 15 Pro": { flexCarga:25821 },
-  "iPhone 15 Pro Max": { flexCarga:25824 },
-  "iPhone 16":  { flexCarga:25827 },
-  "iPhone 16 Pro": { flexCarga:25830 },
-  "iPhone 16 Pro Max": { flexCarga:25833 },
-  "Moto G7 Power": { flexCarga:13163 },
-  "Moto G8 Power": { flexCarga:13175 },
-  "Moto G9 Play": { flexCarga:13178 },
-  "Moto G31":   { flexCarga:13181 },
-  "Moto G32":   { flexCarga:13184 },
-  "Moto G42":   { flexCarga:13187 },
-  "Moto G53":   { flexCarga:13190 },
-  "Moto G54":   { flexCarga:13193 },
-  "Moto G60":   { flexCarga:13196 },
-  "Moto G62":   { flexCarga:13199 },
-  "Moto G71":   { flexCarga:13202 },
-  "Moto G73":   { flexCarga:28289 },
-  "Moto G82":   { flexCarga:28283 },
-  "Moto G84":   { flexCarga:29116 },
-  "Moto G85":   { flexCarga:24818 },
-  "Moto G100":  { flexCarga:9871 },
-  "Moto G200":  { flexCarga:28292 },
-  "Moto G14":   { flexCarga:28232 },
-  "Moto G34":   { flexCarga:24815 },
-  "Moto G52":   { flexCarga:22067 },
-  "Moto G5G":   { flexCarga:9759 },
-  "Moto G9 Plus": { flexCarga:9777 },
-  "Moto G9 Power": { flexCarga:9768 },
-  "Moto G50 5G": { flexCarga:9789 },
-  "Moto One":   { flexCarga:13145 },
-  "Moto One Action": { flexCarga:13148 },
-  "Moto One Fusion": { flexCarga:9795 },
-  "Moto One Fusion Plus": { flexCarga:9741 },
-  "Moto One Hyper": { flexCarga:9744 },
-  "Moto Edge":  { flexCarga:28271 },
-  "Moto Edge Plus": { flexCarga:28262 },
-  "Moto Edge 20": { flexCarga:13118 },
-  "Moto Edge 20 Lite": { flexCarga:13121 },
-  "Moto Edge 30": { flexCarga:13127 },
-  "Moto Edge 30 Neo": { flexCarga:13130 },
-  "Moto Edge 30 Pro": { flexCarga:28229 },
-  "Moto Edge 30 Ultra": { flexCarga:28265 },
-  "Moto E7 Plus": { flexCarga:22070 },
-  "Galaxy A10":  { flexCarga:9816 },
-  "Galaxy A20":  { flexCarga:9850 },
-  "Galaxy A20E": { flexCarga:9849 },
-  "Galaxy A20S": { flexCarga:9874 },
-  "Galaxy A21S": { flexCarga:6305 },
-  "Galaxy A22 5G": { flexCarga:11276 },
-  "Galaxy A24":  { flexCarga:20445 },
-  "Galaxy A25":  { flexCarga:28295 },
-  "Galaxy A31":  { flexCarga:6272 },
-  "Galaxy A32 4G": { flexCarga:9810 },
-  "Galaxy A34":  { flexCarga:20442 },
-  "Galaxy A35":  { flexCarga:20990 },
-  "Galaxy A50":  { flexCarga:22187 },
-  "Galaxy A52":  { flexCarga:28298 },
-  "Galaxy A53":  { flexCarga:22743 },
-  "Galaxy A54":  { flexCarga:20442 },
-  "Galaxy A55":  { flexCarga:20990 },
-  "Galaxy A72":  { flexCarga:9828 },
-  "Galaxy A15":  { flexCarga:23642 },
-  "Galaxy M21":  { flexCarga:28277 },
-  "Galaxy M30":  { flexCarga:9819 },
-  "Galaxy M30S": { flexCarga:26582 },
-  "Galaxy M31S": { flexCarga:28223 },
-  "Galaxy M32":  { flexCarga:9859 },
-  "Galaxy M51":  { flexCarga:9801 },
-  "Galaxy M52":  { flexCarga:9831 },
-  "Galaxy M53":  { flexCarga:9831 },
-  "Galaxy M54":  { flexCarga:28194 },
-  "Galaxy S20":  { flexCarga:21005 },
-  "Galaxy S20 FE": { flexCarga:9840 },
-  "Galaxy S20 Plus": { flexCarga:9807 },
-  "Galaxy S20 Ultra": { flexCarga:22758 },
-  "Galaxy S21":  { flexCarga:22749 },
-  "Galaxy S21 Ultra": { flexCarga:22752 },
-  "Galaxy S22":  { flexCarga:21008 },
-  "Galaxy S22 Plus": { flexCarga:20996 },
-  "Galaxy S22 Ultra": { flexCarga:28185 },
-  "Galaxy S23":  { flexCarga:21017 },
-  "Galaxy S23 FE": { flexCarga:21011 },
-  "Galaxy S23 Plus": { flexCarga:21014 },
-  "Galaxy S23 Ultra": { flexCarga:20999 },
-  "Galaxy S24":  { flexCarga:20993 },
-  "Galaxy S24 Plus": { flexCarga:21020 },
-  "Galaxy S24 Ultra": { flexCarga:21002 },
-  "Galaxy Note 20": { flexCarga:26100 },
-  "Galaxy Note 20 Ultra": { flexCarga:26103 },
-  "Redmi Note 10 4G": { flexCarga:21408 },
-  "Redmi Note 10S": { flexCarga:21408 },
-  "Redmi Note 11 4G": { flexCarga:21411 },
-  "Redmi Note 12 4G": { flexCarga:28203 },
-  "Redmi Note 12 5G": { flexCarga:28206 },
-  "Redmi Note 12 Pro 5G": { flexCarga:28301 },
-  "Redmi Note 13 Pro 5G": { flexCarga:28209 },
-  "Redmi Note 14 Pro 4G": { flexCarga:25212 },
-  "Redmi Note 8T": { flexCarga:9702 },
-  "Redmi 7":     { flexCarga:9693 },
-  "Poco X3":     { flexCarga:18623 },
-  "Poco X3 Pro": { flexCarga:18623 },
-  "Poco X3 GT":  { flexCarga:28217 },
-  "Poco X4 Pro": { flexCarga:28182 },
-  "Poco X5 5G":  { flexCarga:21396 },
-  "Poco X5 Pro": { flexCarga:21396 },
-  "Poco X6 5G":  { flexCarga:28209 },
-  "Poco X6 Pro": { flexCarga:28215 },
-  "Poco F3":     { flexCarga:28238 },
-  "Poco M6 Pro 4G": { flexCarga:21023 },
-  "Poco M7 Pro 5G": { flexCarga:29199 },
-  "Mi 9":        { flexCarga:9645 },
-  "Mi 9 Lite":   { flexCarga:9648 },
-  "Mi 9T Pro":   { flexCarga:9657 },
-  "Mi 10T":      { flexCarga:28200 },
-  "Mi 10T Pro":  { flexCarga:28200 },
-  "Mi 11T":      { flexCarga:28304 },
-  "Mi 12 Lite":  { flexCarga:21026 },
-  "Mi 12T Pro":  { flexCarga:26208 },
-  "LG K41S":     { flexCarga:9675 },
-  "LG K42":      { flexCarga:9687 },
-  "LG K50S":     { flexCarga:9681 },
-  "LG K51S":     { flexCarga:9615 },
-  "LG K61":      { flexCarga:9696 },
-  "Realme C3":   { flexCarga:9868 },
-  "Realme C21Y": { flexCarga:9654 },
-  "Realme C55":  { flexCarga:28286 },
-  "Realme C11 2021": { flexCarga:28259 },
-  "Infinix Hot 11S": { flexCarga:28247 },
-  "Infinix Hot 30": { flexCarga:28170 },
-  "Infinix Note 10 Pro": { flexCarga:28226 },
+  "iPhone 7G":      { display:14351, bateria:25413, flexCarga:25911, flexPower:6752, cameraTraseira:16720, cameraFrontal:19170, altoFalante:17923 },
+  "iPhone 7 Plus":  { display:14354, bateria:26531, flexCarga:25914, flexPower:6755, cameraTraseira:16726, cameraFrontal:19173, altoFalante:17576 },
 };
-
-// Mapa tipo de defeito → chave no NP
 const NP_KEY = {
   "Display":"display","Bateria":"bateria","Flex Carga":"flexCarga",
   "Flex Power":"flexPower","Câmera Traseira":"cameraTraseira",
   "Câmera Frontal":"cameraFrontal","Alto-falante":"altoFalante",
   "Microfone":"microfone","Botão Home":"botaoHome","Carcaça":"carcaca",
 };
-function npId(tipo,model){ return NP[model]?.[NP_KEY[tipo]]; }
-function npLink(tipo,model){
-  const id = npId(tipo,model);
-  if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`;
-  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`;
-}
 
 
 const BRANDS = [
@@ -1345,12 +1182,12 @@ function renderDefects(){
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
   document.getElementById("defect-grid").innerHTML=Object.entries(DEFECT_TIPOS).map(([tipo,info])=>{
     const hasPart=tiposDisp.includes(tipo);
-    const hasNP = npId(tipo, state.model);
+    const hasNP=NP[state.model]?.[NP_KEY[tipo]];
     const sel=state.defects.includes(tipo)?"selected":"";
     return `<div class="defect-card ${sel}" onclick="toggleDefect('${tipo}')">
       <div class="defect-icon-wrap">${info.icon}</div>
       <div class="defect-info">
-        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}${hasNP?'<span class="has-np">🔵 NP</span>':''}</div>
+        <div class="defect-name">${tipo}${hasPart?'<span class="has-price">✓ preço</span>':''}\${hasNP?'<span class="has-np">🔵 NP</span>':''}</div>
         <div class="defect-sub">${info.desc}</div>
       </div>
       <div class="defect-chk"><svg width="12" height="9" fill="none"><path d="M1 4l3.5 3.5L11 1" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -1366,7 +1203,11 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novapecasLink(tipo,model){ return npLink(tipo,model); }
+function npLink(tipo,model){
+  const id = NP[model]?.[NP_KEY[tipo]];
+  if(id) return `https://novapecascell.com.br/pesquisa?busca=${id}`;
+  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`;
+}
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1387,7 +1228,7 @@ function renderPrices(){
             <div class="price-fornecedor">📦 ${p.f}</div>
             <div class="price-links">
               <a class="price-link floritec" href="${p.link}" target="_blank" onclick="event.stopPropagation()">🏪 Floritec</a>
-              <a class="price-link novapecas" href="${novapecasLink(tipo,state.model)}" target="_blank" onclick="event.stopPropagation()">🔵 NovaPeças</a>
+              <a class="price-link novapecas" href="${npLink(tipo,state.model)}" target="_blank" onclick="event.stopPropagation()">🔵 NovaPeças</a>
               <a class="price-link shop" href="${shopLink(tipo+' '+p.q,state.model)}" target="_blank" onclick="event.stopPropagation()">🛒 Shopping</a>
             </div>
           </div>
@@ -1403,7 +1244,7 @@ function renderPrices(){
       const ck=state.model+"_"+tipo+"_manual";
       const inC=cart[ck];
       html+=`<div class="no-price-card"><p>⚠️ Sem preço no catálogo. Consulte:</p>
-        <a class="price-link novapecas" href="${novapecasLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🔵 NovaPeças</a>
+        <a class="price-link novapecas" href="${npLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🔵 NovaPeças</a>
         <a class="price-link shop" href="${shopLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🛒 Shopping</a>
       </div>
       <div class="price-row ${inC?'selected':''}" onclick="selectPrice('${ck}','${state.model.replace(/'/g,"\\'")}','${tipo}','Manual',0,'Manual','')">
@@ -2334,19 +2175,19 @@ function gerarCopy(a){
 
   const copies = {
     verde: [
-      `Oi, tudo bem? Tenho interesse no ${modelo}, ainda tá disponível?\n\nConsigo pagar *${ofertaStr}* à vista agora, pode ser hoje mesmo. Me avisa! 🤝`,
-      `Oi! Ainda vende o ${modelo}?\n\nPago *${ofertaStr}* à vista, sem enrolação. Se topar, combino a retirada hoje. 😊`,
+      `Oi, tudo bem? Tenho interesse no ${modelo}, ainda tá disponível?\n\nConsigo pagar *${ofertaStr}* à vista agora. Me avisa! 🤝`,
+      `Oi! Ainda vende o ${modelo}?\n\nPago *${ofertaStr}* à vista, sem enrolação. Se topar, combino hoje. 😊`,
       `Boa tarde! Vi o ${modelo} e me interessei.\n\nFecho *${ofertaStr}* à vista agora. Tem como?`,
     ],
     amarelo: [
-      `Oi, tudo bem? Vi o ${modelo} e tenho interesse.\n\nJá comprei vários assim pra uso, mas preciso de um desconto porque sempre acabo precisando de algum ajuste. Topo *${ofertaStr}* à vista. Fecha?`,
-      `Olá! O ${modelo} ainda tá disponível?\n\nTrabalho com eletrônicos e compro bastante, mas preciso de margem. Pago *${ofertaStr}* à vista na hora. Aceita? 🤝`,
-      `Oi! Me interesso pelo ${modelo}.\n\nPago *${ofertaStr}* à vista, hoje mesmo se fechar. Fecha? 😊`,
+      `Oi, tudo bem? Vi o ${modelo} e tenho interesse.\n\nJá comprei vários assim pra uso, mas preciso de desconto. Topo *${ofertaStr}* à vista. Fecha?`,
+      `Olá! O ${modelo} ainda tá disponível?\n\nTrabalho com eletrônicos, preciso de margem. Pago *${ofertaStr}* à vista na hora. Aceita? 🤝`,
+      `Oi! Me interesso pelo ${modelo}.\n\nPago *${ofertaStr}* à vista hoje. Fecha? 😊`,
     ],
     vermelho: [
       `Oi! Vi o ${modelo} e tenho interesse, mas meu limite é *${ofertaStr}* à vista.\n\nSe topar, busco hoje. Me avisa! 🙂`,
       `Olá, tudo bem? Tenho interesse no ${modelo}.\n\nO máximo que consigo pagar é *${ofertaStr}* à vista agora. Aceita?`,
-      `Oi! Ainda vende o ${modelo}?\n\nConsigo *${ofertaStr}* à vista. Pago na hora, sem burocracia. Fecha? 😅`,
+      `Oi! Ainda vende o ${modelo}?\n\nConsigo *${ofertaStr}* à vista na hora. Fecha? 😅`,
     ],
   };
 
