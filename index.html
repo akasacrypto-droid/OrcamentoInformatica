@@ -797,13 +797,38 @@ function editPrice(model, idx){
   if(novo === null) return;
   const v = parseFloat(novo.replace(",","."));
   if(isNaN(v) || v <= 0){ alert("Valor inválido."); return; }
+
+  // Encontrar todos os modelos que têm o mesmo preço E mesmo tipo de peça
+  const iguais = [];
+  for(const [m, parts] of Object.entries(CATALOG)){
+    parts.forEach((p, i)=>{
+      if(p.c === part.c && p.tipo === part.tipo && !(m===model && i===idx)){
+        iguais.push({m, i, q: p.q});
+      }
+    });
+  }
+
+  // Atualizar o modelo principal
   CATALOG[model][idx].c = v;
+
+  // Atualizar todos os iguais automaticamente
+  iguais.forEach(({m, i})=>{ CATALOG[m][i].c = v; });
+
   saveCatalog();
-  showToast(`✅ ${model} — ${part.q} atualizado para ${fmt(v)}`);
-  // Atualizar valor na tela
-  const el = document.getElementById("val-"+model.replace(/[^a-z0-9]/gi,"_")+"-"+idx);
-  if(el) el.textContent = fmt(v);
-  // Salvar data
+
+  if(iguais.length > 0){
+    showToast(`✅ Atualizado em ${iguais.length+1} modelos!`);
+  } else {
+    showToast(`✅ ${model} — ${part.q} atualizado!`);
+  }
+
+  // Atualizar valores na tela
+  const atualizar = [{m:model, i:idx}, ...iguais.map(x=>({m:x.m, i:x.i}))];
+  atualizar.forEach(({m, i})=>{
+    const el = document.getElementById("val-"+m.replace(/[^a-z0-9]/gi,"_")+"-"+i);
+    if(el) el.textContent = fmt(v);
+  });
+
   const now = "Última edição: "+new Date().toLocaleString("pt-BR");
   localStorage.setItem("upd_last", now);
   const el2 = document.getElementById("upd-last");
