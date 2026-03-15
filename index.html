@@ -637,7 +637,7 @@ const CATALOG_DEFAULT = {
 "Moto G73 5G":[d("S/A",90),d("ZL C/A",140)],
 "Moto G75":[d("S/A",140)],
 "Moto G82":[d("Incell C/A",115),d("S/A",260),d("ZL C/A",275)],
-"Moto G84":[d("S/A",205),d("ZL C/A",295)],
+"Moto G84":[d("S/A",205),d("ZL C/A",295),b("Compatível",70)],
 "Moto G85":[d("S/A",365),d("ZL C/A",435)],
 "Moto G86":[d("S/A",365),d("ZL C/A",395)],
 "Moto G100":[d("S/A",110),d("ZL C/A",245)],
@@ -1211,7 +1211,11 @@ function toggleDefect(tipo){
   renderDefects();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
-function novapecasLink(tipo,model){ return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model)}`; }
+function novapecasLink(tipo,model){
+  // Pegar só as primeiras 2-3 palavras relevantes do modelo
+  const palavras = model.split(" ").slice(0,3).join(" ");
+  return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(palavras)}`;
+}
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
   const parts=CATALOG[state.model]||[];
@@ -1882,7 +1886,12 @@ function gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnu
   const defeitosNomes = defeitos.map(d=>d.label);
 
   const veredito = lucro > 300 ? "verde" : lucro > 50 ? "amarelo" : "vermelho";
-  const modelFormatado = modelKey || modelRaw.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+  // Limpar modelo detectado — remover palavras inúteis do slug
+  let modelFormatado = modelKey || (()=>{
+    const lixo = ["celular","smartphone","usado","semi","novo","desbloqueado","preto","branco","azul","verde","dourado","rosa","cinza","prata","128gb","256gb","64gb","512gb","8gb","12gb","6gb","4gb","1tb","5g","4g","wifi","com","sem","para","retirada","pecas","peças","bom","estado","urgente","vendo","aceito","troca"];
+    const palavras = modelRaw.split(" ").filter(w => w.length > 1 && !lixo.includes(w.toLowerCase()));
+    return palavras.map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ");
+  })();
 
   return {
     modelo_detectado: modelFormatado,
@@ -1994,7 +2003,7 @@ function renderOLXResult(a, images, url){
         };
 
         const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
-        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(modelo)}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
+        const novapecasLinkOlx = (q) => `<a href="https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(modelo.split(" ").slice(0,3).join(" "))}" target="_blank" style="font-size:11px;background:#e3f0ff;color:#1a56db;border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🔵 NovaPeças</a>`;
         const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
