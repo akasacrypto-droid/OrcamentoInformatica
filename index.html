@@ -210,22 +210,6 @@ textarea{resize:none;height:70px}
     <div id="sync-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px"></div>
     <div id="sync-changes"></div>
 
-    <div style="height:16px;border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">✏️ EDITAR PREÇO MANUALMENTE</div>
-      <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:10px;margin-bottom:10px">
-        <button class="ftag active" id="edt-all" onclick="setEdtBrand('all')">Todos</button>
-        <button class="ftag" id="edt-apple" onclick="setEdtBrand('apple')">🍎 Apple</button>
-        <button class="ftag" id="edt-samsung" onclick="setEdtBrand('samsung')">🌌 Samsung</button>
-        <button class="ftag" id="edt-motorola" onclick="setEdtBrand('motorola')">〽️ Motorola</button>
-        <button class="ftag" id="edt-xiaomi" onclick="setEdtBrand('xiaomi')">🔴 Xiaomi</button>
-        <button class="ftag" id="edt-lg" onclick="setEdtBrand('lg')">🔵 LG</button>
-        <button class="ftag" id="edt-outros" onclick="setEdtBrand('outros')">➕ Outros</button>
-      </div>
-      <input type="text" id="edt-search" placeholder="🔍 Buscar modelo..." oninput="renderEditor()"
-        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;margin-bottom:12px;background:var(--white)">
-      <div id="edt-list"></div>
-    </div>
-
     <div style="height:10px"></div>
     <div id="upd-last" style="font-size:12px;color:var(--muted);text-align:center;display:none"></div>
   </div>
@@ -949,8 +933,6 @@ function applySingleChange(i){
   if(CATALOG[c.key]?.[c.idx]) CATALOG[c.key][c.idx].c = c.newPrice;
   saveCatalog();
   showToast(`✅ ${c.key} atualizado!`);
-  renderEditor();
-  // Remover card
   document.querySelectorAll("#sync-changes > div > div")[i]?.remove();
   window._syncChanges.splice(i,1);
   if(window._syncChanges.length===0){
@@ -967,108 +949,6 @@ function applyAllSyncChanges(){
   showToast(`✅ ${(window._syncChanges||[]).length} preços atualizados!`);
   document.getElementById("sync-changes").innerHTML="";
   document.getElementById("sync-status").textContent="✅ Catálogo atualizado!";
-  renderEditor();
-}
-
-
-const EDT_BRANDS = {
-  apple:    k=>k.startsWith("iPhone"),
-  samsung:  k=>k.startsWith("Galaxy")||k.startsWith("Samsung Tab"),
-  motorola: k=>k.startsWith("Moto"),
-  xiaomi:   k=>k.startsWith("Redmi")||k.startsWith("Poco")||k.startsWith("Mi "),
-  lg:       k=>k.startsWith("LG"),
-  outros:   k=>k.startsWith("Asus")||k.startsWith("Infinix")||k.startsWith("Realme")||k.startsWith("Oppo"),
-};
-let edtBrand = "all";
-
-function setEdtBrand(b){
-  edtBrand = b;
-  document.querySelectorAll("[id^='edt-']").forEach(el=>el.classList.remove("active"));
-  document.getElementById("edt-"+b)?.classList.add("active");
-  renderEditor();
-}
-
-function renderEditor(){
-  const q = document.getElementById("edt-search")?.value.toLowerCase().trim()||"";
-  const list = document.getElementById("edt-list");
-
-  const models = Object.keys(CATALOG).filter(k=>{
-    if(edtBrand !== "all" && !EDT_BRANDS[edtBrand]?.(k)) return false;
-    if(q && !k.toLowerCase().includes(q)) return false;
-    return true;
-  }).sort();
-
-  if(!models.length){
-    list.innerHTML=`<div style="text-align:center;padding:30px;color:var(--muted)">Nenhum modelo encontrado</div>`;
-    return;
-  }
-
-  list.innerHTML = models.map(model=>{
-    const parts = CATALOG[model];
-    const rows = parts.map((p,i)=>`
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div>
-          <div style="font-size:12px;font-weight:700;color:var(--muted)">${p.tipo} · ${p.q}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="font-family:'Bebas Neue',cursive;font-size:18px;color:var(--green)" id="val-${model.replace(/[^a-z0-9]/gi,'_')}-${i}">${fmt(p.c)}</div>
-          <button onclick="editPrice('${model.replace(/'/g,"\\'")}',${i})"
-            style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:5px 10px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">
-            ✏️
-          </button>
-        </div>
-      </div>`).join("");
-
-    return `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px">
-      <div style="font-weight:900;font-size:14px;margin-bottom:6px">${model}</div>
-      ${rows}
-    </div>`;
-  }).join("");
-}
-
-function editPrice(model, idx){
-  const part = CATALOG[model]?.[idx];
-  if(!part) return;
-  const novo = prompt(`${model}\n${part.tipo} · ${part.q}\n\nValor atual: ${fmt(part.c)}\nNovo valor (R$):`, part.c);
-  if(novo === null) return;
-  const v = parseFloat(novo.replace(",","."));
-  if(isNaN(v) || v <= 0){ alert("Valor inválido."); return; }
-
-  // Encontrar todos os modelos que têm o mesmo preço E mesmo tipo de peça
-  const iguais = [];
-  for(const [m, parts] of Object.entries(CATALOG)){
-    parts.forEach((p, i)=>{
-      if(p.c === part.c && p.tipo === part.tipo && !(m===model && i===idx)){
-        iguais.push({m, i, q: p.q});
-      }
-    });
-  }
-
-  // Atualizar o modelo principal
-  CATALOG[model][idx].c = v;
-
-  // Atualizar todos os iguais automaticamente
-  iguais.forEach(({m, i})=>{ CATALOG[m][i].c = v; });
-
-  saveCatalog();
-
-  if(iguais.length > 0){
-    showToast(`✅ Atualizado em ${iguais.length+1} modelos!`);
-  } else {
-    showToast(`✅ ${model} — ${part.q} atualizado!`);
-  }
-
-  // Atualizar valores na tela
-  const atualizar = [{m:model, i:idx}, ...iguais.map(x=>({m:x.m, i:x.i}))];
-  atualizar.forEach(({m, i})=>{
-    const el = document.getElementById("val-"+m.replace(/[^a-z0-9]/gi,"_")+"-"+i);
-    if(el) el.textContent = fmt(v);
-  });
-
-  const now = "Última edição: "+new Date().toLocaleString("pt-BR");
-  localStorage.setItem("upd_last", now);
-  const el2 = document.getElementById("upd-last");
-  if(el2){ el2.textContent=now; el2.style.display="block"; }
 }
 
 
@@ -1432,9 +1312,6 @@ renderBrands();
 updateBadge();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
-const savedUrl=localStorage.getItem("floritec_url");
-if(savedUrl){const el=document.getElementById("upd-url");if(el)el.value=savedUrl;}
-renderEditor();
 </script>
 </body>
 </html>
