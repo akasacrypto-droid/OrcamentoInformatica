@@ -743,102 +743,146 @@ const FLORITEC_URL = "https://docs.google.com/document/u/0/d/e/2PACX-1vTgSZf5Lp8
 async function syncFloritec(){
   const btn = document.getElementById("btn-sync");
   const status = document.getElementById("sync-status");
-  const changes = document.getElementById("sync-changes");
+  const changesEl = document.getElementById("sync-changes");
   btn.disabled = true;
   btn.textContent = "🔄 Buscando...";
   status.style.display = "none";
-  changes.innerHTML = "";
+  changesEl.innerHTML = "";
 
   try {
     const res = await fetch(FLORITEC_URL);
     if(!res.ok) throw new Error("Erro ao buscar documento");
     const html = await res.text();
 
-    // Parsear tabela do doc — cada linha: célula0=modelo+qualidade, célula1=preço
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
-    const rows = doc.querySelectorAll("tr");
 
-    // Mapa de chave única -> preço novo
-    // Chave = "modelo||tipo||qualidade"
+    // Detectar seção atual percorrendo os elementos em ordem
+    let currentBrand = "";   // "iPhone", "Galaxy", "Moto", etc
+    let currentTipo = "Display";
     const newMap = {};
 
-    rows.forEach(row=>{
-      const cells = [...row.querySelectorAll("td")];
-      if(cells.length < 2) return;
-      const modelText = cells[0].textContent.trim();
-      const priceText = cells[cells.length-1].textContent.trim();
+    // Percorrer todos os elementos do body em ordem
+    const elements = doc.body.querySelectorAll("h1,h2,h3,h4,p,table");
 
-      // Extrair preço
-      const pm = priceText.match(/(\d+),(\d{2})/);
-      if(!pm) return;
-      const price = parseFloat(pm[1]+"."+pm[2]);
-      if(price < 10 || price > 15000) return;
+    elements.forEach(el=>{
+      const tag = el.tagName.toLowerCase();
 
-      // Determinar tipo
-      const mu = modelText.toUpperCase();
-      const tipo = mu.includes("BATERIA") ? "Bateria" : "Display";
+      // Cabeçalhos definem a marca atual
+      if(tag.match(/^h[1-4]$/)){
+        const t = el.textContent.trim().toUpperCase();
+        if(t.includes("APPLE") || t.includes("IPHONE")) currentBrand = "iPhone";
+        else if(t.includes("SAMSUNG")) currentBrand = "Galaxy";
+        else if(t.includes("MOTOROLA")) currentBrand = "Moto";
+        else if(t.includes("XIAOMI")) currentBrand = "Xiaomi";
+        else if(t.includes("LG")) currentBrand = "LG";
+        else if(t.includes("ASUS")) currentBrand = "Asus";
+        else if(t.includes("INFINIX")) currentBrand = "Infinix";
+        else if(t.includes("REALME") || t.includes("OPPO")) currentBrand = "Realme";
+        return;
+      }
 
-      // Determinar qualidade
-      let q = "S/A";
-      if(mu.includes("ORIGINAL NOVA")) q = "Original Nova";
-      else if(mu.includes("ORIGINAL RETIRADA")) q = "Original Retirada";
-      else if(mu.includes("ORIGINAL")) q = "Original";
-      else if(mu.includes("SOFT OLED")) q = "Soft OLED";
-      else if(mu.includes("CALIBRA")) q = "Calibra";
-      else if(mu.includes("SEM FLEX")) q = "Sem Flex";
-      else if(mu.includes("NACIONAL")) q = "Nacional";
-      else if(mu.includes("LCD")) q = "LCD Red.";
-      else if(mu.includes("INCELL") && mu.includes("ZL")) q = "Incell ZL";
-      else if(mu.includes("INCELL")) q = "Incell C/A";
-      else if(mu.includes("ZL") && mu.includes("C/A")) q = "ZL C/A";
-      else if(mu.includes("ZL")) q = "ZL";
-      else if(mu.includes("HD")) q = "HD";
-      else if(mu.includes("C/A")) q = "C/A";
-      else if(mu.includes("S/A")) q = "S/A";
+      if(tag !== "table") return;
 
-      // Separar modelos por |
-      const modelParts = modelText.split("|").map(s=>s.trim()).filter(Boolean);
-      modelParts.forEach(mp=>{
-        // Limpar qualidade e extras do nome
-        let clean = mp
-          .replace(/INCELL\s*\d*HZ?\s*(ZL|CI\s*REMOVIVEL)?/gi,"")
-          .replace(/ORIGINAL\s*(NOVA|RETIRADA)?/gi,"")
-          .replace(/SOFT\s*OLED/gi,"").replace(/CALIBRA/gi,"")
-          .replace(/SEM\s*FLEX/gi,"").replace(/LCD\s*RED\.?/gi,"")
-          .replace(/\bZL\b/gi,"").replace(/\bHD\b/gi,"")
-          .replace(/\bS\/A\b/gi,"").replace(/\bC\/A\b/gi,"")
-          .replace(/NACIONAL/gi,"").replace(/120HZ/gi,"")
-          .replace(/CI\s*REMOVIVEL/gi,"").replace(/BATERIA/gi,"")
-          .replace(/4G|5G/gi,"").replace(/\s+/g," ").trim();
+      // Processar tabela
+      const rows = el.querySelectorAll("tr");
+      rows.forEach(row=>{
+        const cells = [...row.querySelectorAll("td")];
+        if(cells.length < 2) return;
+        const modelText = cells[0].textContent.trim();
+        const priceText = cells[cells.length-1].textContent.trim();
 
-        if(!clean || clean.length < 2) return;
+        // Detectar tipo pelo cabeçalho da tabela
+        const mu = modelText.toUpperCase();
+        if(mu.includes("BATERIA")) { currentTipo = "Bateria"; return; }
+        if(mu.includes("DISPLAY") || mu.includes("VALOR")) { currentTipo = "Display"; return; }
 
-        // Buscar no catálogo por correspondência
-        for(const [key, parts] of Object.entries(CATALOG)){
-          const shortKey = key
-            .replace(/^Galaxy /i,"").replace(/^iPhone /i,"")
-            .replace(/^Moto /i,"").replace(/^Redmi /i,"")
-            .replace(/^Poco /i,"").replace(/^Mi /i,"")
-            .replace(/^LG /i,"").replace(/^Asus /i,"")
-            .replace(/^Realme /i,"").replace(/^Infinix /i,"")
-            .replace(/^Samsung Tab /i,"")
-            .replace(/4G|5G/gi,"").replace(/\s+/g," ").trim();
+        // Atualizar tipo se a linha for cabeçalho
+        if(mu === "VALOR" || priceText.toUpperCase() === "VALOR") return;
 
-          if(clean.toUpperCase() !== shortKey.toUpperCase()) continue;
+        // Extrair preço
+        const pm = priceText.match(/(\d+),(\d{2})/);
+        if(!pm) return;
+        const price = parseFloat(pm[1]+"."+pm[2]);
+        if(price < 10 || price > 15000) return;
 
-          parts.forEach((p, idx)=>{
-            if(p.tipo !== tipo) return;
-            if(p.q.toUpperCase() !== q.toUpperCase()) return;
-            const mapKey = key+"||"+idx;
-            newMap[mapKey] = {key, idx, tipo, q, newPrice: price, oldPrice: p.c};
-          });
-        }
+        // Detectar se é bateria pelo contexto
+        const isBateria = mu.includes("BATERIA") || currentTipo === "Bateria";
+        const tipo = isBateria ? "Bateria" : "Display";
+
+        // Detectar qualidade
+        let q = "S/A";
+        if(mu.includes("ORIGINAL NOVA")) q = "Original Nova";
+        else if(mu.includes("ORIGINAL RETIRADA")) q = "Original Retirada";
+        else if(mu.includes("ORIGINAL")) q = "Original";
+        else if(mu.includes("SOFT OLED")) q = "Soft OLED";
+        else if(mu.includes("CALIBRA")) q = "Calibra";
+        else if(mu.includes("SEM FLEX")) q = "Sem Flex";
+        else if(mu.includes("NACIONAL")) q = "Nacional";
+        else if(mu.includes("LCD")) q = "LCD Red.";
+        else if(mu.includes("INCELL") && mu.includes("ZL")) q = "Incell ZL";
+        else if(mu.includes("INCELL")) q = "Incell C/A";
+        else if(mu.includes("ZL") && mu.includes("C/A")) q = "ZL C/A";
+        else if(mu.includes("ZL")) q = "ZL";
+        else if(mu.includes("HD")) q = "HD";
+        else if(mu.includes("C/A")) q = "C/A";
+        else if(mu.includes("S/A")) q = "S/A";
+
+        // Separar modelos por |
+        const modelParts = modelText.split("|").map(s=>s.trim()).filter(Boolean);
+
+        modelParts.forEach(mp=>{
+          // Limpar qualidade do nome
+          let clean = mp
+            .replace(/INCELL\s*\d*HZ?\s*(ZL|CI\s*REMOVIVEL)?/gi,"")
+            .replace(/ORIGINAL\s*(NOVA|RETIRADA)?/gi,"")
+            .replace(/SOFT\s*OLED/gi,"").replace(/CALIBRA/gi,"")
+            .replace(/SEM\s*FLEX/gi,"").replace(/LCD\s*RED\.?/gi,"")
+            .replace(/\bZL\b/gi,"").replace(/\bHD\b/gi,"")
+            .replace(/\bS\/A\b/gi,"").replace(/\bC\/A\b/gi,"")
+            .replace(/NACIONAL/gi,"").replace(/120HZ/gi,"")
+            .replace(/CI\s*REMOVIVEL/gi,"").replace(/BATERIA/gi,"")
+            .replace(/IPHONE\s*/gi,"").replace(/\s+/g," ").trim();
+
+          if(!clean || clean.length < 1) return;
+
+          // Montar nome completo com prefixo da marca
+          let prefix = "";
+          if(currentBrand === "iPhone") prefix = "iPhone ";
+          else if(currentBrand === "Galaxy") prefix = "Galaxy ";
+          else if(currentBrand === "Moto") prefix = "Moto ";
+          else if(currentBrand === "LG") prefix = "LG ";
+          else if(currentBrand === "Asus") prefix = "Asus ";
+          else if(currentBrand === "Infinix") prefix = "Infinix ";
+          else if(currentBrand === "Realme") prefix = "Realme ";
+          else if(currentBrand === "Xiaomi"){
+            // Xiaomi pode ser Redmi, Poco ou Mi
+            const cu = clean.toUpperCase();
+            if(cu.startsWith("REDMI")) prefix = "";
+            else if(cu.startsWith("POCO")) prefix = "";
+            else if(cu.startsWith("MI ") || cu === "MI") prefix = "";
+            else prefix = "";
+          }
+
+          const fullName = (prefix + clean).replace(/\s+/g," ").trim();
+
+          // Buscar no catálogo
+          for(const [key, parts] of Object.entries(CATALOG)){
+            if(key.toUpperCase() !== fullName.toUpperCase()) continue;
+            parts.forEach((p, idx)=>{
+              if(p.tipo !== tipo) return;
+              if(p.q.toUpperCase() !== q.toUpperCase()) return;
+              if(Math.abs(p.c - price) < 1) return; // sem mudança
+              const mapKey = key+"||"+idx;
+              if(!newMap[mapKey]) // não sobrescrever
+                newMap[mapKey] = {key, idx, tipo, q, newPrice: price, oldPrice: p.c};
+            });
+          }
+        });
       });
     });
 
-    // Encontrar mudanças
-    const changed = Object.values(newMap).filter(x=> Math.abs(x.newPrice - x.oldPrice) >= 1);
+    const changed = Object.values(newMap);
 
     if(changed.length === 0){
       status.style.display = "block";
