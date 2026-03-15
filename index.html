@@ -2125,36 +2125,25 @@ function addPecaExtra(compra, reparo, revenda){
 function gerarCopy(a){
   const modelo = a.modelo_detectado || "celular";
   const precoAnuncio = a.preco_anuncio || 0;
-  const condicao = a.condicao_estimada || "";
-
-  // Usar oferta customizada se definida, senão usar o máximo recomendado
-  const ofertaBase = a.oferta_custom || a.preco_maximo_recomendado || 0;
-  const ofertaFinal = precoAnuncio > 0 && ofertaBase >= precoAnuncio
-    ? Math.round(precoAnuncio * 0.65)
-    : ofertaBase;
-
-  const ofertaStr = fmt(ofertaFinal);
-
-  // Calcular economia para usar no copy
-  const economia = precoAnuncio > 0 ? precoAnuncio - ofertaFinal : 0;
-  const pctDesc = precoAnuncio > 0 ? Math.round((economia/precoAnuncio)*100) : 0;
-  const economiaStr = economia > 0 ? ` (o senhor estaria abrindo mão de ${fmt(economia)})` : "";
+  const oferta = a.oferta_custom || a.preco_maximo_recomendado || 0;
+  const ofertaStr = fmt(oferta);
+  const condicao = (a.defeitos_identificados||[]).join(", ").toLowerCase() || "alguns defeitos";
 
   const copies = {
     verde: [
-      `Olá! Vi seu anúncio do ${modelo} aqui na OLX.\n\nTenho interesse, mas preciso levar pra avaliar antes — aparelhos usados sempre têm algum detalhe que aparece só na hora.\n\nConsigo pagar à vista *${ofertaStr}* agora${economiaStr}. Se topar, posso buscar hoje mesmo! 🤝`,
+      `Oi! Vi seu ${modelo} na OLX, tenho interesse.\n\nAparelho usado sempre tem algum detalhe, então não consigo pagar o valor cheio. Pago *${ofertaStr}* à vista agora. Se fechar, busco hoje ainda! 🤝`,
 
-      `Oi! Vi o ${modelo} no seu anúncio. Trabalho com celulares e sei que sempre tem algum ajuste a fazer.\n\nPago *${ofertaStr}* à vista, na hora, sem enrolação${economia>0?` — sei que é ${pctDesc}% abaixo, mas é o máximo viável considerando o estado`:""} . Aceita? 😊`,
+      `Olá! Me interessei pelo seu ${modelo}.\n\nPago *${ofertaStr}* à vista. Pagamento na hora, sem enrolação. Fecha? 😊`,
     ],
     amarelo: [
-      `Olá! Vi seu ${modelo} na OLX.\n\nEle tem alguns detalhes que precisam de conserto (${condicao}), o que reduz bastante o valor de mercado.\n\nConsigo pagar *${ofertaStr}* à vista${economia>0?` — já considerando os ${fmt(a.estimativa_reparo?.total||0)} de reparo necessário`:""} . Topa? 💰`,
+      `Oi! Vi seu ${modelo} na OLX.\n\nVi que ele tem ${condicao}, então vou precisar de reparo. Pago *${ofertaStr}* à vista, já considerando o conserto. Fecha? 💰`,
 
-      `Oi! Me interessei pelo ${modelo}. Pelo estado que ele tá, preciso investir bastante em conserto.\n\nPagaria *${ofertaStr}* à vista${economia>0?`, que já desconta os reparos necessários`:""} . Se quiser, a gente fecha agora! 🤝`,
+      `Olá! Tenho interesse no ${modelo}, mas ele precisa de reparo (${condicao}).\n\nConsigo pagar *${ofertaStr}* à vista. Busco hoje se fechar! 🤝`,
     ],
     vermelho: [
-      `Olá! Vi o ${modelo} no seu anúncio.\n\nPelo estado que ele tá (${condicao}), o conserto vai custar caro. Só consigo pagar *${ofertaStr}* à vista${economiaStr} — já tô no limite considerando tudo que vai precisar ser consertado.\n\nSe topar, resolvo hoje! 🙂`,
+      `Oi! Vi seu ${modelo} na OLX.\n\nPelo estado que ele tá (${condicao}), o conserto sai caro. O máximo que consigo pagar é *${ofertaStr}* à vista. Fecha? 🙂`,
 
-      `Oi! Vi seu ${modelo} na OLX. Pelo estado, o conserto sai caro demais. Máximo que consigo é *${ofertaStr}* à vista${economia>0?` (${pctDesc}% de desconto)`:""}  😅. Aceita?`,
+      `Olá! Me interessei pelo ${modelo}, mas com ${condicao} o valor de mercado cai bastante.\n\nPago *${ofertaStr}* à vista, na hora. Aceita? 😅`,
     ],
   };
 
