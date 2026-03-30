@@ -2,24 +2,187 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TechFix</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Mulish:wght@400;600;700;900&display=swap');
 :root{--bg:#f0f2f5;--white:#fff;--dark:#12151c;--border:#e2e5ec;--accent:#0057ff;--accent-light:#e8efff;--green:#00c47a;--green-light:#e6faf3;--red:#ff3b55;--red-light:#fff0f2;--muted:#8a91a0;--text:#1e2330;--orange:#ff8c00;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;font-size:15px;min-height:100vh}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Mulish',sans-serif;font-size:15px;min-height:100vh;overscroll-behavior-y:none}
+button,input,textarea{font:inherit}
+button,input,textarea,a{transition:all .16s ease}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
 nav{background:var(--dark);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
 .nav-logo{font-family:'Bebas Neue',cursive;font-size:22px;color:#fff;letter-spacing:2px}
 .nav-logo span{color:#4d8fff}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.version-badge{font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,.1);border-radius:6px;user-select:none;transition:all .18s}
+.version-badge:hover{color:#fff;border-color:rgba(255,255,255,.3)}
 .orc-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:7px}
 #badge{background:var(--green);color:#fff;border-radius:999px;min-width:20px;height:20px;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 5px}
 #badge.zero{display:none}
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:40;background:var(--white);border-top:2px solid var(--border);display:flex;height:58px}
 .bnav{flex:1;border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--muted);font-family:'Mulish',sans-serif;font-weight:700;font-size:11px;transition:color .15s}
 .bnav.active{color:var(--accent)}
+.app-main{padding-bottom:8px}
 .page{display:none;padding-bottom:76px}
 .page.active{display:block}
+.step,.surface-card,.panel-card,.price-row,.model-item,.defect-card,.brand-card{animation:fadeInUp .2s ease}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.page-shell{padding:16px;padding-bottom:80px}
+.surface-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.panel-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px}
+.panel-desc{font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.field-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.35px}
+.input-control{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text);transition:border-color .18s}
+.input-control:focus{border-color:var(--accent)}
+.status-line{display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px}
+.status-line.info{background:var(--accent-light);color:var(--accent)}
+.img-strip{display:none;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:4px}
+.muted-note{font-size:12px;color:var(--muted);margin-bottom:8px;display:none}
+.slider-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px}
+.split-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.split-value{display:flex;align-items:center;gap:8px}
+.slider-value{font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green)}
+.slider-pct{font-size:13px;font-weight:700;color:var(--muted)}
+.slider-scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+.defect-card-wrap{margin-bottom:14px}
+.defect-grid-olx{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.price-tools{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.price-tools input{border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:'Mulish',sans-serif;min-width:100px;outline:none}
+.price-tools input:focus{border-color:var(--accent)}
+.price-tools .lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase}
+.history-wrap{margin-top:14px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px}
+.history-title{font-family:'Bebas Neue',cursive;font-size:14px;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px}
+.history-item{padding:7px 0;border-bottom:1px dashed var(--border);font-size:12px}
+.history-item:last-child{border-bottom:none}
+.history-meta{font-size:11px;color:var(--muted)}
+.history-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.history-tools input,.history-tools select{flex:1;min-width:130px;border:1.5px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;background:var(--white);color:var(--text);outline:none}
+.history-tools input:focus,.history-tools select:focus{border-color:var(--accent)}
+.history-tools button{border:1.5px solid var(--border);background:var(--bg);color:var(--muted);border-radius:8px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.history-stats{font-size:11px;color:var(--muted);margin-bottom:6px}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dash-kpi{background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:10px}
+.dash-kpi-label{font-size:11px;color:var(--muted);text-transform:uppercase;font-weight:700}
+.dash-kpi-value{font-family:'Bebas Neue',cursive;font-size:24px;line-height:1.1;margin-top:4px;color:var(--text)}
+.batch-box{background:var(--white);border:1.5px dashed var(--border);border-radius:12px;padding:10px 12px;margin-top:10px}
+.batch-box textarea{width:100%;height:90px;resize:vertical;border:1.5px solid var(--border);border-radius:8px;padding:9px 10px;font-size:12px;font-family:'Mulish',sans-serif;outline:none;background:var(--white)}
+.batch-box textarea:focus{border-color:var(--accent)}
+.batch-actions{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.batch-note{font-size:11px;color:var(--muted)}
+.batch-table-wrap{overflow:auto}
+.batch-table{width:100%;border-collapse:collapse;font-size:12px}
+.batch-table th,.batch-table td{padding:8px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.batch-pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:900;text-transform:uppercase}
+.batch-pill.verde{background:var(--green-light);color:#077a4a}
+.batch-pill.amarelo{background:#fff4e6;color:#7a5f00}
+.batch-pill.vermelho{background:var(--red-light);color:var(--red)}
+.batch-url{max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block}
+.log-toggle-btn{background:none;border:none;color:var(--muted);font-family:'Mulish',sans-serif;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0}
+.log-debug-panel{display:none;background:#12151c;border-radius:10px;padding:12px;margin-top:6px}
+.log-debug-content{font-size:11px;color:#a0aec0;white-space:pre-wrap;margin:0;font-family:monospace;line-height:1.6}
+.log-filter-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.log-filter-btn{border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer}
+.log-filter-btn.all{background:var(--dark);color:#fff}
+.log-filter-btn.error{background:var(--red-light);color:var(--red)}
+.log-filter-btn.warn{background:#fff4e6;color:var(--orange)}
+.log-filter-btn.info{background:var(--accent-light);color:var(--accent)}
+.log-filter-btn.success{background:var(--green-light);color:#077a4a}
+.log-clear-btn{background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto}
+.panel-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px;margin-bottom:12px}
+.panel-card-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+.panel-scroll{max-height:60vh;overflow-y:auto}
+.empty-state{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+.olx-layout{display:block}
+.olx-form{min-width:0}
+.olx-result-panel{min-width:0}
+.mb-8{margin-bottom:8px}
+.no-mb{margin-bottom:0}
+
+/* OLX RESULT DESIGN */
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.olx-result-view>*{animation:fadeUp .3s ease both}
+.olx-result-view>*:nth-child(2){animation-delay:.03s}
+.olx-result-view>*:nth-child(3){animation-delay:.06s}
+.olx-result-view>*:nth-child(4){animation-delay:.09s}
+.olx-result-view>*:nth-child(5){animation-delay:.12s}
+.olx-result-view>*:nth-child(6){animation-delay:.15s}
+.olx-result-view>*:nth-child(7){animation-delay:.18s}
+
+.olx-hero{background:var(--hero-bg,#fff);border:2px solid var(--hero-border,var(--border));border-radius:16px;padding:16px;margin-bottom:14px;text-align:center}
+.olx-hero-emoji{font-size:36px;margin-bottom:6px}
+.olx-hero-title{font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;color:var(--hero-color,var(--text))}
+.olx-hero-sub{font-size:13px;color:var(--hero-color,var(--text));margin-top:4px;opacity:.85}
+.olx-img-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:4px}
+.olx-img-thumb{width:100px;height:100px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)}
+
+.olx-card{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px}
+.olx-card-title{font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:10px}
+.olx-card-sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.olx-stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.olx-stat{background:var(--bg);border-radius:10px;padding:10px}
+.olx-stat.soft-green{background:var(--green-light)}
+.olx-stat.soft-blue{background:var(--accent-light)}
+.olx-stat-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px}
+.olx-stat-label.green{color:#077a4a}
+.olx-stat-label.blue{color:var(--accent)}
+.olx-stat-val{font-weight:900;font-size:13px}
+.olx-stat-money{font-family:'Bebas Neue',cursive;font-size:20px;line-height:1}
+.olx-stat-money.red{color:var(--red)}
+.olx-stat-money.green{color:var(--green)}
+.olx-stat-money.blue{color:var(--accent)}
+.olx-muted-line{margin-top:10px;font-size:13px;color:var(--muted)}
+
+.peca-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.peca-info{flex:1}
+.peca-name{font-size:13px;font-weight:700}
+.peca-links{display:flex;gap:5px;margin-top:4px}
+.peca-edit{display:flex;align-items:center;gap:6px}
+.peca-currency{font-size:12px;color:var(--muted)}
+.peca-input{width:75px;border:1.5px solid var(--accent);border-radius:8px;padding:5px 8px;font-family:'Bebas Neue',cursive;font-size:18px;color:var(--green);outline:none;text-align:right}
+.peca-total{display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;font-size:15px;font-weight:900}
+
+.olx-dark-grid{background:var(--dark);border-radius:14px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.olx-dark-cell{text-align:center}
+.olx-dark-label{font-size:11px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;margin-bottom:3px}
+.olx-dark-value{font-family:'Bebas Neue',cursive;font-size:26px;color:var(--green)}
+
+.olx-alert{background:var(--red-light);border:1.5px solid var(--red);border-radius:14px;padding:14px;margin-bottom:12px}
+.olx-good{background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:14px;margin-bottom:12px}
+.olx-list-title{font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;margin-bottom:10px}
+.olx-list-title.red{color:var(--red)}
+.olx-list-title.green{color:#077a4a}
+.olx-list-item{display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px}
+
+.olx-summary{background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--text)}
+.olx-link-btn{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--accent);color:#fff;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px}
+
+.olx-copy{background:var(--dark);border-radius:14px;padding:14px;margin-bottom:8px}
+.olx-copy-title{font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:#fff;margin-bottom:4px}
+.olx-copy-sub{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px}
+.olx-copy-box{background:#1e2330;border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,.85);line-height:1.7;white-space:pre-wrap;margin-bottom:10px}
+.olx-row{display:flex;gap:8px}
+.olx-btn{flex:1;border:none;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
+.olx-btn.primary{background:var(--accent);color:#fff}
+.olx-wa-link{flex:1;background:#25d366;color:#fff;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px}
+
+.olx-calc-box{background:var(--bg);border-radius:10px;padding:10px;margin-bottom:12px}
+.calc-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.calc-row:last-child{margin-bottom:0}
+.calc-val{font-weight:700}
+.calc-val.accent{color:var(--accent)}
+.calc-val.green{color:var(--green)}
+.calc-total{display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:1px solid var(--border);padding-top:8px;margin-top:6px}
+.calc-extras .extra-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;color:var(--accent)}
+.calc-form{display:flex;gap:8px;margin-bottom:8px}
+.calc-form .txt{flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none}
+.calc-form .num{width:80px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none}
+.calc-form .add{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer}
 .breadcrumb{display:flex;align-items:center;gap:6px;padding:12px 16px;background:var(--white);border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;white-space:nowrap}
 .breadcrumb::-webkit-scrollbar{display:none}
 .bc-item{font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;flex-shrink:0}
@@ -168,8 +331,42 @@ textarea{resize:none;height:70px}
 .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1}
 
-@media(min-width:768px){nav{padding:14px 32px}.nav-logo{font-size:26px}.breadcrumb,.page{max-width:700px;margin:0 auto}.page{padding-bottom:90px}#pg-olx>div,#pg-atualizacao>div,#pg-logs>div{max-width:700px;margin:0 auto}.bottom-nav{left:50%;transform:translateX(-50%);width:480px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}.brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}.brand-card{padding:22px 14px;border-radius:18px}.brand-emoji{font-size:34px}.brand-name{font-size:13px}.model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}.price-val{font-size:26px}.price-row{padding:14px 18px}.overlay{align-items:center}.modal{border-radius:20px;max-width:500px;margin:0 auto}.modal-orc{max-height:85vh;border-radius:20px}}
-@media(min-width:1024px){.page,.breadcrumb,#pg-olx>div,#pg-atualizacao>div,#pg-logs>div{max-width:760px}}
+@media(min-width:768px){nav{padding:14px 32px}.nav-logo{font-size:26px}.breadcrumb,.page{max-width:700px;margin:0 auto}.page{padding-bottom:90px}.page-shell,#pg-atualizacao>div{max-width:700px;margin:0 auto}.bottom-nav{left:50%;transform:translateX(-50%);width:480px;border-radius:20px 20px 0 0;border-left:2px solid var(--border);border-right:2px solid var(--border);box-shadow:0 -4px 24px rgba(0,0,0,.08)}.brand-grid{grid-template-columns:repeat(4,1fr);gap:14px}.brand-card{padding:22px 14px;border-radius:18px}.brand-emoji{font-size:34px}.brand-name{font-size:13px}.model-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.defect-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.step{padding:22px 26px}.step-title{font-size:22px;margin-bottom:20px}.price-val{font-size:26px}.price-row{padding:14px 18px}.overlay{align-items:center}.modal{border-radius:20px;max-width:500px;margin:0 auto}.modal-orc{max-height:85vh;border-radius:20px}}
+@media(min-width:768px){.dash-grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:1024px){
+  .bottom-nav{
+    top:74px;
+    bottom:16px;
+    left:16px;
+    right:auto;
+    width:220px;
+    height:auto;
+    transform:none;
+    border:2px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 6px 24px rgba(0,0,0,.08);
+    flex-direction:column;
+    padding:8px;
+    gap:6px;
+  }
+  .bnav{
+    flex:0 0 auto;
+    min-height:52px;
+    border-radius:12px;
+    flex-direction:row;
+    justify-content:flex-start;
+    gap:10px;
+    padding:0 12px;
+    font-size:13px;
+  }
+  .bnav.active{background:var(--accent-light)}
+  .app-main{padding-left:250px;padding-right:14px}
+  .page,.breadcrumb,.page-shell,#pg-atualizacao>div{max-width:none;margin:0}
+  .page{padding-bottom:24px}
+  .olx-layout{display:grid;grid-template-columns:minmax(320px,400px) 1fr;gap:14px;align-items:start}
+  .olx-form{position:sticky;top:74px}
+  .olx-result-panel{padding-top:2px}
+}
 .log-entry{padding:8px 12px;border-radius:8px;margin-bottom:6px;font-size:12px;font-family:monospace;line-height:1.5;word-break:break-all}
 .log-entry.error{background:#fff0f2;border-left:3px solid var(--red);color:var(--red)}
 .log-entry.warn{background:#fff4e6;border-left:3px solid var(--orange);color:var(--orange)}
@@ -182,13 +379,15 @@ textarea{resize:none;height:70px}
 <body>
 <nav>
   <div class="nav-logo">TECH<span>FIX</span></div>
-  <div style="display:flex;align-items:center;gap:8px">
-    <div id="version-badge" onclick="checkVersion()" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);cursor:pointer;padding:4px 8px;border:1px solid rgba(255,255,255,.1);border-radius:6px;user-select:none" title="Clique para verificar atualização">
+  <div class="nav-actions">
+    <div id="version-badge" class="version-badge" onclick="checkVersion()" title="Clique para verificar atualização">
       v<span id="version-num">...</span>
     </div>
     <button class="orc-btn" onclick="openOrc()">📋 <span id="badge" class="zero">0</span></button>
   </div>
 </nav>
+
+<main class="app-main">
 
 <!-- PAGE: ORÇAMENTO -->
 <div class="page active" id="pg-orcamento">
@@ -210,6 +409,11 @@ textarea{resize:none;height:70px}
   </div>
   <div class="step" id="step4">
     <div class="step-title">💰 Preços (Floritec)</div>
+    <div class="price-tools">
+      <span class="lbl">Filtros:</span>
+      <input type="text" id="priceFilterQuality" placeholder="Qualidade (ex: ZL)" oninput="applyPriceFilters()">
+      <input type="number" id="priceFilterMax" placeholder="Custo máx." min="0" oninput="applyPriceFilters()">
+    </div>
     <div id="prices-wrap"></div>
     <button class="btn-confirm" onclick="openOrc()">📋 Ir para o Orçamento</button>
   </div>
@@ -217,88 +421,105 @@ textarea{resize:none;height:70px}
 
 <!-- PAGE: ATUALIZAÇÃO -->
 <div class="page" id="pg-atualizacao">
-  <div class="upd-wrap">
+  <div class="upd-wrap surface-card" style="margin-top:16px">
     <div class="upd-title">🔄 Atualizar Preços</div>
     <div class="upd-desc">O app busca a lista da Floritec e mostra só o que mudou. Você confirma e aplica.</div>
 
     <button class="btn-upd" id="btn-sync" onclick="syncFloritec()">🔍 Verificar mudanças agora</button>
-    <div id="sync-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px"></div>
+    <div id="sync-status" class="status-line"></div>
     <div id="sync-changes"></div>
 
     <div style="height:10px"></div>
-    <div id="upd-last" style="font-size:12px;color:var(--muted);text-align:center;display:none"></div>
+    <div id="upd-last" class="upd-last" style="display:none"></div>
   </div>
 </div>
 
 <!-- PAGE: OLX ANALYSE -->
 <div class="page" id="pg-olx">
-  <div style="padding:16px;padding-bottom:80px">
+  <div class="page-shell">
+    <div class="panel-title">🔍 OLX Analyse</div>
+    <div class="panel-desc">Cole o link, o preço e marque os defeitos — a análise é feita na hora</div>
 
-    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🔍 OLX Analyse</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:16px">Cole o link, o preço e marque os defeitos — a análise é feita na hora</div>
+    <div class="olx-layout">
+      <section class="olx-form surface-card">
+        <input type="url" id="olx-url" placeholder="https://go.olx.com.br/..."
+          class="input-control mb-8"
+          oninput="tentarCarregarImagens()">
 
-    <input type="url" id="olx-url" placeholder="https://go.olx.com.br/..."
-      style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text);margin-bottom:8px"
-      oninput="tentarCarregarImagens()">
+        <!-- Preview de imagens -->
+        <div id="olx-imgs-preview" class="img-strip"></div>
+        <div id="olx-imgs-status" class="muted-note"></div>
 
-    <!-- Preview de imagens -->
-    <div id="olx-imgs-preview" style="display:none;flex-wrap:nowrap;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;padding-bottom:4px"></div>
-    <div id="olx-imgs-status" style="font-size:12px;color:var(--muted);margin-bottom:8px;display:none"></div>
-
-    <!-- Preços -->
-    <div style="margin-bottom:8px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">PREÇO PEDIDO (R$)</div>
-      <input type="number" id="olx-preco" placeholder="Ex: 800" min="0"
-        style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:11px 13px;font-family:'Mulish',sans-serif;font-size:14px;outline:none;background:var(--white);color:var(--text)"
-        oninput="atualizarSlider()">
-    </div>
-
-    <!-- Slider de desconto -->
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-size:11px;font-weight:700;color:var(--muted)">QUANTO QUER PAGAR</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-family:'Bebas Neue',cursive;font-size:22px;color:var(--green)" id="slider-valor">—</span>
-          <span style="font-size:13px;font-weight:700;color:var(--muted)" id="slider-pct">(—%)</span>
+        <!-- Preços -->
+        <div class="mb-8">
+          <div class="field-label">Preço pedido (R$)</div>
+          <input type="number" id="olx-preco" placeholder="Ex: 800" min="0"
+            class="input-control"
+            oninput="atualizarSlider()">
         </div>
-      </div>
-      <input type="range" id="olx-slider" min="30" max="100" value="70" step="1"
-        oninput="atualizarSlider()"
-        style="width:100%;height:6px;accent-color:var(--accent);cursor:pointer">
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px">
-        <span>30%</span>
-        <span>50%</span>
-        <span>70%</span>
-        <span>85%</span>
-        <span>100%</span>
-      </div>
-      <div id="desconto-tag" style="margin-top:8px;font-size:12px;font-weight:700;display:none"></div>
+
+        <!-- Slider de desconto -->
+        <div class="slider-card">
+          <div class="split-head">
+            <div class="field-label no-mb">Quanto quer pagar</div>
+            <div class="split-value">
+              <span class="slider-value" id="slider-valor">—</span>
+              <span class="slider-pct" id="slider-pct">(—%)</span>
+            </div>
+          </div>
+          <input type="range" id="olx-slider" min="30" max="100" value="70" step="1"
+            oninput="atualizarSlider()"
+            style="width:100%;height:6px;accent-color:var(--accent);cursor:pointer">
+          <div class="slider-scale">
+            <span>30%</span>
+            <span>50%</span>
+            <span>70%</span>
+            <span>85%</span>
+            <span>100%</span>
+          </div>
+          <div id="desconto-tag" style="margin-top:8px;font-size:12px;font-weight:700;display:none"></div>
+        </div>
+
+        <!-- Defeitos -->
+        <div class="defect-card-wrap">
+          <div class="field-label" style="margin-bottom:8px">Defeitos identificados no anúncio</div>
+          <div class="defect-grid-olx" id="olx-defeitos-grid">
+            <!-- Gerado pelo JS -->
+          </div>
+        </div>
+
+        <button onclick="analisarOLX()" id="olx-btn" class="btn-upd">
+          🔍 Analisar anúncio
+        </button>
+
+        <div class="batch-box">
+          <div class="field-label" style="margin-bottom:8px">Análise em lote (1 link por linha)</div>
+          <textarea id="olx-batch-urls" placeholder="https://www.olx.com.br/...&#10;https://go.olx.com.br/...&#10;..."></textarea>
+          <div class="batch-actions">
+            <button onclick="analisarOLXLote()" id="olx-batch-btn" class="btn-copy" style="padding:10px 12px;font-size:13px">📦 Analisar lote</button>
+            <span class="batch-note">Dica: até 20 links por rodada.</span>
+          </div>
+        </div>
+
+        <div id="olx-status" class="status-line info"></div>
+
+        <!-- LOG DEBUG -->
+        <div style="margin-top:8px">
+          <button onclick="toggleLog()" class="log-toggle-btn">
+            🛠️ Ver log de debug
+          </button>
+          <div id="olx-log" class="log-debug-panel">
+            <pre id="olx-log-content" class="log-debug-content">Nenhuma análise executada ainda.</pre>
+          </div>
+        </div>
+      </section>
+
+      <section class="olx-result-panel">
+        <div id="olx-result" class="surface-card" style="display:none"></div>
+        <div id="olx-batch-result" class="surface-card" style="display:none"></div>
+      </section>
     </div>
 
-    <!-- Defeitos -->
-    <div style="margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">DEFEITOS IDENTIFICADOS NO ANÚNCIO</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px" id="olx-defeitos-grid">
-        <!-- Gerado pelo JS -->
-      </div>
-    </div>
-
-    <button onclick="analisarOLX()" id="olx-btn" style="width:100%;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:12px">
-      🔍 Analisar anúncio
-    </button>
-
-    <div id="olx-status" style="display:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:700;margin-bottom:12px;background:var(--accent-light);color:var(--accent)"></div>
-    <div id="olx-result" style="display:none"></div>
-
-    <!-- LOG DEBUG -->
-    <div style="margin-top:8px">
-      <button onclick="toggleLog()" style="background:none;border:none;color:var(--muted);font-family:'Mulish',sans-serif;font-size:12px;font-weight:700;cursor:pointer;padding:4px 0">
-        🛠️ Ver log de debug
-      </button>
-      <div id="olx-log" style="display:none;background:#12151c;border-radius:10px;padding:12px;margin-top:6px">
-        <pre id="olx-log-content" style="font-size:11px;color:#a0aec0;white-space:pre-wrap;margin:0;font-family:monospace;line-height:1.6">Nenhuma análise executada ainda.</pre>
-      </div>
-    </div>
 
   </div>
 </div>
@@ -306,34 +527,51 @@ textarea{resize:none;height:70px}
 
 <!-- PAGE: LOGS -->
 <div class="page" id="pg-logs">
-  <div style="padding:16px;padding-bottom:80px">
-    <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1.5px;margin-bottom:4px">🛠️ Painel de Erros</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">Log completo de todas as ações e erros do app</div>
+  <div class="page-shell">
+    <div class="panel-title">🛠️ Painel de Erros</div>
+    <div class="panel-desc" style="margin-bottom:14px">Log completo de todas as ações e erros do app</div>
 
-    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-      <button onclick="filterLogs('all')" id="log-btn-all" style="background:var(--dark);color:#fff;border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Todos</button>
-      <button onclick="filterLogs('error')" id="log-btn-error" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">❌ Erros</button>
-      <button onclick="filterLogs('warn')" id="log-btn-warn" style="background:#fff4e6;color:var(--orange);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">⚠️ Avisos</button>
-      <button onclick="filterLogs('info')" id="log-btn-info" style="background:var(--accent-light);color:var(--accent);border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">ℹ️ Info</button>
-      <button onclick="filterLogs('success')" id="log-btn-success" style="background:var(--green-light);color:#077a4a;border:none;border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer">✅ OK</button>
-      <button onclick="clearLogs()" style="background:var(--bg);color:var(--muted);border:1.5px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Mulish',sans-serif;font-weight:700;font-size:12px;cursor:pointer;margin-left:auto">🗑 Limpar</button>
+    <div class="surface-card">
+      <div class="panel-card-head" style="margin-bottom:10px">
+        <span>📊 Dashboard</span>
+        <span id="dash-updated">agora</span>
+      </div>
+      <div class="dash-grid">
+        <div class="dash-kpi"><div class="dash-kpi-label">Orçamentos</div><div id="dash-orcamentos" class="dash-kpi-value">0</div></div>
+        <div class="dash-kpi"><div class="dash-kpi-label">Faturamento</div><div id="dash-faturamento" class="dash-kpi-value">R$ 0,00</div></div>
+        <div class="dash-kpi"><div class="dash-kpi-label">Ticket Médio</div><div id="dash-ticket" class="dash-kpi-value">R$ 0,00</div></div>
+        <div class="dash-kpi"><div class="dash-kpi-label">Erros no App</div><div id="dash-erros" class="dash-kpi-value">0</div></div>
+      </div>
     </div>
 
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:10px;margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px">
+    <div class="surface-card">
+      <div class="log-filter-row" style="margin-bottom:0">
+        <button onclick="filterLogs('all')" id="log-btn-all" class="log-filter-btn all">Todos</button>
+        <button onclick="filterLogs('error')" id="log-btn-error" class="log-filter-btn error">❌ Erros</button>
+        <button onclick="filterLogs('warn')" id="log-btn-warn" class="log-filter-btn warn">⚠️ Avisos</button>
+        <button onclick="filterLogs('info')" id="log-btn-info" class="log-filter-btn info">ℹ️ Info</button>
+        <button onclick="filterLogs('success')" id="log-btn-success" class="log-filter-btn success">✅ OK</button>
+        <button onclick="clearLogs()" class="log-clear-btn">🗑 Limpar</button>
+      </div>
+    </div>
+
+    <div class="panel-card">
+      <div class="panel-card-head">
         <span id="log-count">0 entradas</span>
         <span id="log-error-count" style="color:var(--red)">0 erros</span>
       </div>
-      <div id="log-container" style="max-height:60vh;overflow-y:auto">
-        <div style="text-align:center;padding:30px;color:var(--muted);font-size:13px">Nenhum log ainda — use o app para gerar logs</div>
+      <div id="log-container" class="panel-scroll">
+        <div class="empty-state">Nenhum log ainda — use o app para gerar logs</div>
       </div>
     </div>
 
-    <button onclick="exportLogs()" style="width:100%;background:var(--dark);color:#fff;border:none;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;cursor:pointer">
+    <button onclick="exportLogs()" class="btn-copy" style="padding:13px;font-size:14px">
       📋 Copiar logs
     </button>
   </div>
 </div>
+
+</main>
 
 <!-- BOTTOM NAV -->
 <div class="bottom-nav">
@@ -853,8 +1091,11 @@ function saveCatalog(){
 // SYNC AUTOMÁTICO COM FLORITEC
 // ══════════════════════════════════════
 const FLORITEC_URL = "https://docs.google.com/document/u/0/d/e/2PACX-1vTgSZf5Lp8dfhKBNS5hicGm3pWyVhVFI-dhzpI0C8kKj_7TALqFmeqZsFI2W5r1GnKIkDiQhd4DDk-2/pub?pli=1";
+let _syncInFlight = false;
 
 async function syncFloritec(){
+  if(_syncInFlight) return;
+  _syncInFlight = true;
   const btn = document.getElementById("btn-sync");
   const status = document.getElementById("sync-status");
   const changesEl = document.getElementById("sync-changes");
@@ -1027,6 +1268,7 @@ async function syncFloritec(){
 
   btn.disabled = false;
   btn.textContent = "🔍 Verificar mudanças agora";
+  _syncInFlight = false;
 }
 
 function renderSyncChanges(changed){
@@ -1065,11 +1307,15 @@ function applySingleChange(i){
   if(CATALOG[c.key]?.[c.idx]) CATALOG[c.key][c.idx].c = c.newPrice;
   saveCatalog();
   showToast(`✅ ${c.key} atualizado!`);
-  document.querySelectorAll("#sync-changes > div > div")[i]?.remove();
   window._syncChanges.splice(i,1);
   if(window._syncChanges.length===0){
     document.getElementById("sync-changes").innerHTML="";
     document.getElementById("sync-status").textContent="✅ Tudo atualizado!";
+    document.getElementById("sync-status").style.background="var(--green-light)";
+    document.getElementById("sync-status").style.color="#077a4a";
+  } else {
+    renderSyncChanges(window._syncChanges);
+    document.getElementById("sync-status").textContent=`🔍 ${window._syncChanges.length} mudança(s) restante(s):`;
   }
 }
 
@@ -1090,6 +1336,34 @@ function applyAllSyncChanges(){
 // ══ SISTEMA DE LOGS ══
 const _logs = [];
 let _logFilter = 'all';
+
+function getHistoryList(){
+  let list = [];
+  try{ list = JSON.parse(localStorage.getItem(STORE_HISTORY)||"[]"); }catch(_){ list=[]; }
+  return Array.isArray(list) ? list : [];
+}
+
+function getHistoryMetrics(){
+  const list = getHistoryList();
+  const total = list.reduce((a,h)=>a + (Number(h.total)||0), 0);
+  const count = list.length;
+  return { list, count, total, avg: count ? (total/count) : 0 };
+}
+
+function renderDashboard(){
+  const orcEl = document.getElementById("dash-orcamentos");
+  const fatEl = document.getElementById("dash-faturamento");
+  const avgEl = document.getElementById("dash-ticket");
+  const errEl = document.getElementById("dash-erros");
+  const updEl = document.getElementById("dash-updated");
+  if(!orcEl || !fatEl || !avgEl || !errEl) return;
+  const m = getHistoryMetrics();
+  orcEl.textContent = String(m.count);
+  fatEl.textContent = fmt(m.total);
+  avgEl.textContent = fmt(m.avg);
+  errEl.textContent = String(_logs.filter(l=>l.level==='error').length);
+  if(updEl) updEl.textContent = new Date().toLocaleTimeString("pt-BR", {hour:"2-digit", minute:"2-digit"});
+}
 
 function appLog(level, module, msg, detail=''){
   const entry = {
@@ -1133,6 +1407,7 @@ function renderLogs(){
       ${l.detail ? `<div style="margin-top:3px;opacity:.75;font-size:11px">${l.detail}</div>` : ''}
     </div>
   `).join('');
+  renderDashboard();
 }
 
 function filterLogs(level){
@@ -1148,6 +1423,7 @@ function clearLogs(){
   const badge = document.getElementById('log-error-badge');
   if(badge) badge.style.display='none';
   renderLogs();
+  renderDashboard();
 }
 
 function exportLogs(){
@@ -1206,6 +1482,110 @@ const MAO_OBRA = [
 
 let state = {brand:null, model:null, defects:[], step:1};
 let cart = {}, maoObra = {}, pendingPrice = null;
+let _pecasExtras = [];
+const STORE_RUNTIME = "techfix_runtime_v2";
+const STORE_HISTORY = "techfix_history_v1";
+let priceView = { quality:"", max:0 };
+let orcMeta = { nome:"", modelo:"", tel:"", obs:"" };
+let historyView = { query:"", origin:"all" };
+
+function saveRuntimeState(){
+  try{
+    localStorage.setItem(STORE_RUNTIME, JSON.stringify({
+      state,
+      cart,
+      maoObra,
+      orcMeta,
+      priceView,
+      savedAt: Date.now()
+    }));
+  }catch(e){ appLog("warn","Persistência","Falha ao salvar estado",e.message||""); }
+}
+
+function loadRuntimeState(){
+  try{
+    const raw = localStorage.getItem(STORE_RUNTIME);
+    if(!raw) return;
+    const data = JSON.parse(raw);
+    if(data?.state) state = {...state, ...data.state};
+    if(data?.cart && typeof data.cart === "object") cart = data.cart;
+    if(data?.maoObra && typeof data.maoObra === "object") maoObra = data.maoObra;
+    if(data?.orcMeta && typeof data.orcMeta === "object") orcMeta = {...orcMeta, ...data.orcMeta};
+    if(data?.priceView) priceView = {...priceView, ...data.priceView};
+    appLog("info","Persistência","Sessão restaurada","Carrinho e seleção recuperados");
+  }catch(e){ appLog("warn","Persistência","Falha ao restaurar sessão",e.message||""); }
+}
+
+function saveBudgetSnapshot(origem){
+  const items = Object.values(cart);
+  const servicos = Object.values(maoObra);
+  if(!items.length && !servicos.length) return;
+  const nome = (document.getElementById("cli_nome")?.value||"").trim();
+  const modelo = (document.getElementById("cli_modelo")?.value||state.model||"").trim();
+  const entry = {
+    id: Date.now(),
+    origem,
+    nome,
+    modelo,
+    total: calcTotal(),
+    pecas: items.reduce((a,i)=>a+i.qty,0),
+    servicos: servicos.length,
+    at: new Date().toLocaleString("pt-BR")
+  };
+  let list = getHistoryList();
+  list.unshift(entry);
+  list = list.slice(0,20);
+  localStorage.setItem(STORE_HISTORY, JSON.stringify(list));
+  renderDashboard();
+}
+
+function setHistoryFilter(kind, value){
+  if(kind === "query") historyView.query = String(value||"");
+  if(kind === "origin") historyView.origin = String(value||"all");
+  const panel = document.getElementById("history-list");
+  const stats = document.getElementById("history-stats");
+  if(!panel || !stats) return;
+
+  const q = historyView.query.trim().toLowerCase();
+  const origin = historyView.origin;
+  const list = getHistoryList();
+  const filtered = list.filter(h=>{
+    const originOk = origin === "all" || (h.origem||"") === origin;
+    if(!originOk) return false;
+    if(!q) return true;
+    const bucket = `${h.nome||""} ${h.modelo||""} ${h.at||""} ${h.origem||""}`.toLowerCase();
+    return bucket.includes(q);
+  });
+
+  stats.textContent = `${filtered.length} de ${list.length} registro(s)`;
+  panel.innerHTML = filtered.length
+    ? filtered.slice(0,10).map(h=>`<div class="history-item"><strong>${esc(h.modelo||"Sem modelo")}</strong> · ${fmt(h.total)}<div class="history-meta">${esc(h.at)} · ${esc(h.origem)} · ${h.pecas} peça(s), ${h.servicos} serviço(s)</div></div>`).join("")
+    : `<div class="history-meta">Nenhum resultado para o filtro atual.</div>`;
+}
+
+function renderHistory(){
+  const list = getHistoryList();
+  if(!list.length){
+    return `<div class="history-wrap"><div class="history-title">Histórico recente</div><div class="history-meta">Ainda sem histórico salvo.</div></div>`;
+  }
+  const q = esc(historyView.query||"");
+  const origin = historyView.origin||"all";
+  return `<div class="history-wrap">
+    <div class="history-title">Histórico recente</div>
+    <div class="history-tools">
+      <input type="text" placeholder="Buscar por cliente, modelo ou data" value="${q}" oninput="setHistoryFilter('query', this.value)">
+      <select onchange="setHistoryFilter('origin', this.value)">
+        <option value="all" ${origin==='all'?'selected':''}>Todas origens</option>
+        <option value="copia" ${origin==='copia'?'selected':''}>Cópia</option>
+        <option value="whatsapp" ${origin==='whatsapp'?'selected':''}>WhatsApp</option>
+        <option value="pdf" ${origin==='pdf'?'selected':''}>PDF</option>
+      </select>
+      <button type="button" onclick="historyView={query:'',origin:'all'};renderOrc();">Limpar</button>
+    </div>
+    <div class="history-stats" id="history-stats">${list.length} registro(s)</div>
+    <div id="history-list">${list.slice(0,10).map(h=>`<div class="history-item"><strong>${esc(h.modelo||"Sem modelo")}</strong> · ${fmt(h.total)}<div class="history-meta">${esc(h.at)} · ${esc(h.origem)} · ${h.pecas} peça(s), ${h.servicos} serviço(s)</div></div>`).join("")}</div>
+  </div>`;
+}
 
 function getModels(brandId){ return Object.keys(CATALOG).filter(k=>BRANDS.find(b=>b.id===brandId)?.test(k)).sort(); }
 
@@ -1222,14 +1602,19 @@ function renderBrands(){
 }
 
 function goStep(n){
-  state.step=n;
+  const next = Math.min(4, Math.max(1, Number(n)||1));
+  state.step = next;
   document.querySelectorAll(".step").forEach(s=>s.classList.remove("active"));
-  document.getElementById("step"+n).classList.add("active");
+  const target = document.getElementById("step"+next);
+  if(target) target.classList.add("active");
   buildBC();
-  if(n===1) renderBrands();
-  if(n===2) renderModels();
-  if(n===3) renderDefects();
-  if(n===4) renderPrices();
+  if(next===1) renderBrands();
+  if(next===2) renderModels();
+  if(next===3) renderDefects();
+  if(next===4) renderPrices();
+  const pageTop = document.querySelector("#pg-orcamento .page-shell") || document.getElementById("pg-orcamento");
+  pageTop?.scrollIntoView({behavior:"smooth", block:"start"});
+  saveRuntimeState();
 }
 function buildBC(){
   const b=BRANDS.find(x=>x.id===state.brand);
@@ -1239,9 +1624,14 @@ function buildBC(){
   if(state.step===4) h+=`<span class="bc-sep">›</span><span class="bc-item active">Preços</span>`;
   document.getElementById("breadcrumb").innerHTML=h;
 }
-function selectBrand(id){ appLog("info","Orçamento",`Marca selecionada: ${BRANDS.find(b=>b.id===id)?.name||id}`); state.brand=id; state.model=null; state.defects=[]; document.getElementById("modelFilter").value=""; goStep(2); }
+function selectBrand(id){ appLog("info","Orçamento",`Marca selecionada: ${BRANDS.find(b=>b.id===id)?.name||id}`); state.brand=id; state.model=null; state.defects=[]; document.getElementById("modelFilter").value=""; goStep(2); saveRuntimeState(); }
 function renderModels(){
   const b=BRANDS.find(x=>x.id===state.brand);
+  if(!b){
+    document.getElementById("step2-title").textContent="Selecione o modelo";
+    document.getElementById("model-list").innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Selecione uma marca primeiro</div>`;
+    return;
+  }
   document.getElementById("step2-title").textContent=`${b.emoji} Selecione o modelo`;
   const q=document.getElementById("modelFilter").value.toLowerCase();
   const models=getModels(state.brand).filter(m=>m.toLowerCase().includes(q));
@@ -1256,7 +1646,7 @@ function renderModels(){
     : `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Nenhum modelo encontrado</div>`;
 }
 function filterModels(){ renderModels(); }
-function selectModel(m){ appLog("info","Orçamento",`Modelo selecionado: ${m}`); state.model=m; state.defects=[]; goStep(3); }
+function selectModel(m){ appLog("info","Orçamento",`Modelo selecionado: ${m}`); state.model=m; state.defects=[]; goStep(3); saveRuntimeState(); }
 function renderDefects(){
   document.getElementById("step3-title").textContent=`Defeitos — ${state.model}`;
   const tiposDisp=[...new Set((CATALOG[state.model]||[]).map(p=>p.tipo))];
@@ -1280,18 +1670,39 @@ function toggleDefect(tipo){
   const i=state.defects.indexOf(tipo);
   if(i>-1) state.defects.splice(i,1); else state.defects.push(tipo);
   renderDefects();
+  saveRuntimeState();
+}
+function applyPriceFilters(){
+  priceView.quality = (document.getElementById("priceFilterQuality")?.value||"").trim().toLowerCase();
+  priceView.max = parseFloat(document.getElementById("priceFilterMax")?.value)||0;
+  renderPrices();
+  saveRuntimeState();
 }
 function shopLink(tipo,model){ return `https://www.google.com/search?q=${encodeURIComponent(tipo+" "+model)}&tbm=shop`; }
 function npLink(tipo,model){ appLog("info","NovaPeças",`Busca: ${tipo} — ${model}`); return `https://novapecascell.com.br/pesquisa?busca=${encodeURIComponent(model.split(" ").slice(0,3).join(" "))}`; }
 function renderPrices(){
   const b=BRANDS.find(x=>x.id===state.brand);
+  if(!b || !state.model){
+    document.getElementById("prices-wrap").innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:14px">Complete os passos anteriores para ver os preços</div>`;
+    return;
+  }
   const parts=CATALOG[state.model]||[];
+  const qf = (priceView.quality||"").toLowerCase();
+  const maxf = Number(priceView.max)||0;
+  const qInput = document.getElementById("priceFilterQuality");
+  const mInput = document.getElementById("priceFilterMax");
+  if(qInput && qInput.value !== (priceView.quality||"")) qInput.value = priceView.quality||"";
+  if(mInput && String(mInput.value||"") !== (maxf?String(maxf):"")) mInput.value = maxf||"";
   let html=`<div class="prices-header"><div class="prices-model-icon">${b.emoji}</div>
     <div class="prices-model-info"><div class="prices-model-name">${state.model}</div>
     <div class="prices-model-brand">${b.name} · ${state.defects.join(", ")}</div></div></div>`;
   state.defects.forEach(tipo=>{
     const info=DEFECT_TIPOS[tipo];
-    const tipoPartes=parts.filter(p=>p.tipo===tipo);
+    const tipoPartes=parts.filter(p=>p.tipo===tipo).filter(p=>{
+      if(qf && !String(p.q||"").toLowerCase().includes(qf)) return false;
+      if(maxf>0 && Number(p.c||0)>maxf) return false;
+      return true;
+    });
     html+=`<div class="price-section"><div class="price-section-title">${info.icon} ${tipo}</div>`;
     if(tipoPartes.length){
       tipoPartes.forEach((p,i)=>{
@@ -1318,7 +1729,7 @@ function renderPrices(){
     } else {
       const ck=state.model+"_"+tipo+"_manual";
       const inC=cart[ck];
-      html+=`<div class="no-price-card"><p>⚠️ Sem preço no catálogo. Consulte:</p>
+      html+=`<div class="no-price-card"><p>⚠️ Sem itens para este defeito com os filtros atuais. Consulte:</p>
         <a class="price-link novapecas" href="${npLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🔵 NovaPeças</a>
         <a class="price-link shop" href="${shopLink(tipo,state.model)}" target="_blank" style="padding:8px 14px;font-size:13px">🛒 Shopping</a>
       </div>
@@ -1334,7 +1745,7 @@ function renderPrices(){
 }
 
 function selectPrice(ck,model,tipo,q,c,f,link){
-  if(cart[ck]){delete cart[ck];updateBadge();renderPrices();return;}
+  if(cart[ck]){delete cart[ck];updateBadge();renderPrices();saveRuntimeState();return;}
   pendingPrice={ck,model,tipo,q,c,f,link};
   document.getElementById("price-modal-title").textContent=`${tipo} — ${q}`;
   document.getElementById("cost-badge").textContent=`💰 Custo ref.: ${c>0?fmt(c):"—"} (${f})`;
@@ -1345,13 +1756,18 @@ function selectPrice(ck,model,tipo,q,c,f,link){
 }
 function closePriceModal(){document.getElementById("priceOverlay").classList.remove("open");pendingPrice=null;}
 function confirmPrice(){
-  const price=parseFloat(document.getElementById("priceInput").value);
+  if(!pendingPrice){
+    showToast("Selecione uma peça antes de confirmar o preço");
+    return;
+  }
+  const raw=(document.getElementById("priceInput").value||"").replace(",",".");
+  const price=parseFloat(raw);
   if(isNaN(price)||price<0){alert("Valor inválido.");return;}
   const {ck,model,tipo,q,c}=pendingPrice;
   const info=DEFECT_TIPOS[tipo]||{icon:"🔧"};
   cart[ck]={id:ck,icon:info.icon,name:`${tipo} — ${model}`,desc:`${q} · Custo ref.: ${c>0?fmt(c):"—"}`,qty:1,price,custo:c};
   appLog("success","Orçamento",`Peça adicionada: ${tipo} — ${model}`,`Qualidade: ${q} | Custo: ${c>0?fmt(c):"—"} | Cobrança: ${fmt(price)}`);
-  closePriceModal();updateBadge();renderPrices();showToast("✅ Adicionado!");
+  closePriceModal();updateBadge();renderPrices();saveRuntimeState();showToast("✅ Adicionado!");
 }
 
 function calcTotalMO(){return Object.values(maoObra).reduce((a,i)=>a+i.valor,0);}
@@ -1363,7 +1779,7 @@ function updateBadge(){
   b.textContent=t||"";b.classList.toggle("zero",!t);
 }
 
-function openOrc(){renderOrc();document.getElementById("orcOverlay").classList.add("open");}
+function openOrc(){renderOrc();document.getElementById("orcOverlay").classList.add("open");saveRuntimeState();}
 function closeOrc(){document.getElementById("orcOverlay").classList.remove("open");}
 function renderOrc(){
   const items=Object.values(cart);
@@ -1431,14 +1847,23 @@ function renderOrc(){
     </button>
     <button class="btn-pdf" onclick="savePDF()">📄 Salvar PDF</button>
     <button class="btn-limpar" onclick="limpar()">🗑 Limpar</button>
-  </div><div style="height:8px"></div>`;
+  </div>${renderHistory()}<div style="height:8px"></div>`;
   document.getElementById("orc-body").innerHTML=html;
+  const inNome = document.getElementById("cli_nome");
+  const inModelo = document.getElementById("cli_modelo");
+  const inTel = document.getElementById("cli_tel");
+  const inObs = document.getElementById("obs");
+  if(inNome) inNome.value = orcMeta.nome||"";
+  if(inModelo) inModelo.value = orcMeta.modelo||"";
+  if(inTel) inTel.value = orcMeta.tel||"";
+  if(inObs) inObs.value = orcMeta.obs||"";
 }
 
 function toggleMO(id){
   if(maoObra[id]) delete maoObra[id];
   else{const m=MAO_OBRA.find(x=>x.id===id);maoObra[id]={...m};}
   renderOrc();
+  saveRuntimeState();
 }
 function editMO(id){
   const m=maoObra[id]||MAO_OBRA.find(x=>x.id===id);
@@ -1447,7 +1872,7 @@ function editMO(id){
   const v=parseFloat(novo);
   if(isNaN(v)||v<0){alert("Valor inválido.");return;}
   if(!maoObra[id])maoObra[id]={...m};
-  maoObra[id].valor=v; renderOrc();
+  maoObra[id].valor=v; renderOrc(); saveRuntimeState();
 }
 function chQty(id,d){
   if(!cart[id])return;
@@ -1456,14 +1881,15 @@ function chQty(id,d){
   document.getElementById("ip_"+id).textContent=fmt(cart[id].price*cart[id].qty);
   document.getElementById("total-val").textContent=fmt(calcTotal());
   updateBadge();
+  saveRuntimeState();
 }
-function rmItem(id){delete cart[id];updateBadge();renderOrc();}
-function limpar(){if(!confirm("Limpar tudo?"))return;cart={};maoObra={};updateBadge();renderOrc();}
+function rmItem(id){delete cart[id];updateBadge();renderOrc();saveRuntimeState();}
+function limpar(){if(!confirm("Limpar tudo?"))return;cart={};maoObra={};state.defects=[];updateBadge();renderOrc();saveRuntimeState();}
 
 function buildMsg(){
-  const nome=document.getElementById("cli_nome")?.value.trim()||"";
-  const modelo=document.getElementById("cli_modelo")?.value.trim()||state.model||"";
-  const obs=document.getElementById("obs")?.value.trim()||"";
+  const nome=document.getElementById("cli_nome")?.value.trim()||orcMeta.nome||"";
+  const modelo=document.getElementById("cli_modelo")?.value.trim()||orcMeta.modelo||state.model||"";
+  const obs=document.getElementById("obs")?.value.trim()||orcMeta.obs||"";
   const items=Object.values(cart), moItems=Object.values(maoObra);
   const num=String(Date.now()).slice(-6);
   let msg=`🔧 *ORÇAMENTO #${num}*\n`;
@@ -1480,6 +1906,7 @@ function copyMsg(){
   const items=Object.values(cart), moItems=Object.values(maoObra);
   if(!items.length&&!moItems.length){appLog('warn','Orçamento','Copiar: nenhum item no orçamento');alert("Adicione pelo menos um item.");return;}
   appLog('info','Orçamento','Mensagem copiada',`${items.length} peça(s)`);
+  saveBudgetSnapshot("copia");
   const msg=buildMsg();
   navigator.clipboard?.writeText(msg).then(()=>showToast("✅ Mensagem copiada! Cole no WhatsApp")).catch(()=>{
     const ta=document.createElement("textarea");ta.value=msg;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);showToast("✅ Copiado!");
@@ -1489,32 +1916,103 @@ function sendWhats(){
   const items=Object.values(cart), moItems=Object.values(maoObra);
   if(!items.length&&!moItems.length){appLog('warn','Orçamento','WhatsApp: nenhum item no orçamento');alert("Adicione pelo menos um item.");return;}
   appLog('success','Orçamento','Orçamento enviado via WhatsApp',`${items.length} peça(s), ${moItems.length} serviço(s)`);
-  const tel=document.getElementById("cli_tel")?.value.trim().replace(/\D/g,"")||"";
+  saveBudgetSnapshot("whatsapp");
+  let tel=(document.getElementById("cli_tel")?.value||orcMeta.tel||"").trim().replace(/\D/g,"");
+  if(tel && tel.length>=10 && !tel.startsWith("55")) tel = "55"+tel;
   const msg=buildMsg();
-  window.open(tel?`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
+  window.open(tel?`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,"_blank");
 }
 function savePDF(){
-  const nome=document.getElementById("cli_nome")?.value.trim()||"—";
-  const modelo=document.getElementById("cli_modelo")?.value.trim()||state.model||"—";
-  const obs=document.getElementById("obs")?.value.trim()||"";
+  const nome=document.getElementById("cli_nome")?.value.trim()||orcMeta.nome||"—";
+  const modelo=document.getElementById("cli_modelo")?.value.trim()||orcMeta.modelo||state.model||"—";
+  const obs=document.getElementById("obs")?.value.trim()||orcMeta.obs||"";
   const items=Object.values(cart), moItems=Object.values(maoObra);
   if(!items.length&&!moItems.length){alert("Adicione pelo menos um item.");return;}
+  saveBudgetSnapshot("pdf");
   const grand=calcTotal(), num=String(Date.now()).slice(-6), data=new Date().toLocaleDateString("pt-BR");
-  const pRows=items.map(i=>`<tr><td>${i.name}</td><td align="center">${i.qty}</td><td align="right">${fmt(i.price)}</td><td align="right"><strong>${fmt(i.price*i.qty)}</strong></td></tr>`).join("");
-  const mRows=moItems.map(i=>`<tr style="background:#f9f9f9"><td>🛠️ ${i.nome}</td><td align="center">1</td><td align="right">${fmt(i.valor)}</td><td align="right"><strong>${fmt(i.valor)}</strong></td></tr>`).join("");
+  const pRows=items.map(i=>`<tr><td>${esc(i.name)}</td><td align="center">${i.qty}</td><td align="right">${fmt(i.price)}</td><td align="right"><strong>${fmt(i.price*i.qty)}</strong></td></tr>`).join("");
+  const mRows=moItems.map(i=>`<tr style="background:#f9f9f9"><td>🛠️ ${esc(i.nome)}</td><td align="center">1</td><td align="right">${fmt(i.valor)}</td><td align="right"><strong>${fmt(i.valor)}</strong></td></tr>`).join("");
   const w=window.open("","_blank");
-  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;padding:32px;color:#1e2330;font-size:14px}h1{font-size:22px;margin-bottom:4px}.sub{color:#888;font-size:13px;margin-bottom:20px}.info{background:#f5f7fa;border-radius:8px;padding:12px 16px;margin-bottom:20px}.info div{margin-bottom:4px}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#12151c;color:#fff;padding:9px 12px;text-align:left;font-size:12px}td{padding:9px 12px;border-bottom:1px solid #e2e5ec}.sec{background:#f0f0f0;font-weight:700;font-size:12px;padding:6px 12px;color:#555}.tot td{font-size:16px;font-weight:bold;background:#e6faf3;border-top:2px solid #00c47a}.obs{background:#fffbf0;border:1px solid #ffe08a;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:20px}footer{text-align:center;color:#aaa;font-size:12px;margin-top:30px;border-top:1px solid #e2e5ec;padding-top:14px}</style></head><body><h1>🔧 Orçamento #${num}</h1><div class="sub">Emitido em ${data}</div><div class="info"><div><strong>Cliente:</strong> ${nome}</div><div><strong>Aparelho:</strong> ${modelo}</div></div><table><thead><tr><th>Serviço / Peça</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead><tbody>${items.length?`<tr><td colspan="4" class="sec">🔩 PEÇAS</td></tr>${pRows}`:''}${moItems.length?`<tr><td colspan="4" class="sec">🛠️ MÃO DE OBRA</td></tr>${mRows}`:''}</tbody><tfoot><tr class="tot"><td colspan="3">TOTAL</td><td align="right">${fmt(grand)}</td></tr></tfoot></table>${obs?`<div class="obs">📝 ${obs}</div>`:''}<footer>TechFix — Assistência Técnica</footer><script>window.onload=()=>window.print()<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><style>
+  body{font-family:Arial,sans-serif;padding:26px;color:#1e2330;font-size:14px;background:#f6f8fc}
+  .sheet{max-width:820px;margin:0 auto;background:#fff;border:1px solid #e2e5ec;border-radius:16px;padding:24px 24px 18px;box-shadow:0 10px 30px rgba(18,21,28,.06)}
+  .head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;border-bottom:2px solid #eef2fa;padding-bottom:14px}
+  .brand{display:flex;gap:10px;align-items:center}
+  .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#0057ff,#00c47a);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;font-weight:700}
+  .brand h1{font-size:24px;line-height:1;margin:0;letter-spacing:.5px}
+  .brand small{display:block;color:#6b7382;margin-top:4px;font-size:12px}
+  .doc-meta{text-align:right}
+  .doc-tag{display:inline-block;background:#12151c;color:#fff;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700;margin-bottom:6px}
+  .doc-num{font-size:20px;font-weight:900}
+  .doc-date{font-size:12px;color:#6b7382}
+  .info{display:grid;grid-template-columns:1fr 1fr;gap:10px;background:#f7f9ff;border:1px solid #e6ecff;border-radius:10px;padding:12px 14px;margin-bottom:16px}
+  .info div{font-size:13px}
+  table{width:100%;border-collapse:collapse;margin-bottom:8px;overflow:hidden;border-radius:10px}
+  th{background:#12151c;color:#fff;padding:10px 12px;text-align:left;font-size:12px}
+  td{padding:9px 12px;border-bottom:1px solid #e2e5ec}
+  .sec{background:#f3f6fb;font-weight:700;font-size:12px;padding:7px 12px;color:#4f5665}
+  .tot td{font-size:16px;font-weight:bold;background:#e6faf3;border-top:2px solid #00c47a}
+  .obs{background:#fffaf0;border:1px solid #ffe0a6;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding-top:12px;border-top:1px solid #e2e5ec;color:#6b7382;font-size:12px}
+  @media print{body{background:#fff;padding:0}.sheet{box-shadow:none;border:none;max-width:none;margin:0}}
+  </style></head><body>
+  <div class="sheet">
+    <div class="head">
+      <div class="brand">
+        <div class="logo">🔧</div>
+        <div><h1>TechFix</h1><small>Assistência técnica especializada</small></div>
+      </div>
+      <div class="doc-meta"><div class="doc-tag">ORÇAMENTO</div><div class="doc-num">#${num}</div><div class="doc-date">Emitido em ${data}</div></div>
+    </div>
+    <div class="info">
+      <div><strong>Cliente:</strong> ${esc(nome)}</div>
+      <div><strong>Aparelho:</strong> ${esc(modelo)}</div>
+    </div>
+    <table><thead><tr><th>Serviço / Peça</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead><tbody>${items.length?`<tr><td colspan="4" class="sec">🔩 PEÇAS</td></tr>${pRows}`:''}${moItems.length?`<tr><td colspan="4" class="sec">🛠️ MÃO DE OBRA</td></tr>${mRows}`:''}</tbody><tfoot><tr class="tot"><td colspan="3">TOTAL</td><td align="right">${fmt(grand)}</td></tr></tfoot></table>
+    ${obs?`<div class="obs">📝 <strong>Observações:</strong> ${esc(obs)}</div>`:''}
+    <div class="foot"><span>Garantia e prazo conforme avaliação técnica.</span><span>TechFix</span></div>
+  </div>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
   w.document.close();
 }
 function fmt(v){return"R$ "+Number(v).toFixed(2).replace(".",",");}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
 
 function showPage(p){
+  const pageEl = document.getElementById("pg-"+p);
+  const navEl = document.getElementById("bn-"+p);
+  if(!pageEl || !navEl) return;
   document.querySelectorAll(".page").forEach(e=>e.classList.remove("active"));
   document.querySelectorAll(".bnav").forEach(e=>e.classList.remove("active"));
-  document.getElementById("pg-"+p).classList.add("active");
-  document.getElementById("bn-"+p).classList.add("active");
+  pageEl.classList.add("active");
+  navEl.classList.add("active");
+  const topRef = document.querySelector("main") || document.body;
+  topRef.scrollIntoView({behavior:"smooth", block:"start"});
+  if(p==="logs") renderLogs();
+  saveRuntimeState();
 }
+
+document.addEventListener("input",(ev)=>{
+  const t = ev.target;
+  if(!(t instanceof HTMLElement)) return;
+  if(t.id === "cli_nome") orcMeta.nome = t.value.trim();
+  if(t.id === "cli_modelo") orcMeta.modelo = t.value.trim();
+  if(t.id === "cli_tel") orcMeta.tel = t.value.trim();
+  if(t.id === "obs") orcMeta.obs = t.value.trim();
+  if(["cli_nome","cli_modelo","cli_tel","obs"].includes(t.id)) saveRuntimeState();
+});
+
+document.addEventListener("keydown",(ev)=>{
+  if(ev.key === "Escape"){
+    document.getElementById("priceOverlay")?.classList.remove("open");
+    document.getElementById("orcOverlay")?.classList.remove("open");
+  }
+  if(ev.ctrlKey && ev.key.toLowerCase()==="b"){
+    ev.preventDefault();
+    openOrc();
+  }
+});
 
 // ══════════════════════════════════════
 // OLX ANALYSE — IA + Imagens
@@ -1534,6 +2032,181 @@ const OLX_DEFEITOS = [
   {id:"carcaca",    icon:"🔩", label:"Carcaça torta/quebrada",custo_key:null,     extra:80},
   {id:"alto",       icon:"🔊", label:"Sem som",              custo_key:null,      extra:40},
 ];
+let _olxInFlight = false;
+let _olxBatchInFlight = false;
+
+const OLX_DEFECT_KEYWORDS = {
+  tela: ["tela trincada","trincado","trincada","display quebrado","tela quebrada","vidro quebrado"],
+  tela_morta: ["sem imagem","sem display","display não funciona","display nao funciona","tela preta","tela apagada"],
+  bateria: ["bateria ruim","não segura carga","nao segura carga","viciada","descarrega rapido","saude da bateria"],
+  conector: ["conector","não carrega","nao carrega","carrega mal","porta de carga"],
+  camera_t: ["camera traseira","câmera traseira","camera ruim","câmera ruim"],
+  camera_f: ["camera frontal","câmera frontal","selfie não funciona","selfie nao funciona"],
+  nao_liga: ["não liga","nao liga","morto","sem sinal de vida"],
+  placa: ["placa","curto","reparo de placa","micro solda","microsolda"],
+  molho: ["molhou","caiu na água","caiu na agua","oxidação","oxidacao"],
+  carcaca: ["carcaça","carcaca","amassado","quebrado atrás","quebrado atras"],
+  alto: ["sem som","alto falante","alto-falante","audio falhando"]
+};
+
+function pushSuggestion(map,id,score,reason,source){
+  if(!map[id]) map[id] = {id, score:0, reasons:[], sources:new Set()};
+  map[id].score += score;
+  map[id].reasons.push(reason);
+  map[id].sources.add(source);
+}
+
+function normalizeFreeText(s){
+  return String(s||"")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9\s]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function inferDefectsFromText(text){
+  const t = normalizeFreeText(text);
+  const map = {};
+  if(!t) return [];
+
+  for(const [id, terms] of Object.entries(OLX_DEFECT_KEYWORDS)){
+    const hit = terms.find(term => t.includes(normalizeFreeText(term)));
+    if(hit) pushSuggestion(map, id, 2, `Texto menciona "${hit}"`, "texto");
+  }
+
+  return Object.values(map);
+}
+
+function computeImageMetrics(img){
+  const canvas = document.createElement("canvas");
+  const w = 140, h = 140;
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d", {willReadFrequently:true});
+  ctx.drawImage(img, 0, 0, w, h);
+  const data = ctx.getImageData(0,0,w,h).data;
+
+  let dark = 0, edges = 0, total = w*h;
+  const lum = (i)=>0.2126*data[i] + 0.7152*data[i+1] + 0.0722*data[i+2];
+
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x++){
+      const i = (y*w + x) * 4;
+      const l = lum(i);
+      if(l < 28) dark++;
+      if(x < w-1){
+        const ir = (y*w + (x+1)) * 4;
+        if(Math.abs(l - lum(ir)) > 45) edges++;
+      }
+      if(y < h-1){
+        const ib = ((y+1)*w + x) * 4;
+        if(Math.abs(l - lum(ib)) > 45) edges++;
+      }
+    }
+  }
+
+  return {
+    darkRatio: dark/total,
+    edgeRatio: edges/(total*2)
+  };
+}
+
+async function inferDefectsFromImages(urls, addLog){
+  const map = {};
+  const list = (urls||[]).slice(0,4);
+  if(!list.length){
+    return {
+      suggestions: [],
+      diag: {
+        attempted: 0,
+        success: 0,
+        failed: 0,
+        darkAvg: 0,
+        edgeMax: 0,
+        note: "Sem imagens disponíveis no anúncio"
+      }
+    };
+  }
+
+  let success = 0;
+  let failed = 0;
+  let darkSum = 0;
+  let edgeMax = 0;
+
+  for(const url of list){
+    try{
+      const img = await new Promise((resolve,reject)=>{
+        const im = new Image();
+        im.crossOrigin = "anonymous";
+        im.referrerPolicy = "no-referrer";
+        im.onload = ()=>resolve(im);
+        im.onerror = reject;
+        im.src = url;
+      });
+
+      const m = computeImageMetrics(img);
+      success++;
+      darkSum += m.darkRatio;
+      edgeMax = Math.max(edgeMax, m.edgeRatio);
+    }catch(_){ failed++; }
+  }
+
+  if(!success){
+    addLog?.("⚠️ Não foi possível ler pixels das imagens (CORS/bloqueio)");
+    return {
+      suggestions: [],
+      diag: {
+        attempted: list.length,
+        success: 0,
+        failed: list.length,
+        darkAvg: 0,
+        edgeMax: 0,
+        note: "Imagens bloqueadas por CORS/anti-bot"
+      }
+    };
+  }
+
+  const darkAvg = darkSum / success;
+  addLog?.(`🖼️ Heurística imagem: dark=${darkAvg.toFixed(2)} edgeMax=${edgeMax.toFixed(2)}`);
+
+  if(darkAvg > 0.62) pushSuggestion(map, "tela_morta", 2.5, "Imagem muito escura (possível sem display)", "imagem");
+  if(edgeMax > 0.28) pushSuggestion(map, "tela", 2.0, "Muitos contornos/arestas (possível trinca)", "imagem");
+  if(darkAvg > 0.45 && edgeMax < 0.08) pushSuggestion(map, "nao_liga", 1.6, "Aparelho com tela apagada sem detalhe", "imagem");
+
+  return {
+    suggestions: Object.values(map),
+    diag: {
+      attempted: list.length,
+      success,
+      failed,
+      darkAvg: Number(darkAvg.toFixed(3)),
+      edgeMax: Number(edgeMax.toFixed(3)),
+      note: "Heurística por brilho e contornos"
+    }
+  };
+}
+
+function mergeDefectSuggestions(a,b){
+  const map = {};
+  [...(a||[]), ...(b||[])].forEach(s=>{
+    if(!map[s.id]) map[s.id] = {id:s.id, score:0, reasons:[], sources:new Set()};
+    map[s.id].score += Number(s.score)||0;
+    if(Array.isArray(s.reasons)) map[s.id].reasons.push(...s.reasons);
+    else if(s.reason) map[s.id].reasons.push(s.reason);
+    if(s.sources instanceof Set) s.sources.forEach(x=>map[s.id].sources.add(x));
+    else if(s.source) map[s.id].sources.add(s.source);
+  });
+
+  return Object.values(map)
+    .map(x=>({
+      id:x.id,
+      score:Number(x.score.toFixed(2)),
+      confidence: x.score >= 3.5 ? "alta" : x.score >= 2 ? "media" : "baixa",
+      reasons:[...new Set(x.reasons)].slice(0,2),
+      sources:[...x.sources]
+    }))
+    .sort((p,q)=>q.score-p.score);
+}
 
 function renderOlxDefeitos(){
   const grid = document.getElementById("olx-defeitos-grid");
@@ -1573,6 +2246,275 @@ function getDefeitosSelecionados(){
 }
 
 let _olxImages = [];
+let _olxAdCache = { url:"", data:null };
+
+function parseBRLValue(text){
+  if(!text) return 0;
+  const m = String(text).match(/R\$\s*([\d\.]+)(?:,\d{2})?/i);
+  if(!m) return 0;
+  return Number(m[1].replace(/\./g, "")) || 0;
+}
+
+function pickBestPrice(candidates){
+  const norm = candidates
+    .map(c=>{
+      if(typeof c === "object" && c){
+        const v = Number(c.v ?? c.value ?? 0) || 0;
+        const w = Number(c.w ?? c.weight ?? 1) || 1;
+        return {v, w};
+      }
+      return {v:Number(c)||0, w:1};
+    })
+    .filter(x=>x.v>=50 && x.v<=300000);
+
+  if(!norm.length) return 0;
+  if(norm.length===1) return Math.round(norm[0].v);
+
+  // Escolhe o centro com melhor consenso ponderado dos candidatos próximos.
+  let best = {score:-1, center:norm[0].v};
+  for(const a of norm){
+    const tol = Math.max(60, a.v * 0.08);
+    let score = 0;
+    for(const b of norm){
+      const diff = Math.abs(b.v - a.v);
+      const proximity = Math.max(0, 1 - diff / tol);
+      score += b.w * proximity;
+    }
+    // Bônus leve para candidatos com peso alto (meta/JSON estruturado)
+    score += a.w * 0.12;
+    if(score > best.score) best = {score, center:a.v};
+  }
+
+  return Math.round(best.center);
+}
+
+function normalizeModelHint(s){
+  return String(s||"")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+
+function walkDeep(node, fn, path=""){
+  if(node===null || node===undefined) return;
+  fn(node, path);
+  if(Array.isArray(node)){
+    for(let i=0;i<node.length;i++) walkDeep(node[i], fn, `${path}[${i}]`);
+    return;
+  }
+  if(typeof node === "object"){
+    for(const [k,v] of Object.entries(node)) walkDeep(v, fn, path ? `${path}.${k}` : k);
+  }
+}
+
+function extractFromDeepJson(root){
+  const titles = [];
+  const descs = [];
+  const prices = [];
+  const locs = [];
+  const images = [];
+
+  walkDeep(root, (value, path)=>{
+    if(typeof value === "string"){
+      const p = path.toLowerCase();
+      const v = value.trim();
+      if(!v) return;
+      if(/(title|subject|name)$/.test(p) && v.length > 3) titles.push(v);
+      if(/(description|body|text|content)$/.test(p) && v.length > 15) descs.push(v);
+      if(/(city|state|region|location|municipio|neighborhood|bairro)$/.test(p) && v.length > 2) locs.push(v);
+      if(/^https?:\/\//i.test(v) && /\.(jpg|jpeg|png|webp)(\?|$)/i.test(v)) images.push(v);
+      const pBR = parseBRLValue(v);
+      if(pBR){
+        let w = 1;
+        if(/price|amount|value|regular|sale|cash|list/i.test(p)) w = 3;
+        else if(/offer|pricing|advert|ad/i.test(p)) w = 2;
+        prices.push({v:pBR,w});
+      }
+    }
+    if(typeof value === "number"){
+      const p = path.toLowerCase();
+      if(/price|amount|value/.test(p) && value >= 50 && value <= 300000){
+        let w = 2;
+        if(/sale|cash|list|main|advert/.test(p)) w = 3;
+        prices.push({v:value,w});
+      }
+    }
+  });
+
+  const unique = arr => [...new Set(arr.map(s=>String(s).trim()).filter(Boolean))];
+  const title = unique(titles).sort((a,b)=>b.length-a.length)[0] || "";
+  const description = unique(descs).sort((a,b)=>b.length-a.length)[0] || "";
+  const location = unique(locs).sort((a,b)=>b.length-a.length)[0] || "";
+  const price = pickBestPrice(prices);
+
+  return {title, description, location, price, images: unique(images)};
+}
+
+function extractOlxDataFromHtml(html, pageUrl){
+  const out = {
+    title: "",
+    description: "",
+    price: 0,
+    location: "",
+    sellerName: "",
+    sellerSince: "",
+    images: [],
+    modelHint: "",
+    source: ""
+  };
+
+  if(!html) return out;
+  const doc = new DOMParser().parseFromString(html, "text/html");
+
+  const getMeta = (name, attr="property") => doc.querySelector(`meta[${attr}="${name}"]`)?.getAttribute("content")?.trim() || "";
+
+  out.title = getMeta("og:title") || doc.querySelector("h1")?.textContent?.trim() || doc.title?.trim() || "";
+  out.description = getMeta("og:description") || getMeta("description", "name") || "";
+  out.location = getMeta("product:location") || "";
+
+  const priceCandidates = [];
+  const addPrice = (v, w=1) => {
+    const n = Number(v)||0;
+    if(n>=50 && n<=300000) priceCandidates.push({v:n,w});
+  };
+  const pm = getMeta("product:price:amount");
+  if(pm) addPrice(pm, 6);
+  if(out.title) addPrice(parseBRLValue(out.title), 2);
+  if(out.description) addPrice(parseBRLValue(out.description), 1);
+
+  const bodyText = doc.body?.textContent || "";
+  const bodyPriceMatches = [...bodyText.matchAll(/R\$\s*([\d\.]+)(?:,\d{2})?/gi)].slice(0,20);
+  bodyPriceMatches.forEach((m,idx)=>addPrice(Number((m[1]||"").replace(/\./g,"")), idx<3?1.2:0.8));
+
+  const scripts = [...doc.querySelectorAll("script")].map(s=>s.textContent||"");
+  for(const s of scripts){
+    const inlinePrice = [...s.matchAll(/"price"\s*:\s*"?(\d{2,7})"?/gi)];
+    inlinePrice.forEach(m=>addPrice(Number(m[1]), 3));
+
+    const seller = s.match(/"name"\s*:\s*"([^"]{2,70})"/i);
+    if(!out.sellerName && seller && !/iphone|galaxy|moto|redmi/i.test(seller[1])) out.sellerName = seller[1];
+
+    const imgMatches = [...s.matchAll(/"url"\s*:\s*"(https?:\/\/[^\"]+\.(?:jpg|jpeg|png|webp)[^\"]*)"/gi)];
+    imgMatches.forEach(m=>out.images.push(m[1].replace(/\\u002F/g,"/").replace(/\\\//g,"/")));
+  }
+
+  // Parse de JSON interno (OLX costuma expor dados no __NEXT_DATA__).
+  const nextDataRaw = doc.getElementById("__NEXT_DATA__")?.textContent || "";
+  if(nextDataRaw){
+    try{
+      const nextData = JSON.parse(nextDataRaw);
+      const deep = extractFromDeepJson(nextData);
+      if(!out.title && deep.title) out.title = deep.title;
+      if(!out.description && deep.description) out.description = deep.description;
+      if(!out.location && deep.location) out.location = deep.location;
+      if(!out.price && deep.price) addPrice(deep.price, 4);
+      if(deep.images?.length) out.images.push(...deep.images);
+    }catch(_){ }
+  }
+
+  const ldScripts = [...doc.querySelectorAll('script[type="application/ld+json"]')].map(s=>s.textContent||"");
+  for(const raw of ldScripts){
+    try{
+      const parsed = JSON.parse(raw);
+      const arr = Array.isArray(parsed) ? parsed : [parsed];
+      for(const it of arr){
+        if(!it || typeof it !== "object") continue;
+        if(!out.title && it.name) out.title = String(it.name);
+        if(!out.description && it.description) out.description = String(it.description);
+        if(!out.location && it?.address?.addressLocality) out.location = String(it.address.addressLocality);
+        const p = Number(it?.offers?.price || it?.price || 0);
+        if(p) addPrice(p, 5);
+        const imgs = it.image;
+        if(Array.isArray(imgs)) imgs.forEach(u=>out.images.push(String(u)));
+        else if(typeof imgs === "string") out.images.push(imgs);
+      }
+    }catch(_){ }
+  }
+
+  out.price = pickBestPrice(priceCandidates);
+
+  // OG image primeiro, depois deduplicado
+  const ogImg = getMeta("og:image");
+  if(ogImg) out.images.unshift(ogImg);
+  out.images = [...new Set(out.images.filter(u=>/^https?:\/\//i.test(u) && !/logo|icon|avatar/i.test(u)))].slice(0,8);
+
+  // Model hint: tenta título antes da URL
+  const slug = (()=>{ try{ return new URL(pageUrl).pathname.split("/").filter(Boolean).pop()||""; }catch(_){ return ""; } })();
+  const titleHint = normalizeModelHint(out.title);
+  const slugHint = normalizeModelHint(slug.replace(/-\d{6,}$/," ").replace(/-/g," "));
+  out.modelHint = titleHint.length > 8 ? titleHint : slugHint;
+
+  // Não preencher título/local por slug para evitar dados "nada a ver".
+  // Se não vier do anúncio, mantém vazio e o sistema informa baixa confiança.
+
+  return out;
+}
+
+async function fetchOlxData(url, addLog){
+  if(_olxAdCache.url === url && _olxAdCache.data) return _olxAdCache.data;
+
+  const sources = [
+    {name:"direct", build: u=>u, json:false},
+    {name:"allorigins", build: u=>`https://api.allorigins.win/get?url=${encodeURIComponent(u)}`, json:true, jsonField:"contents"},
+    {name:"r.jina.ai", build: u=>`https://r.jina.ai/http://${u.replace(/^https?:\/\//,"")}`, json:false},
+    {name:"corsproxy.io", build: u=>`https://corsproxy.io/?${encodeURIComponent(u)}`, json:false}
+  ];
+
+  let best = null;
+  for(const src of sources){
+    try{
+      addLog?.(`🌐 Tentando fonte: ${src.name}`);
+      const res = await fetch(src.build(url), {signal: AbortSignal.timeout(8000)});
+      if(!res.ok) throw new Error(`HTTP ${res.status}`);
+      let html = "";
+      if(src.json){
+        const j = await res.json();
+        html = String(j?.[src.jsonField] || "");
+      } else {
+        html = await res.text();
+      }
+      if(!html || html.length < 200) throw new Error("resposta vazia");
+      const parsed = extractOlxDataFromHtml(html, url);
+      parsed.source = src.name;
+
+      // Score ponderado para priorizar dados úteis de anúncio.
+      const titleOk = !!parsed.title && parsed.title.length > 6;
+      const modelOk = !!parsed.modelHint && parsed.modelHint.length > 6;
+      const priceOk = parsed.price >= 100 && parsed.price <= 300000;
+      const score =
+        (titleOk?3:0) +
+        (modelOk?2:0) +
+        (priceOk?4:0) +
+        ((parsed.images?.length||0)>0?2:0) +
+        (parsed.description?1:0) +
+        (parsed.location?1:0);
+      parsed._score = score;
+      if(!best || score > best._score) best = parsed;
+      addLog?.(`✅ ${src.name}: score ${score} (titulo:${!!parsed.title} preco:${parsed.price||0} imgs:${parsed.images.length})`);
+      if(score >= 6) break;
+    }catch(e){
+      addLog?.(`⚠️ ${src.name} falhou: ${e.message}`);
+    }
+  }
+
+  if(!best) best = {title:"",description:"",price:0,location:"",sellerName:"",sellerSince:"",images:[],modelHint:"",source:"none",_score:0};
+
+  // Apenas modelHint pode usar slug como fallback técnico para casar no catálogo.
+  if(!best.modelHint){
+    try{
+      const slug = new URL(url).pathname.split("/").filter(Boolean).pop() || "";
+      best.modelHint = normalizeModelHint(slug.replace(/-\d{6,}$/, "").replace(/-/g, " "));
+    }catch(_){ }
+  }
+
+  // Sinaliza baixa confiança quando faltam campos essenciais do anúncio.
+  if(best.source === "none" || (!best.title && !best.price && !(best.images||[]).length)){
+    best.source = "baixa-confianca";
+  }
+  _olxAdCache = {url, data:best};
+  return best;
+}
 
 async function tentarCarregarImagens(){
   const url = document.getElementById("olx-url").value.trim();
@@ -1584,27 +2526,23 @@ async function tentarCarregarImagens(){
   imgStatus.style.display = "none";
 
   try {
-    const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`, {signal: AbortSignal.timeout(4000)});
-    const data = await res.json();
-    const html = data.contents || "";
-    if(!html) return;
-    const tmpDoc = new DOMParser().parseFromString(html, "text/html");
-    const ogImgs = [...tmpDoc.querySelectorAll('meta[property="og:image"]')]
-      .map(m => m.getAttribute("content")).filter(Boolean);
-    const scripts = [...tmpDoc.querySelectorAll("script")].map(s=>s.textContent);
-    const jsonImgs = [];
-    for(const s of scripts){
-      const matches = [...s.matchAll(/"url"\s*:\s*"(https:\/\/[^"]+\.(?:jpg|jpeg|png|webp)[^"]*)"/gi)];
-      matches.forEach(m => jsonImgs.push(m[1].replace(/\\u002F/g,"/").replace(/\\\//g,"/")));
+    const ad = await fetchOlxData(url);
+    _olxImages = (ad.images||[]).slice(0,5);
+
+    // Preenche preço automático se vier do anúncio e o campo estiver vazio
+    const pInput = document.getElementById("olx-preco");
+    if(ad.price > 0 && pInput && !Number(pInput.value)){
+      pInput.value = String(ad.price);
+      atualizarSlider();
     }
-    _olxImages = [...new Set([...ogImgs, ...jsonImgs])].filter(u=>!u.includes("logo")&&!u.includes("icon")).slice(0,5);
+
     if(_olxImages.length > 0){
       preview.style.display = "flex";
       preview.innerHTML = _olxImages.map(img=>
         `<img src="${img}" style="width:90px;height:90px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" onerror="this.style.display='none'">`
       ).join("");
       imgStatus.style.display = "block";
-      imgStatus.textContent = `🖼️ ${_olxImages.length} foto(s) carregada(s)`;
+      imgStatus.textContent = `🖼️ ${_olxImages.length} foto(s) carregada(s) · fonte: ${ad.source||'desconhecida'}`;
     }
   } catch(e){ /* silencioso — sem imagens */ }
 }
@@ -1640,8 +2578,10 @@ function atualizarSlider(){
 }
 
 async function analisarOLX(){
+  if(_olxInFlight) return;
   const url = document.getElementById("olx-url").value.trim();
   if(!url || !url.includes("olx")){ alert("Cole um link válido da OLX."); return; }
+  _olxInFlight = true;
 
   const precoAnuncio = parseFloat(document.getElementById("olx-preco")?.value) || 0;
   const pct = parseInt(document.getElementById("olx-slider")?.value) || 70;
@@ -1662,65 +2602,239 @@ async function analisarOLX(){
   const addLog = (msg) => { log.push(`[${new Date().toLocaleTimeString("pt-BR")}] ${msg}`); updateLog(log); };
   const t0 = Date.now();
 
-  addLog("▶ Iniciando análise");
-  addLog(`🔗 URL: ${url.slice(0,60)}...`);
-  status.textContent = "🔍 Identificando modelo...";
-
-  // Extrair slug da URL — SÍNCRONO, sem await
-  let slug = "";
   try {
-    const urlObj = new URL(url);
-    const parts = urlObj.pathname.split("/").filter(Boolean);
-    slug = parts[parts.length - 1] || "";
-    addLog(`📎 Slug extraído: ${slug}`);
-  } catch(e) {
-    slug = url.split("?")[0].split("/").filter(Boolean).pop() || "";
-    addLog(`⚠️ URL parse error: ${e.message}`);
-  }
+    addLog("▶ Iniciando análise");
+    addLog(`🔗 URL: ${url.slice(0,60)}...`);
+    status.textContent = "🌐 Lendo anúncio da OLX...";
 
-  const modelRaw = slug.replace(/-\d{6,}$/, "").replace(/-/g," ").trim().toLowerCase();
-  addLog(`🔤 Model raw: "${modelRaw}"`);
+    const adData = await fetchOlxData(url, addLog);
+    addLog(`📦 Coleta: fonte=${adData.source} score=${adData._score||0}`);
 
-  status.textContent = "📊 Buscando no catálogo...";
-  const modelKey = identificarModelo(modelRaw);
-  addLog(modelKey ? `✅ Modelo identificado: ${modelKey}` : `⚠️ Modelo não encontrado no catálogo — usando estimativa genérica`);
+    // Modo estrito: não inventa dados quando a coleta está fraca.
+    const userTypedPrice = parseFloat(document.getElementById("olx-preco")?.value) || 0;
+    const weakExtraction = (adData._score||0) < 4;
+    if(weakExtraction && !userTypedPrice){
+      status.style.background = "var(--red-light)";
+      status.style.color = "var(--red)";
+      status.textContent = "❌ Não consegui dados confiáveis da OLX para este link. Abra o anúncio normal da OLX e cole o link direto (ou informe o preço manualmente).";
+      addLog("❌ Coleta fraca: análise bloqueada para evitar resultado errado");
+      return;
+    }
 
-  const catalogParts = modelKey ? (CATALOG[modelKey] || CATALOG_DEFAULT[modelKey] || []) : [];
-  const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
-  const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
-  addLog(`💰 Custo tela: R$${custoTela} | Custo bateria: R$${custoBateria}`);
+    if(adData.price > 0 && !precoAnuncio){
+      document.getElementById("olx-preco").value = String(adData.price);
+      atualizarSlider();
+    }
 
-  status.textContent = "🔧 Calculando reparo e lucro...";
-  const defeitos = getDefeitosSelecionados();
-  addLog(`🔧 Defeitos selecionados: ${defeitos.length > 0 ? defeitos.map(d=>d.label).join(", ") : "nenhum"}`);
+    const precoAtual = parseFloat(document.getElementById("olx-preco")?.value) || adData.price || 0;
+    const ofertaAtual = precoAtual > 0 ? Math.round(precoAtual * pct / 100) : 0;
 
-  try {
+    status.textContent = "🔍 Identificando modelo...";
+
+    let slug = "";
+    try {
+      const urlObj = new URL(url);
+      const parts = urlObj.pathname.split("/").filter(Boolean);
+      slug = parts[parts.length - 1] || "";
+      addLog(`📎 Slug extraído: ${slug}`);
+    } catch(e) {
+      slug = url.split("?")[0].split("/").filter(Boolean).pop() || "";
+      addLog(`⚠️ URL parse error: ${e.message}`);
+    }
+
+    const modelRaw = (adData.modelHint || slug.replace(/-\d{6,}$/, "").replace(/-/g," ")).trim().toLowerCase();
+    addLog(`🔤 Model raw: "${modelRaw}"`);
+
+    status.textContent = "📊 Buscando no catálogo...";
+    const modelKey = identificarModelo(modelRaw);
+    addLog(modelKey ? `✅ Modelo identificado: ${modelKey}` : `⚠️ Modelo não encontrado no catálogo — usando estimativa genérica`);
+
+    const catalogParts = modelKey ? (CATALOG[modelKey] || CATALOG_DEFAULT[modelKey] || []) : [];
+    const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
+    const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
+    addLog(`💰 Custo tela: R$${custoTela} | Custo bateria: R$${custoBateria}`);
+
+    status.textContent = "🔧 Detectando defeitos e calculando reparo...";
+    const defeitosManual = getDefeitosSelecionados();
+    const autoText = inferDefectsFromText(`${adData.title||""} ${adData.description||""}`);
+    const imagePack = await inferDefectsFromImages(_olxImages.length?_olxImages:(adData.images||[]), addLog);
+    const autoImg = imagePack.suggestions || [];
+    const autoDefects = mergeDefectSuggestions(autoText, autoImg);
+
+    let defeitos = defeitosManual;
+    let autoApplied = false;
+    if(!defeitosManual.length && autoDefects.length){
+      defeitos = autoDefects
+        .filter(s=>s.confidence !== "baixa")
+        .map(s=>OLX_DEFEITOS.find(d=>d.id===s.id))
+        .filter(Boolean);
+      autoApplied = defeitos.length > 0;
+    }
+
+    addLog(`🔧 Defeitos manuais: ${defeitosManual.length ? defeitosManual.map(d=>d.label).join(", ") : "nenhum"}`);
+    addLog(`🤖 Sugestões automáticas: ${autoDefects.length ? autoDefects.map(d=>`${d.id}(${d.confidence})`).join(", ") : "nenhuma"}`);
+    if(autoApplied) addLog(`✅ Defeitos autoaplicados no cálculo: ${defeitos.map(d=>d.label).join(", ")}`);
+
     addLog("⚙️ Chamando gerarAnalise...");
-    const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAnuncio, defeitos, ofertaCustom);
+    const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoAtual, defeitos, ofertaAtual);
     _pecasExtras = [];
 
     const elapsed = Date.now() - t0;
     addLog(`✅ Análise concluída em ${elapsed}ms`);
     addLog(`📊 Veredito: ${analise.veredito} | Lucro: R$${analise.lucro_estimado}`);
 
+    analise._copyText = gerarCopy(analise);
+    analise._adData = adData;
+    analise._autoDefects = autoDefects;
+    analise._imageDiag = imagePack.diag;
+    analise._autoApplied = autoApplied;
+    analise._manualDefectCount = defeitosManual.length;
     addLog("🖥️ Renderizando resultado...");
     status.style.display = "none";
-    renderOLXResult(analise, _olxImages, url);
+    renderOLXResult(analise, _olxImages.length?_olxImages:(adData.images||[]).slice(0,5), url, adData);
     addLog("✅ Pronto!");
   } catch(err) {
-    addLog(`❌ ERRO: ${err.message}`);
-    addLog(`📍 Stack: ${err.stack?.split("\n")[1]||""}`);
-    appLog("error","OLX Analyse","Erro na análise",err.message);
+    addLog(`❌ Falha geral: ${err.message}`);
+    appLog("error","OLX Analyse","Falha geral da análise",err.message);
     status.style.background = "var(--red-light)";
     status.style.color = "var(--red)";
-    status.textContent = "❌ Erro na análise — veja o log de debug";
-    // Abrir log automaticamente
+    status.textContent = "❌ Falha ao analisar anúncio. Tente novamente com link direto da OLX.";
     const logEl = document.getElementById("olx-log");
     if(logEl) logEl.style.display = "block";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "🔍 Analisar anúncio";
+    _olxInFlight = false;
+  }
+}
+
+function renderBatchResult(rows){
+  const box = document.getElementById("olx-batch-result");
+  if(!box) return;
+  if(!rows.length){ box.style.display = "none"; return; }
+
+  const ok = rows.filter(r=>!r.error);
+  const lucroTotal = ok.reduce((a,r)=>a + (Number(r.lucro)||0), 0);
+  const mediaLucro = ok.length ? lucroTotal / ok.length : 0;
+
+  box.style.display = "block";
+  box.innerHTML = `
+    <div class="olx-card-title">📦 Resultado do lote</div>
+    <div class="olx-muted-line" style="margin-top:0">Processados ${rows.length} link(s) · válidos ${ok.length} · falhas ${rows.length-ok.length}</div>
+    <div class="olx-muted-line">Lucro total estimado: <strong>${fmt(lucroTotal)}</strong> · lucro médio: <strong>${fmt(mediaLucro)}</strong></div>
+    <div class="batch-table-wrap" style="margin-top:10px">
+      <table class="batch-table">
+        <thead>
+          <tr><th>Veredito</th><th>Modelo</th><th>Preço</th><th>Oferta</th><th>Lucro</th><th>Fonte</th><th>Link</th></tr>
+        </thead>
+        <tbody>
+          ${rows.map(r=>r.error
+            ? `<tr><td><span class="batch-pill vermelho">falha</span></td><td colspan="5">${esc(r.error)}</td><td><a href="${esc(r.url)}" target="_blank" rel="noopener">abrir</a></td></tr>`
+            : `<tr>
+                <td><span class="batch-pill ${r.veredito}">${esc(r.veredito)}</span></td>
+                <td>${esc(r.modelo||"—")}</td>
+                <td>${r.preco?fmt(r.preco):"—"}</td>
+                <td>${r.oferta?fmt(r.oferta):"—"}</td>
+                <td>${fmt(r.lucro)}</td>
+                <td>${esc(r.source||"—")} · score ${Number(r.score)||0}</td>
+                <td><a class="batch-url" href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title||"anúncio")}</a></td>
+              </tr>`
+          ).join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function analisarOLXLote(){
+  if(_olxBatchInFlight) return;
+  const input = document.getElementById("olx-batch-urls");
+  const status = document.getElementById("olx-status");
+  const btn = document.getElementById("olx-batch-btn");
+  const lines = String(input?.value||"")
+    .split(/\r?\n/)
+    .map(s=>s.trim())
+    .filter(Boolean)
+    .filter((u,i,a)=>a.indexOf(u)===i)
+    .filter(u=>u.includes("olx"))
+    .slice(0,20);
+
+  if(!lines.length){
+    alert("Cole pelo menos 1 link da OLX (um por linha).");
+    return;
   }
 
-  btn.disabled = false;
-  btn.textContent = "🔍 Analisar anúncio";
+  _olxBatchInFlight = true;
+  btn.disabled = true;
+  btn.textContent = "⏳ Processando lote...";
+  status.style.display = "block";
+  status.style.background = "var(--accent-light)";
+  status.style.color = "var(--accent)";
+
+  const pct = parseInt(document.getElementById("olx-slider")?.value) || 70;
+  const rows = [];
+
+  try{
+    for(let i=0; i<lines.length; i++){
+      const url = lines[i];
+      status.textContent = `📦 Lote: analisando ${i+1}/${lines.length}...`;
+      try{
+        const adData = await fetchOlxData(url);
+        const precoBase = Number(adData.price)||0;
+        const oferta = precoBase>0 ? Math.round(precoBase*pct/100) : 0;
+
+        let slug = "";
+        try{
+          const uo = new URL(url);
+          const parts = uo.pathname.split("/").filter(Boolean);
+          slug = parts[parts.length-1] || "";
+        }catch(_){
+          slug = url.split("?")[0].split("/").filter(Boolean).pop() || "";
+        }
+
+        const modelRaw = (adData.modelHint || slug.replace(/-\d{6,}$/, "").replace(/-/g," ")).trim().toLowerCase();
+        const modelKey = identificarModelo(modelRaw);
+        const catalogParts = modelKey ? (CATALOG[modelKey] || CATALOG_DEFAULT[modelKey] || []) : [];
+        const custoTela = catalogParts.find(p=>p.tipo==="Display")?.c || 0;
+        const custoBateria = catalogParts.find(p=>p.tipo==="Bateria")?.c || 0;
+
+        const autoText = inferDefectsFromText(`${adData.title||""} ${adData.description||""}`);
+        const defeitos = autoText
+          .filter(s=>s.confidence !== "baixa")
+          .map(s=>OLX_DEFEITOS.find(d=>d.id===s.id))
+          .filter(Boolean);
+
+        const analise = gerarAnalise(modelRaw, modelKey, custoTela, custoBateria, url, precoBase, defeitos, oferta);
+        rows.push({
+          url,
+          title: adData.title || "Anúncio OLX",
+          modelo: analise.modelo_detectado || modelKey || "Não identificado",
+          preco: precoBase,
+          oferta,
+          lucro: Number(analise.lucro_estimado)||0,
+          veredito: analise.veredito || "amarelo",
+          source: adData.source || "desconhecida",
+          score: adData._score || 0
+        });
+      }catch(err){
+        rows.push({url, error: err.message || "Falha na coleta/análise"});
+      }
+    }
+
+    renderBatchResult(rows);
+    status.style.background = "var(--green-light)";
+    status.style.color = "#077a4a";
+    status.textContent = `✅ Lote concluído: ${rows.length} link(s) processados.`;
+    appLog("success","OLX Lote","Lote analisado",`${rows.length} links processados`);
+  }catch(err){
+    status.style.background = "var(--red-light)";
+    status.style.color = "var(--red)";
+    status.textContent = `❌ Falha no lote: ${err.message}`;
+    appLog("error","OLX Lote","Falha no lote",err.message||"");
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "📦 Analisar lote";
+    _olxBatchInFlight = false;
+  }
 }
 
 const _olxLog = [];
@@ -1988,63 +3102,92 @@ function renderOLXResult(a, images, url){
 
   const fmt2 = v => v>0 ? `R$ ${Number(v).toFixed(2).replace(".",",")}` : "—";
   const margem = a.margem_percent > 0 ? `${a.margem_percent.toFixed(0)}%` : "—";
+  const imgDiag = a?._imageDiag || null;
 
   // Imagens do anúncio
   const imgsHtml = images.length > 0 ? `
-    <div style="display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin-bottom:14px;padding-bottom:4px">
-      ${images.map(img=>`<img src="${img}" style="width:100px;height:100px;object-fit:cover;border-radius:10px;flex-shrink:0;border:1.5px solid var(--border)" onerror="this.style.display='none'">`).join("")}
+    <div class="olx-img-row">
+      ${images.map(img=>`<img src="${img}" class="olx-img-thumb" onerror="this.style.display='none'">`).join("")}
     </div>` : "";
 
   // Bandeiras vermelhas
   const flags = (a.bandeiras_vermelhas||[]).map(f=>
-    `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px"><span>🚩</span><span>${f}</span></div>`
+    `<div class="olx-list-item"><span>🚩</span><span>${f}</span></div>`
   ).join("");
 
   // Pontos positivos
   const positivos = (a.pontos_positivos||[]).map(p=>
-    `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px;font-size:13px"><span>✅</span><span>${p}</span></div>`
+    `<div class="olx-list-item"><span>✅</span><span>${p}</span></div>`
   ).join("");
 
   result.style.display = "block";
   result.innerHTML = `
+    <div class="olx-result-view">
     <!-- VEREDITO -->
-    <div style="background:${veredito.bg};border:2px solid ${veredito.border};border-radius:16px;padding:16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:36px;margin-bottom:6px">${veredito.emoji}</div>
-      <div style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:1px;color:${veredito.color}">${veredito.label}</div>
-      <div style="font-size:13px;color:${veredito.color};margin-top:4px;opacity:.85">${a.veredito_texto||""}</div>
+    <div class="olx-hero" style="--hero-bg:${veredito.bg};--hero-border:${veredito.border};--hero-color:${veredito.color}">
+      <div class="olx-hero-emoji">${veredito.emoji}</div>
+      <div class="olx-hero-title">${veredito.label}</div>
+      <div class="olx-hero-sub">${a.veredito_texto||""}</div>
     </div>
 
     <!-- IMAGENS -->
     ${imgsHtml}
 
+    <!-- ANÚNCIO OLX -->
+    <div class="olx-card">
+      <div class="olx-card-title">🧾 DADOS DO ANÚNCIO</div>
+      <div class="olx-muted-line" style="margin-top:0"><strong>Título:</strong> ${esc(a?._adData?.title || "Não identificado")}</div>
+      <div class="olx-muted-line"><strong>Modelo detectado:</strong> ${esc(a?.modelo_detectado || a?._adData?.modelHint || "Não identificado")}</div>
+      <div class="olx-muted-line"><strong>Local:</strong> ${esc(a?._adData?.location || "Não informado")}</div>
+      <div class="olx-muted-line"><strong>Preço capturado:</strong> ${a?._adData?.price?fmt2(a._adData.price):"Não identificado"}</div>
+      <div class="olx-muted-line"><strong>Fonte de coleta:</strong> ${esc(a?._adData?.source || "desconhecida")}</div>
+      <div class="olx-muted-line"><strong>Confiabilidade:</strong> ${(a?._adData?._score||0) >= 7 ? "Alta" : (a?._adData?._score||0) >= 4 ? "Média" : "Baixa"} (score ${(a?._adData?._score||0)})</div>
+      ${a?._adData?.description ? `<div class="olx-muted-line"><strong>Descrição:</strong> ${esc(a._adData.description).slice(0,240)}${a._adData.description.length>240?"...":""}</div>` : ""}
+      ${(a?._adData?._score||0) < 4 ? `<div class="olx-muted-line" style="color:var(--orange)">⚠️ Coleta parcial. O sistema evitou suposições para não te mostrar informação errada.</div>` : ""}
+    </div>
+
+    <div class="olx-card">
+      <div class="olx-card-title">🩺 DETECÇÃO AUTOMÁTICA (TEXTO + IMAGEM)</div>
+      <div class="olx-muted-line" style="margin-top:0">${a._autoApplied ? "✅ Usada no cálculo (nenhum defeito manual marcado)." : "ℹ️ Apenas sugestão (você marcou defeitos manualmente ou confiança baixa)."}</div>
+      ${(a._autoDefects||[]).length ? (a._autoDefects||[]).slice(0,4).map(s=>{
+        const d = OLX_DEFEITOS.find(x=>x.id===s.id);
+        return `<div class="olx-muted-line"><strong>${d?d.label:s.id}</strong> · Confiança ${s.confidence} · Fonte: ${s.sources.join("+")}<br>${(s.reasons||[]).map(r=>`• ${esc(r)}`).join(" ")}</div>`;
+      }).join("") : `<div class="olx-muted-line">Nenhum defeito detectado automaticamente com confiança suficiente.</div>`}
+
+      ${imgDiag ? `<div class="olx-muted-line" style="border-top:1px dashed var(--line);padding-top:8px;margin-top:8px">
+        <strong>Leitura das imagens:</strong> analisadas ${imgDiag.success}/${imgDiag.attempted} · bloqueadas ${imgDiag.failed} · escuro médio ${imgDiag.darkAvg} · contorno máx ${imgDiag.edgeMax}<br>
+        ${esc(imgDiag.note||"Diagnóstico por heurística visual")}
+      </div>` : `<div class="olx-muted-line" style="border-top:1px dashed var(--line);padding-top:8px;margin-top:8px">Sem diagnóstico de imagem disponível.</div>`}
+    </div>
+
     <!-- ANÁLISE DO CELULAR -->
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:12px">📱 ANÁLISE DO CELULAR</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div style="background:var(--bg);border-radius:10px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Modelo</div>
-          <div style="font-weight:900;font-size:13px">${a.modelo_detectado||"—"}</div>
+    <div class="olx-card">
+      <div class="olx-card-title">📱 ANÁLISE DO CELULAR</div>
+      <div class="olx-stat-grid">
+        <div class="olx-stat">
+          <div class="olx-stat-label">Modelo</div>
+          <div class="olx-stat-val">${a.modelo_detectado||"—"}</div>
         </div>
-        <div style="background:var(--bg);border-radius:10px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:3px">Preço pedido</div>
-          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--red)">${fmt2(a.preco_anuncio)}</div>
+        <div class="olx-stat">
+          <div class="olx-stat-label">Preço pedido</div>
+          <div class="olx-stat-money red">${fmt2(a.preco_anuncio)}</div>
         </div>
-        <div style="background:var(--green-light);border-radius:10px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:#077a4a;text-transform:uppercase;margin-bottom:3px">Máx. recomendado</div>
-          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--green)">${fmt2(a.preco_maximo_recomendado)}</div>
+        <div class="olx-stat soft-green">
+          <div class="olx-stat-label green">Máx. recomendado</div>
+          <div class="olx-stat-money green">${fmt2(a.preco_maximo_recomendado)}</div>
         </div>
-        <div style="background:var(--accent-light);border-radius:10px;padding:10px">
-          <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;margin-bottom:3px">Revenda média</div>
-          <div style="font-family:'Bebas Neue',cursive;font-size:20px;color:var(--accent)">${fmt2(a.preco_revenda_medio)}</div>
+        <div class="olx-stat soft-blue">
+          <div class="olx-stat-label blue">Revenda média</div>
+          <div class="olx-stat-money blue">${fmt2(a.preco_revenda_medio)}</div>
         </div>
       </div>
-      ${a.condicao_estimada ? `<div style="margin-top:10px;font-size:13px;color:var(--muted)">📋 Condição: ${a.condicao_estimada}</div>` : ""}
+      ${a.condicao_estimada ? `<div class="olx-muted-line">📋 Condição: ${a.condicao_estimada}</div>` : ""}
     </div>
 
     <!-- ESTIMATIVA DE REPARO -->
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">🔧 PEÇAS NECESSÁRIAS</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Edite o valor após pesquisar — recalcula tudo na hora</div>
+    <div class="olx-card">
+      <div class="olx-card-title" style="margin-bottom:4px">🔧 PEÇAS NECESSÁRIAS</div>
+      <div class="olx-card-sub">Edite o valor após pesquisar — recalcula tudo na hora</div>
       <div id="pecas-lista">
       ${(()=>{
         const modelo = a.modelo_detectado || "";
@@ -2055,21 +3198,21 @@ function renderOLXResult(a, images, url){
 
         const pecaRow = (icon, nome, val, links) => {
           const id = `peca-val-${idx++}`;
-          return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:700">${icon} ${nome}</div>
-              <div style="display:flex;gap:5px;margin-top:4px">${links}</div>
+          return `<div class="peca-row">
+            <div class="peca-info">
+              <div class="peca-name">${icon} ${nome}</div>
+              <div class="peca-links">${links}</div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:12px;color:var(--muted)">R$</span>
+            <div class="peca-edit">
+              <span class="peca-currency">R$</span>
               <input type="number" id="${id}" value="${val}" min="0" onchange="recalcularPecas(${a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado}, ${a.preco_revenda_medio})"
-                style="width:75px;border:1.5px solid var(--accent);border-radius:8px;padding:5px 8px;font-family:'Bebas Neue',cursive;font-size:18px;color:var(--green);outline:none;text-align:right">
+                class="peca-input">
             </div>
           </div>`;
         };
 
-        const floritecLink = `<a href="${floritecUrl}" target="_blank" style="font-size:11px;background:var(--accent-light);color:var(--accent);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🏪 Floritec</a>`;
-        const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" style="font-size:11px;background:#fff4e6;color:var(--orange);border-radius:5px;padding:2px 7px;font-weight:700;text-decoration:none">🛒 Shopping</a>`;
+        const floritecLink = `<a href="${floritecUrl}" target="_blank" class="price-link floritec">🏪 Floritec</a>`;
+        const shopLink = (q) => `<a href="${shopUrl(q)}" target="_blank" class="price-link shop">🛒 Shopping</a>`;
 
         if(a.estimativa_reparo?.tela > 0)
           rows += pecaRow("📱","Tela / Display", a.estimativa_reparo.tela, floritecLink+shopLink("tela display"));
@@ -2084,103 +3227,104 @@ function renderOLXResult(a, images, url){
             rows += pecaRow(d.icon, d.label, d.extra, shopLink(d.label));
         });
 
-        if(!rows) rows = `<div style="font-size:13px;color:var(--muted);padding:8px 0">Nenhum defeito selecionado</div>`;
+        if(!rows) rows = `<div class="olx-muted-line" style="margin-top:0;padding:8px 0">Nenhum defeito selecionado</div>`;
         return rows;
       })()}
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0 0;font-size:15px;font-weight:900">
+      <div class="peca-total">
         <span>Total peças</span>
         <span style="color:var(--orange)" id="total-pecas-val">${fmt2(a.estimativa_reparo?.total||0)}</span>
       </div>
     </div>
 
     <!-- LUCRO -->
-    <div style="background:var(--dark);border-radius:14px;padding:14px;margin-bottom:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px" id="lucro-box">
-      <div style="text-align:center">
-        <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;margin-bottom:3px">Lucro estimado</div>
-        <div style="font-family:'Bebas Neue',cursive;font-size:26px;color:var(--green)" id="lucro-val">${fmt2(a.lucro_estimado)}</div>
+    <div class="olx-dark-grid" id="lucro-box">
+      <div class="olx-dark-cell">
+        <div class="olx-dark-label">Lucro estimado</div>
+        <div class="olx-dark-value" id="lucro-val">${fmt2(a.lucro_estimado)}</div>
       </div>
-      <div style="text-align:center">
-        <div style="font-size:11px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;margin-bottom:3px">Margem</div>
-        <div style="font-family:'Bebas Neue',cursive;font-size:26px;color:var(--green)" id="margem-val">${margem}</div>
+      <div class="olx-dark-cell">
+        <div class="olx-dark-label">Margem</div>
+        <div class="olx-dark-value" id="margem-val">${margem}</div>
       </div>
     </div>
 
     <!-- BANDEIRAS E POSITIVOS -->
-    ${flags ? `<div style="background:var(--red-light);border:1.5px solid var(--red);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;color:var(--red);margin-bottom:10px">🚩 ALERTAS</div>
+    ${flags ? `<div class="olx-alert">
+      <div class="olx-list-title red">🚩 ALERTAS</div>
       ${flags}
     </div>` : ""}
 
-    ${positivos ? `<div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:14px;padding:14px;margin-bottom:12px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:1px;color:#077a4a;margin-bottom:10px">✅ PONTOS POSITIVOS</div>
+    ${positivos ? `<div class="olx-good">
+      <div class="olx-list-title green">✅ PONTOS POSITIVOS</div>
       ${positivos}
     </div>` : ""}
 
     <!-- RESUMO -->
-    ${a.resumo ? `<div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;font-size:13px;line-height:1.6;color:var(--text)">
+    ${a.resumo ? `<div class="olx-summary">
       <strong>💬 Resumo:</strong> ${a.resumo}
     </div>` : ""}
 
-    <a href="${url}" target="_blank" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--accent);color:#fff;border-radius:12px;padding:13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:8px">
+    <a href="${url}" target="_blank" class="olx-link-btn">
       🔗 Ver anúncio na OLX
     </a>
 
     <!-- COPY PARA O VENDEDOR -->
-    <div style="background:var(--dark);border-radius:14px;padding:14px;margin-bottom:8px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:#fff;margin-bottom:4px">💬 MENSAGEM PARA O VENDEDOR</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.5);margin-bottom:12px">Copy persuasivo para negociar o preço</div>
-      <div id="copy-msg-box" style="background:#1e2330;border-radius:10px;padding:12px;font-size:13px;color:rgba(255,255,255,.85);line-height:1.7;white-space:pre-wrap;margin-bottom:10px">${gerarCopy(a)}</div>
-      <div style="display:flex;gap:8px">
-        <button onclick="copiarMsgVendedor()" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+    <div class="olx-copy">
+      <div class="olx-copy-title">💬 MENSAGEM PARA O VENDEDOR</div>
+      <div class="olx-copy-sub">Copy persuasivo para negociar o preço</div>
+      <div id="copy-msg-box" class="olx-copy-box">${a._copyText}</div>
+      <div class="olx-row">
+        <button onclick="copiarMsgVendedor()" class="olx-btn primary">
           📋 Copiar mensagem
         </button>
-        <a href="https://wa.me/?text=${encodeURIComponent(gerarCopy(a))}" target="_blank"
-          style="flex:1;background:#25d366;color:#fff;border-radius:10px;padding:11px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:5px">
+        <a href="https://wa.me/?text=${encodeURIComponent(a._copyText)}" target="_blank"
+          class="olx-wa-link">
           💬 WhatsApp
         </a>
       </div>
     </div>
 
     <!-- CALCULADORA DE CUSTO TOTAL -->
-    <div style="background:var(--white);border:1.5px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px">
-      <div style="font-family:'Bebas Neue',cursive;font-size:16px;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px">🧮 CALCULADORA DE CUSTO TOTAL</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Baseado no valor que você vai pagar</div>
+    <div class="olx-card">
+      <div class="olx-card-title" style="margin-bottom:4px">🧮 CALCULADORA DE CUSTO TOTAL</div>
+      <div class="olx-card-sub">Baseado no valor que você vai pagar</div>
 
-      <div style="background:var(--bg);border-radius:10px;padding:10px;margin-bottom:12px">
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+      <div class="olx-calc-box">
+        <div class="calc-row">
           <span>💳 Você vai pagar</span>
-          <span style="font-weight:700;color:var(--accent)" id="calc-compra">${fmt2(a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado)}</span>
+          <span class="calc-val accent" id="calc-compra">${fmt2(a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado)}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+        <div class="calc-row">
           <span>🔧 Peças necessárias</span>
-          <span style="font-weight:700" id="calc-pecas-val">${fmt2(a.estimativa_reparo?.total||0)}</span>
+          <span class="calc-val" id="calc-pecas-val">${fmt2(a.estimativa_reparo?.total||0)}</span>
         </div>
-        <div id="calc-extras-list"></div>
-        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:900;border-top:1px solid var(--border);padding-top:8px;margin-top:6px">
+        <div id="calc-extras-list" class="calc-extras"></div>
+        <div class="calc-total">
           <span>INVESTIMENTO TOTAL</span>
           <span style="color:var(--accent)" id="calc-total">${fmt2((a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado) + (a.estimativa_reparo?.total||0))}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px">
+        <div class="calc-row" style="margin-top:6px">
           <span>💰 Lucro final estimado</span>
-          <span style="font-weight:700;color:var(--green)" id="calc-lucro">${fmt2(a.preco_revenda_medio - (a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado) - (a.estimativa_reparo?.total||0))}</span>
+          <span class="calc-val green" id="calc-lucro">${fmt2(a.preco_revenda_medio - (a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado) - (a.estimativa_reparo?.total||0))}</span>
         </div>
-        <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px">
+        <div class="calc-row" style="margin-top:4px">
           <span>📈 Revenda média</span>
-          <span style="font-weight:700;color:var(--green)">${fmt2(a.preco_revenda_medio)}</span>
+          <span class="calc-val green">${fmt2(a.preco_revenda_medio)}</span>
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-bottom:8px">
+      <div class="calc-form">
         <input type="text" id="calc-peca-nome" placeholder="Peça extra (ex: Flex volume)"
-          style="flex:1;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
+          class="txt">
         <input type="number" id="calc-peca-val" placeholder="R$" min="0"
-          style="width:80px;border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;font-family:'Mulish',sans-serif;font-size:13px;outline:none">
-        <button onclick="addPecaExtra(${a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado}, ${a.estimativa_reparo?.total||0}, ${a.preco_revenda_medio})"
-          style="background:var(--accent);color:#fff;border:none;border-radius:8px;padding:9px 13px;font-family:'Mulish',sans-serif;font-weight:700;font-size:13px;cursor:pointer">
+          class="num">
+        <button onclick="addPecaExtra(${a.oferta_custom||a.preco_anuncio||a.preco_maximo_recomendado}, ${a.preco_revenda_medio})"
+          class="add">
           + Adicionar
         </button>
       </div>
+    </div>
     </div>
   `;
 }
@@ -2219,7 +3363,7 @@ function recalcularPecas(precoCompra, revenda){
 }
 
 
-function addPecaExtra(compra, reparo, revenda){
+function addPecaExtra(compra, revenda){
   const nome = document.getElementById("calc-peca-nome")?.value.trim();
   const val = parseFloat(document.getElementById("calc-peca-val")?.value) || 0;
   if(!nome || !val){ showToast("Preencha nome e valor."); return; }
@@ -2227,21 +3371,16 @@ function addPecaExtra(compra, reparo, revenda){
   document.getElementById("calc-peca-nome").value = "";
   document.getElementById("calc-peca-val").value = "";
 
-  const totalExtras = _pecasExtras.reduce((a,p)=>a+p.val, 0);
-  const totalInvest = compra + reparo + totalExtras;
-  const lucroFinal = revenda - totalInvest;
-
-  // Atualizar lista
+  // Atualizar lista visual de extras
   document.getElementById("calc-extras-list").innerHTML = _pecasExtras.map((p,i)=>
-    `<div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;color:var(--accent)">
+    `<div class="extra-row">
       <span>+ ${p.nome}</span>
-      <span style="font-weight:700">${fmt(p.val)}</span>
+      <span class="calc-val">${fmt(p.val)}</span>
     </div>`
   ).join("");
 
-  document.getElementById("calc-total").textContent = fmt(totalInvest);
-  document.getElementById("calc-lucro").textContent = fmt(lucroFinal);
-  document.getElementById("calc-lucro").style.color = lucroFinal > 0 ? "var(--green)" : "var(--red)";
+  // Recalcular tudo usando valores atuais dos inputs
+  recalcularPecas(compra, revenda);
   showToast(`✅ ${nome} adicionado!`);
 }
 
@@ -2348,10 +3487,15 @@ async function checkVersion(){
 }
 
 loadCatalog();
+loadRuntimeState();
 renderBrands();
 updateBadge();
+if(state.brand&&state.model){
+  goStep(Math.min(Math.max(Number(state.step)||1,1),4));
+}
 appLog("success","App","TechFix iniciado",`${new Date().toLocaleString("pt-BR")}`);
 renderOlxDefeitos();
+renderDashboard();
 const last=localStorage.getItem("upd_last");
 if(last){const el=document.getElementById("upd-last");if(el){el.textContent=last;el.style.display="block";}}
 checkVersion();
